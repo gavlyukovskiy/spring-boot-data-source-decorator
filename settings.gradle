@@ -1,0 +1,6 @@
+rootProject.name = 'spring-boot-data-source-decorator'
+include 'decorator-spring-boot-autoconfigure'
+include 'p6spy-spring-boot-starter'
+include 'datasource-proxy-spring-boot-starter'
+include 'flexy-pool-spring-boot-starter'
+

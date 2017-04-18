@@ -1,0 +1,36 @@
+group 'com.gavlyukovskiy'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'maven'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile("org.springframework:spring-jdbc:4.3.6.RELEASE")
+    compile("org.springframework.boot:spring-boot:1.4.2.RELEASE")
+    compile("org.springframework.boot:spring-boot-autoconfigure:1.4.2.RELEASE")
+
+    compileOnly("org.springframework.boot:spring-boot-configuration-processor:1.4.2.RELEASE")
+
+    compileOnly("p6spy:p6spy:3.0.0")
+    compileOnly("net.ttddyy:datasource-proxy:1.4.1")
+    compileOnly("com.vladmihalcea.flexy-pool:flexy-pool-core:1.2.7")
+
+    testCompile("junit:junit:4.12")
+    testCompile("org.assertj:assertj-core:3.6.2")
+    testCompile("org.springframework.boot:spring-boot-test:1.4.2.RELEASE")
+
+    testCompileOnly("p6spy:p6spy:3.0.0")
+    testCompileOnly("net.ttddyy:datasource-proxy:1.4.1")
+    testCompileOnly("com.vladmihalcea.flexy-pool:flexy-pool-core:1.2.7")
+
+    testCompileOnly("commons-dbcp:commons-dbcp:1.4")
+    testCompileOnly("org.apache.commons:commons-dbcp2:2.1.1")
+    testCompileOnly("org.apache.tomcat:tomcat-jdbc:8.5.13")
+    testCompileOnly("com.zaxxer:HikariCP:2.5.1")
+}

@@ -1,0 +1,16 @@
+group 'com.gavlyukovskiy'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'maven'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile(project(":decorator-spring-boot-autoconfigure"))
+    compile("com.vladmihalcea.flexy-pool:flexy-pool-core:1.2.7")
+}
