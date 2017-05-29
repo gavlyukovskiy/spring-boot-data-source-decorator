@@ -1,15 +1,3 @@
-group 'com.gavlyukovskiy'
-version '1.0-SNAPSHOT'
-
-apply plugin: 'java'
-apply plugin: 'maven'
-
-sourceCompatibility = 1.8
-
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     compile(project(":decorator-spring-boot-autoconfigure"))
     compile("net.ttddyy:datasource-proxy:1.4.1")

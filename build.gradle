@@ -1,2 +1,14 @@
-group 'com.gavlyukovskiy'
-version '1.0-SNAPSHOT'
+subprojects {
+    group 'com.github.gavlyukovskiy'
+    version '1.0.RELEASE'
+
+    apply plugin: 'java'
+    apply plugin: 'maven'
+    apply plugin: 'maven-publish'
+
+    sourceCompatibility = 1.8
+
+    repositories {
+        mavenCentral()
+    }
+}
