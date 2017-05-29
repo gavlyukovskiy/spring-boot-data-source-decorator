@@ -1,4 +1,4 @@
-package com.gavlyukovskiy.boot.jdbc.decorator;
+package com.github.gavlyukovskiy.decorator.boot;
 
 import com.p6spy.engine.spy.P6DataSource;
 import com.vladmihalcea.flexypool.FlexyPoolDataSource;
@@ -231,12 +231,7 @@ public class DataSourceDecoratorAutoConfigurationTests {
 
         @Bean
         public DataSourceDecorator customDataSourceDecorator() {
-            return new DataSourceDecorator() {
-                @Override
-                public DataSource decorate(DataSource dataSource) {
-                    return new CustomDataSourceProxy(dataSource);
-                }
-            };
+            return (beanName, dataSource) -> new CustomDataSourceProxy(dataSource);
         }
 
     }
@@ -309,10 +304,6 @@ public class DataSourceDecoratorAutoConfigurationTests {
 
         public CustomDataSourceProxy(DataSource delegate) {
             this.delegate = delegate;
-        }
-
-        public DataSource getDelegate() {
-            return this.delegate;
         }
 
         @Override

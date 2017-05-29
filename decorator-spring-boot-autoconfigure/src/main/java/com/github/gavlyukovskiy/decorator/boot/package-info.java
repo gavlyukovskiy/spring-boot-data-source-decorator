@@ -17,4 +17,4 @@
 /**
  * Auto-configuration for JDBC Decorators.
  */
-package com.gavlyukovskiy.boot.jdbc.decorator;
+package com.github.gavlyukovskiy.decorator.boot;

@@ -1,4 +1,4 @@
 #
 # Test flexy-pool data source wrapping for testing purposes only.
 #
-com.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorAutoConfigurationTests$TestMetricsFactoryService
+com.github.gavlyukovskiy.decorator.boot.DataSourceDecoratorAutoConfigurationTests$TestMetricsFactoryService

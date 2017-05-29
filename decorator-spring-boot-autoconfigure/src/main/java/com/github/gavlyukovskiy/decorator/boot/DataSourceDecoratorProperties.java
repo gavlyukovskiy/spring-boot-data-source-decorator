@@ -14,32 +14,32 @@
  * limitations under the License.
  */
 
-package com.gavlyukovskiy.boot.jdbc.decorator;
+package com.github.gavlyukovskiy.decorator.boot;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.Collection;
 import java.util.Collections;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 @ConfigurationProperties(prefix = "spring.datasource.decorator")
 public class DataSourceDecoratorProperties {
 
-	private boolean enabled = true;
-	private Collection<String> excludeBeans = Collections.emptyList();
+    private boolean enabled = true;
+    private Collection<String> excludeBeans = Collections.emptyList();
 
-	public boolean isEnabled() {
-		return this.enabled;
-	}
+    public boolean isEnabled() {
+        return this.enabled;
+    }
 
-	public void setEnabled(boolean enabled) {
-		this.enabled = enabled;
-	}
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
 
-	public Collection<String> getExcludeBeans() {
-		return this.excludeBeans;
-	}
+    public Collection<String> getExcludeBeans() {
+        return this.excludeBeans;
+    }
 
-	public void setExcludeBeans(Collection<String> excludeBeans) {
-		this.excludeBeans = excludeBeans;
-	}
+    public void setExcludeBeans(Collection<String> excludeBeans) {
+        this.excludeBeans = excludeBeans;
+    }
 }

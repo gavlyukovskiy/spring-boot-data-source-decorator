@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.gavlyukovskiy.boot.jdbc.decorator;
+package com.github.gavlyukovskiy.decorator.boot;
 
 import javax.sql.DataSource;
 
 public interface DataSourceDecorator {
 
-	DataSource decorate(DataSource dataSource);
+    DataSource decorate(String beanName, DataSource dataSource);
 }

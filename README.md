@@ -9,7 +9,7 @@ As well it supports custom data source decorators through declaring beans of typ
 ```
 @Bean
 public DataSourceDecorator customDecorator() {
-  return dataSource -> {
+  return (beanName, dataSource) -> {
     return new DataSourceWrapper(dataSource);
   }
 }

@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.gavlyukovskiy.boot.jdbc.decorator.metadata;
+package com.github.gavlyukovskiy.decorator.boot.metadata;
 
-import com.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorAutoConfiguration;
-import com.gavlyukovskiy.boot.jdbc.decorator.DecoratedDataSource;
+import com.github.gavlyukovskiy.decorator.boot.DataSourceDecoratorAutoConfiguration;
+import com.github.gavlyukovskiy.decorator.boot.DecoratedDataSource;
 import com.zaxxer.hikari.HikariDataSource;
 import org.junit.After;
 import org.junit.Before;
