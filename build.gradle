@@ -1,14 +1,100 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+}
+
+plugins {
+    id "com.jfrog.bintray" version "1.7.3"
+}
+
+def pomConfig = {
+    licenses {
+        license {
+            name "The Apache Software License, Version 2.0"
+            url "http://www.apache.org/licenses/LICENSE-2.0.txt"
+            distribution "repo"
+        }
+    }
+    developers {
+        developer {
+            id "gavlyukovskiy"
+            name "Arthur Gavlyukovskiy"
+            email "agavlyukovskiy@gmail.com"
+        }
+    }
+
+    scm {
+        url "https://github.com/gavlyukovskiy/spring-boot-data-source-decorator"
+    }
+}
+
 subprojects {
+
     group 'com.github.gavlyukovskiy'
     version '1.0.RELEASE'
 
     apply plugin: 'java'
     apply plugin: 'maven'
     apply plugin: 'maven-publish'
+    apply plugin: 'com.jfrog.bintray'
 
     sourceCompatibility = 1.8
 
     repositories {
         mavenCentral()
+    }
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
+                artifact sourceJar
+                artifact javadocJar
+                groupId project.group
+                artifactId project.name
+                version project.version
+                pom.withXml {
+                    def root = asNode()
+                    root.appendNode('description', 'Your description of the lib')
+                    root.appendNode('name', 'spring-boot-data-source-decorator')
+                    root.appendNode('url', 'https://github.com/gavlyukovskiy/spring-boot-data-source-decorator')
+                    root.children().last() + pomConfig
+                }
+            }
+        }
+    }
+
+    bintray {
+        user = System.getenv('BINTRAY_USER')
+        key = System.getenv('BINTRAY_KEY')
+        publications = ['mavenJava']
+        pkg {
+            repo = project.group
+            name = project.name
+            licenses = ['Apache-2.0']
+            version {
+                name = project.version
+                released  = new Date()
+                vcsTag = 'v1.0.RELEASE'
+            }
+        }
+    }
+
+    task sourceJar(type: Jar, dependsOn: classes) {
+        classifier 'sources'
+        from sourceSets.main.allSource
+    }
+
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier = 'javadoc'
+        from javadoc.destinationDir
+    }
+
+    tasks.withType(Jar) {
+        from(rootProject.projectDir) {
+            include 'LICENSE.txt'
+            into 'META-INF'
+        }
     }
 }
