@@ -17,6 +17,7 @@
 package com.github.gavlyukovskiy.decorator.boot;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -26,6 +27,9 @@ public class DataSourceDecoratorProperties {
 
     private boolean enabled = true;
     private Collection<String> excludeBeans = Collections.emptyList();
+
+    @NestedConfigurationProperty
+    private DataSourceProxyProperties dataSourceProxy = new DataSourceProxyProperties();
 
     public boolean isEnabled() {
         return this.enabled;
@@ -41,5 +45,13 @@ public class DataSourceDecoratorProperties {
 
     public void setExcludeBeans(Collection<String> excludeBeans) {
         this.excludeBeans = excludeBeans;
+    }
+
+    public DataSourceProxyProperties getDataSourceProxy() {
+        return dataSourceProxy;
+    }
+
+    public void setDataSourceProxy(DataSourceProxyProperties dataSourceProxy) {
+        this.dataSourceProxy = dataSourceProxy;
     }
 }
