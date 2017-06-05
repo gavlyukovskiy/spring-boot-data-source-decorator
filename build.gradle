@@ -32,7 +32,7 @@ def pomConfig = {
 subprojects {
 
     group 'com.github.gavlyukovskiy'
-    version '1.0.RELEASE'
+    version '1.1.SNAPSHOT'
 
     apply plugin: 'java'
     apply plugin: 'maven'
@@ -56,7 +56,7 @@ subprojects {
                 version project.version
                 pom.withXml {
                     def root = asNode()
-                    root.appendNode('description', 'Your description of the lib')
+                    root.appendNode('description', 'Spring Boot integration with p6spy, datasource-proxy and flexy-pool')
                     root.appendNode('name', 'spring-boot-data-source-decorator')
                     root.appendNode('url', 'https://github.com/gavlyukovskiy/spring-boot-data-source-decorator')
                     root.children().last() + pomConfig
@@ -76,7 +76,7 @@ subprojects {
             version {
                 name = project.version
                 released  = new Date()
-                vcsTag = 'v1.0.RELEASE'
+                vcsTag = 'v1.1.RELEASE'
             }
         }
     }
