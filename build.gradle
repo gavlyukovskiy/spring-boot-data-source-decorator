@@ -76,7 +76,7 @@ subprojects {
             version {
                 name = project.version
                 released  = new Date()
-                vcsTag = 'v1.1.0.RELEASE'
+                vcsTag = "v${project.version}"
             }
         }
     }
