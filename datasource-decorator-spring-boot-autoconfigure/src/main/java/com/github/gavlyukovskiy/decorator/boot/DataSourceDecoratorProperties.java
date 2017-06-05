@@ -16,12 +16,16 @@
 
 package com.github.gavlyukovskiy.decorator.boot;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 import java.util.Collection;
 import java.util.Collections;
 
+@Getter
+@Setter
 @ConfigurationProperties(prefix = "spring.datasource.decorator")
 public class DataSourceDecoratorProperties {
 
@@ -30,28 +34,4 @@ public class DataSourceDecoratorProperties {
 
     @NestedConfigurationProperty
     private DataSourceProxyProperties dataSourceProxy = new DataSourceProxyProperties();
-
-    public boolean isEnabled() {
-        return this.enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public Collection<String> getExcludeBeans() {
-        return this.excludeBeans;
-    }
-
-    public void setExcludeBeans(Collection<String> excludeBeans) {
-        this.excludeBeans = excludeBeans;
-    }
-
-    public DataSourceProxyProperties getDataSourceProxy() {
-        return dataSourceProxy;
-    }
-
-    public void setDataSourceProxy(DataSourceProxyProperties dataSourceProxy) {
-        this.dataSourceProxy = dataSourceProxy;
-    }
 }

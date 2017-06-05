@@ -4,6 +4,7 @@ dependencies {
     compile("org.springframework.boot:spring-boot-autoconfigure:1.4.2.RELEASE")
 
     compileOnly("org.springframework.boot:spring-boot-configuration-processor:1.4.2.RELEASE")
+    compileOnly('org.projectlombok:lombok:1.16.10')
 
     compileOnly("p6spy:p6spy:3.0.0")
     compileOnly("net.ttddyy:datasource-proxy:1.4.1")

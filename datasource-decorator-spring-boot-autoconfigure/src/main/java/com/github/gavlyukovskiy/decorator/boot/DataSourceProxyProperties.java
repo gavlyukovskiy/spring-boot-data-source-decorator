@@ -16,6 +16,8 @@
 
 package com.github.gavlyukovskiy.decorator.boot;
 
+import lombok.Getter;
+import lombok.Setter;
 import net.ttddyy.dsproxy.QueryCountHolder;
 import net.ttddyy.dsproxy.listener.logging.CommonsLogLevel;
 import net.ttddyy.dsproxy.listener.logging.SLF4JLogLevel;
@@ -36,6 +38,8 @@ import static org.slf4j.LoggerFactory.getLogger;
  * @author Arthur Gavlyukovskiy
  * @since 1.1
  */
+@Getter
+@Setter
 public class DataSourceProxyProperties {
 
     private static final Logger log = getLogger(DataSourceProxyProperties.class);
@@ -45,55 +49,8 @@ public class DataSourceProxyProperties {
      */
     private DataSourceProxyLogging logging = DataSourceProxyLogging.SYSOUT;
 
-    /**
-     * Logging level appropriate to the selected logging type.
-     *
-     * @see ProxyDataSourceBuilder#logQueryToSysOut()
-     * @see ProxyDataSourceBuilder#logQueryBySlf4j()
-     * @see ProxyDataSourceBuilder#logQueryByCommons()
-     * @see ProxyDataSourceBuilder#logQueryByJUL()
-     */
-    private String logLevel;
-
-    /**
-     * Name of the logger.
-     *
-     * @see ProxyDataSourceBuilder#logQueryToSysOut()
-     * @see ProxyDataSourceBuilder#logQueryBySlf4j(SLF4JLogLevel, String)
-     * @see ProxyDataSourceBuilder#logQueryByCommons(CommonsLogLevel, String)
-     * @see ProxyDataSourceBuilder#logQueryByJUL(Level, String)
-     */
-    private String loggerName;
-
-    /**
-     * Log all queries to the log.
-     *
-     * @see ProxyDataSourceBuilder#logQueryToSysOut()
-     * @see ProxyDataSourceBuilder#logQueryBySlf4j(SLF4JLogLevel, String)
-     * @see ProxyDataSourceBuilder#logQueryByCommons(CommonsLogLevel, String)
-     * @see ProxyDataSourceBuilder#logQueryByJUL(Level, String)
-     */
-    private boolean logQuery = true;
-
-    /**
-     * Log slow queries to the log.
-     *
-     * @see ProxyDataSourceBuilder#logSlowQueryToSysOut(long, TimeUnit)
-     * @see ProxyDataSourceBuilder#logSlowQueryBySlf4j(long, TimeUnit)
-     * @see ProxyDataSourceBuilder#logSlowQueryByCommons(long, TimeUnit)
-     * @see ProxyDataSourceBuilder#logSlowQueryByJUL(long, TimeUnit)
-     */
-    private boolean logSlowQuery = true;
-
-    /**
-     * Number of seconds to consider query as slow.
-     *
-     * @see ProxyDataSourceBuilder#logSlowQueryToSysOut(long, TimeUnit)
-     * @see ProxyDataSourceBuilder#logSlowQueryBySlf4j(long, TimeUnit)
-     * @see ProxyDataSourceBuilder#logSlowQueryByCommons(long, TimeUnit)
-     * @see ProxyDataSourceBuilder#logSlowQueryByJUL(long, TimeUnit)
-     */
-    private long slowQueryThreshold = 300;
+    private Query query = new Query();
+    private SlowQuery slowQuery = new SlowQuery();
 
     /**
      * Use multiline output for logging query.
@@ -101,14 +58,12 @@ public class DataSourceProxyProperties {
      * @see ProxyDataSourceBuilder#multiline()
      */
     private boolean multiline = true;
-
     /**
      * Use json output for logging query.
      *
      * @see ProxyDataSourceBuilder#asJson()
      */
     private boolean jsonFormat = false;
-
     /**
      * Creates listener to count queries.
      *
@@ -120,47 +75,47 @@ public class DataSourceProxyProperties {
     void configure(ProxyDataSourceBuilder proxyDataSourceBuilder) {
         switch (logging) {
             case SLF4j: {
-                SLF4JLogLevel logLevel = toSlf4JLogLevel();
-                if (logQuery) {
-                    proxyDataSourceBuilder.logQueryBySlf4j(logLevel, loggerName);
+                if (query.isEnableLogging()) {
+                    proxyDataSourceBuilder.logQueryBySlf4j(toSlf4JLogLevel(query.getLogLevel()), query.getLoggerName());
                 }
-                if (logSlowQuery) {
-                    proxyDataSourceBuilder.logSlowQueryBySlf4j(slowQueryThreshold, TimeUnit.SECONDS, logLevel, loggerName);
+                if (slowQuery.isEnableLogging()) {
+                    proxyDataSourceBuilder.logSlowQueryBySlf4j(slowQuery.getThreshold(), TimeUnit.SECONDS,
+                            toSlf4JLogLevel(slowQuery.getLogLevel()), slowQuery.getLoggerName());
                 }
                 break;
             }
             case JUL: {
-                Level logLevel = toJULLogLevel();
-                if (logQuery) {
-                    proxyDataSourceBuilder.logQueryByJUL(logLevel, loggerName);
+                if (query.isEnableLogging()) {
+                    proxyDataSourceBuilder.logQueryByJUL(toJULLogLevel(query.getLogLevel()), query.getLoggerName());
                 }
-                if (logSlowQuery) {
-                    proxyDataSourceBuilder.logSlowQueryByJUL(slowQueryThreshold, TimeUnit.SECONDS, logLevel, loggerName);
+                if (slowQuery.isEnableLogging()) {
+                    proxyDataSourceBuilder.logSlowQueryByJUL(slowQuery.getThreshold(), TimeUnit.SECONDS,
+                            toJULLogLevel(slowQuery.getLogLevel()), slowQuery.getLoggerName());
                 }
                 break;
             }
             case COMMONS: {
-                CommonsLogLevel logLevel = toCommonsLogLevel();
-                if (logQuery) {
-                    proxyDataSourceBuilder.logQueryByCommons(logLevel, loggerName);
+                if (query.isEnableLogging()) {
+                    proxyDataSourceBuilder.logQueryByCommons(toCommonsLogLevel(query.getLogLevel()), query.getLoggerName());
                 }
-                if (logSlowQuery) {
-                    proxyDataSourceBuilder.logSlowQueryByCommons(slowQueryThreshold, TimeUnit.SECONDS, logLevel, loggerName);
+                if (slowQuery.isEnableLogging()) {
+                    proxyDataSourceBuilder.logSlowQueryByCommons(slowQuery.getThreshold(), TimeUnit.SECONDS,
+                            toCommonsLogLevel(slowQuery.getLogLevel()), slowQuery.getLoggerName());
                 }
                 break;
             }
             case SYSOUT: {
-                if (logQuery) {
+                if (query.isEnableLogging()) {
                     proxyDataSourceBuilder.logQueryToSysOut();
                 }
-                if (logSlowQuery) {
-                    proxyDataSourceBuilder.logSlowQueryToSysOut(slowQueryThreshold, TimeUnit.SECONDS);
+                if (slowQuery.isEnableLogging()) {
+                    proxyDataSourceBuilder.logSlowQueryToSysOut(slowQuery.getThreshold(), TimeUnit.SECONDS);
                 }
                 break;
             }
         }
         if (multiline && jsonFormat) {
-            log.warn("Found opposite multiline and json format, multiline will be used (may be depend on library version)");
+            log.warn("Found opposite multiline and json format, multiline will be used (may depend on library version)");
         }
         if (multiline) {
             proxyDataSourceBuilder.multiline();
@@ -173,7 +128,7 @@ public class DataSourceProxyProperties {
         }
     }
 
-    private SLF4JLogLevel toSlf4JLogLevel() {
+    private SLF4JLogLevel toSlf4JLogLevel(String logLevel) {
         if (logLevel == null) {
             return null;
         }
@@ -186,7 +141,7 @@ public class DataSourceProxyProperties {
                 "known levels: " + Arrays.toString(SLF4JLogLevel.values()));
     }
 
-    private Level toJULLogLevel() {
+    private Level toJULLogLevel(String logLevel) {
         if (logLevel == null) {
             return null;
         }
@@ -198,7 +153,7 @@ public class DataSourceProxyProperties {
         }
     }
 
-    private CommonsLogLevel toCommonsLogLevel() {
+    private CommonsLogLevel toCommonsLogLevel(String logLevel) {
         if (logLevel == null) {
             return null;
         }
@@ -211,76 +166,58 @@ public class DataSourceProxyProperties {
                 "known levels " + Arrays.toString(CommonsLogLevel.values()));
     }
 
-    public DataSourceProxyLogging getLogging() {
-        return logging;
+    /**
+     * Properties to configure query logging listener.
+     *
+     * @see ProxyDataSourceBuilder#logQueryToSysOut()
+     * @see ProxyDataSourceBuilder#logQueryBySlf4j(SLF4JLogLevel, String)
+     * @see ProxyDataSourceBuilder#logQueryByCommons(CommonsLogLevel, String)
+     * @see ProxyDataSourceBuilder#logQueryByJUL(Level, String)
+     */
+    @Getter
+    @Setter
+    public static class Query {
+        /**
+         * Enable logging all queries to the log.
+         */
+        private boolean enableLogging = true;
+        /**
+         * Name of query logger.
+         */
+        private String loggerName;
+        /**
+         * Severity of query logger.
+         */
+        private String logLevel = "DEBUG";
     }
 
-    public void setLogging(DataSourceProxyLogging logging) {
-        this.logging = logging;
-    }
-
-    public String getLogLevel() {
-        return logLevel;
-    }
-
-    public void setLogLevel(String logLevel) {
-        this.logLevel = logLevel;
-    }
-
-    public String getLoggerName() {
-        return loggerName;
-    }
-
-    public void setLoggerName(String loggerName) {
-        this.loggerName = loggerName;
-    }
-
-    public boolean isLogQuery() {
-        return logQuery;
-    }
-
-    public void setLogQuery(boolean logQuery) {
-        this.logQuery = logQuery;
-    }
-
-    public boolean isLogSlowQuery() {
-        return logSlowQuery;
-    }
-
-    public void setLogSlowQuery(boolean logSlowQuery) {
-        this.logSlowQuery = logSlowQuery;
-    }
-
-    public long getSlowQueryThreshold() {
-        return slowQueryThreshold;
-    }
-
-    public void setSlowQueryThreshold(long slowQueryThreshold) {
-        this.slowQueryThreshold = slowQueryThreshold;
-    }
-
-    public boolean isMultiline() {
-        return multiline;
-    }
-
-    public void setMultiline(boolean multiline) {
-        this.multiline = multiline;
-    }
-
-    public boolean isJsonFormat() {
-        return jsonFormat;
-    }
-
-    public void setJsonFormat(boolean jsonFormat) {
-        this.jsonFormat = jsonFormat;
-    }
-
-    public boolean isCountQuery() {
-        return countQuery;
-    }
-
-    public void setCountQuery(boolean countQuery) {
-        this.countQuery = countQuery;
+    /**
+     * Properties to configure slow query logging listener.
+     *
+     * @see ProxyDataSourceBuilder#logSlowQueryToSysOut(long, TimeUnit)
+     * @see ProxyDataSourceBuilder#logSlowQueryBySlf4j(long, TimeUnit)
+     * @see ProxyDataSourceBuilder#logSlowQueryByCommons(long, TimeUnit)
+     * @see ProxyDataSourceBuilder#logSlowQueryByJUL(long, TimeUnit)
+     */
+    @Getter
+    @Setter
+    public static class SlowQuery {
+        /**
+         * Enable logging slow queries to the log.
+         */
+        private boolean enableLogging = true;
+        /**
+         * Name of slow query logger.
+         */
+        private String loggerName;
+        /**
+         * Severity of slow query logger.
+         */
+        private String logLevel = "WARN";
+        /**
+         * Number of seconds to consider query as slow.
+         */
+        private long threshold = 300;
     }
 
     public enum DataSourceProxyLogging {
