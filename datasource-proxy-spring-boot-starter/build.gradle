@@ -1,4 +1,4 @@
 dependencies {
-    compile(project(":decorator-spring-boot-autoconfigure"))
+    compile(project(":datasource-decorator-spring-boot-autoconfigure"))
     compile("net.ttddyy:datasource-proxy:1.4.1")
 }

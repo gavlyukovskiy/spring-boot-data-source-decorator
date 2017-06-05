@@ -1,1 +1,1 @@
-provides: decorator-spring-boot-autoconfigure,flexy-pool
+provides: datasource-decorator-spring-boot-autoconfigure,flexy-pool
