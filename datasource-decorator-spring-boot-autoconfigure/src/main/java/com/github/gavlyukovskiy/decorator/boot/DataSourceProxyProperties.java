@@ -149,6 +149,12 @@ public class DataSourceProxyProperties {
             return Level.parse(logLevel);
         }
         catch (IllegalArgumentException e) {
+            if (logLevel.equals("DEBUG")) {
+                return Level.FINE;
+            }
+            if (logLevel.equals("WARN")) {
+                return Level.WARNING;
+            }
             throw new IllegalArgumentException("Unresolved log level " + logLevel + " for java.util.logging", e);
         }
     }
