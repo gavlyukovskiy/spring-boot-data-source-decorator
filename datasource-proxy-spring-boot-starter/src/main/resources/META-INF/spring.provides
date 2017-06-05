@@ -1,1 +1,1 @@
-provides: decorator-spring-boot-autoconfigure,datasource-proxy
+provides: datasource-decorator-spring-boot-autoconfigure,datasource-proxy

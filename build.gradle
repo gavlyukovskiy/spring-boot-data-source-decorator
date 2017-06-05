@@ -32,7 +32,7 @@ def pomConfig = {
 subprojects {
 
     group 'com.github.gavlyukovskiy'
-    version '1.1.SNAPSHOT'
+    version '1.1.0.RELEASE'
 
     apply plugin: 'java'
     apply plugin: 'maven'
@@ -76,7 +76,7 @@ subprojects {
             version {
                 name = project.version
                 released  = new Date()
-                vcsTag = 'v1.1.RELEASE'
+                vcsTag = 'v1.1.0.RELEASE'
             }
         }
     }

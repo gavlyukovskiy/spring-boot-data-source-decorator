@@ -1,1 +1,1 @@
-provides: decorator-spring-boot-autoconfigure,p6spy
+provides: datasource-decorator-spring-boot-autoconfigure,p6spy
