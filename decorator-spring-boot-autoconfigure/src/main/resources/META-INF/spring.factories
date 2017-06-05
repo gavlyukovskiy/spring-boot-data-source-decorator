@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorAutoConfiguration
+com.github.gavlyukovskiy.decorator.boot.DataSourceDecoratorAutoConfiguration
