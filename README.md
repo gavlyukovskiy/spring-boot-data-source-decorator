@@ -1,9 +1,9 @@
 **Spring Boot DataSource Decorator**
 
 Spring Boot autoconfiguration for integration with 
-* [p6spy](https://github.com/p6spy/p6spy)
-* [datasource-proxy](https://github.com/ttddyy/datasource-proxy)
-* [Flexy Pool](https://github.com/vladmihalcea/flexy-pool)
+* [P6Spy](https://github.com/p6spy/p6spy)
+* [Datasource Proxy](https://github.com/ttddyy/datasource-proxy)
+* [FlexyPool](https://github.com/vladmihalcea/flexy-pool)
 
 **Quick Start**
 
