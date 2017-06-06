@@ -9,7 +9,22 @@ import org.springframework.util.Assert;
 
 import java.util.List;
 
+/**
+ * Factory to support all defined {@link JdbcEventListener} in the context.
+ * If any listener is added into context this factory will be added to the P6Spy 'modulelist'.
+ *
+ * If P6Spy 'modulelist' is overridden, factory will not be registered thus listeners will not be applied.
+ */
 public class RuntimeListenerSupportFactory implements P6Factory {
+
+    private final CompoundJdbcEventListener listener;
+
+    public RuntimeListenerSupportFactory() {
+        List<JdbcEventListener> listeners = RuntimeListenerHolder.getListeners();
+        Assert.state(listeners != null, "This factory should not been initialized if there are no listeners available");
+        listener = new CompoundJdbcEventListener(listeners);
+    }
+
     @Override
     public P6LoadableOptions getOptions(P6OptionsRepository optionsRepository) {
         return new RuntimeListenerSupportLoadableOptions(optionsRepository);
@@ -17,8 +32,6 @@ public class RuntimeListenerSupportFactory implements P6Factory {
 
     @Override
     public JdbcEventListener getJdbcEventListener() {
-        List<JdbcEventListener> listeners = RuntimeListenerHolder.getListeners();
-        Assert.state(listeners != null, "This factory should not been initialized if there are no listeners available");
-        return new CompoundJdbcEventListener(listeners);
+        return listener;
     }
 }

@@ -74,7 +74,7 @@ public class DataSourceProxyProperties {
 
     void configure(ProxyDataSourceBuilder proxyDataSourceBuilder) {
         switch (logging) {
-            case SLF4j: {
+            case SLF4J: {
                 if (query.isEnableLogging()) {
                     proxyDataSourceBuilder.logQueryBySlf4j(toSlf4JLogLevel(query.getLogLevel()), query.getLoggerName());
                 }
@@ -228,7 +228,7 @@ public class DataSourceProxyProperties {
 
     public enum DataSourceProxyLogging {
         SYSOUT,
-        SLF4j,
+        SLF4J,
         COMMONS,
         JUL
     }

@@ -6,6 +6,10 @@ import com.p6spy.engine.event.JdbcEventListener;
 import com.p6spy.engine.logging.P6LogFactory;
 import com.p6spy.engine.spy.P6DataSource;
 import com.p6spy.engine.spy.P6SpyFactory;
+import com.p6spy.engine.spy.option.EnvironmentVariables;
+import com.p6spy.engine.spy.option.P6OptionsSource;
+import com.p6spy.engine.spy.option.SpyDotProperties;
+import com.p6spy.engine.spy.option.SystemProperties;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -13,7 +17,10 @@ import org.springframework.context.annotation.Bean;
 
 import javax.annotation.PostConstruct;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,18 +43,51 @@ public class P6SpyConfiguration {
 
     @PostConstruct
     public void init() {
+        P6SpyProperties p6spy = dataSourceDecoratorProperties.getP6spy();
+        Set<String> definedOptions = findDefinedOptions();
         if (listeners != null) {
-            if (dataSourceDecoratorProperties.getP6spy().isEnableDynamicListeners()) {
+            if (p6spy.isEnableRuntimeListeners() && !definedOptions.contains("modulelist")) {
                 RuntimeListenerHolder.setListeners(listeners);
                 System.setProperty("p6spy.config.modulelist", DEFAULT_P6SPY_MODULES + "," + RuntimeListenerSupportFactory.class.getName());
             }
             else {
-                log.info("JdbcEventListener(s) " + listeners + " will not be applied since enable-dynamic-listeners is false");
+                log.info("JdbcEventListener(s) " + listeners + " will not be applied since enable-runtime-listeners is false or modulelist is overridden");
             }
         }
-        if (dataSourceDecoratorProperties.getP6spy().isMultiline()) {
+        if (p6spy.isMultiline() && !definedOptions.contains("logMessageFormat")) {
             System.setProperty("p6spy.config.logMessageFormat", "com.p6spy.engine.spy.appender.MultiLineFormat");
         }
+        if (!definedOptions.contains("appender")) {
+            switch (p6spy.getLogging()) {
+                case SYSOUT:
+                    System.setProperty("p6spy.config.appender", "com.p6spy.engine.spy.appender.StdoutLogger");
+                    break;
+                case SLF4J:
+                    System.setProperty("p6spy.config.appender", "com.p6spy.engine.spy.appender.Slf4JLogger");
+                    break;
+                case FILE:
+                    System.setProperty("p6spy.config.appender", "com.p6spy.engine.spy.appender.FileLogger");
+                    break;
+            }
+        }
+        if (!definedOptions.contains("logfile")) {
+            System.setProperty("p6spy.config.logfile", p6spy.getLogFile());
+        }
+    }
+
+    private Set<String> findDefinedOptions() {
+        SpyDotProperties spyDotProperties = null;
+        try {
+            spyDotProperties = new SpyDotProperties();
+        }
+        catch (IOException ignored) {
+        }
+        return Stream.of(spyDotProperties, new EnvironmentVariables(), new SystemProperties())
+                .filter(Objects::nonNull)
+                .map(P6OptionsSource::getOptions)
+                .filter(Objects::nonNull)
+                .flatMap(options -> options.keySet().stream())
+                .collect(Collectors.toSet());
     }
 
     @Bean
