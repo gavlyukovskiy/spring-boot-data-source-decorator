@@ -2,7 +2,6 @@ package com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy;
 
 import com.p6spy.engine.event.JdbcEventListener;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 

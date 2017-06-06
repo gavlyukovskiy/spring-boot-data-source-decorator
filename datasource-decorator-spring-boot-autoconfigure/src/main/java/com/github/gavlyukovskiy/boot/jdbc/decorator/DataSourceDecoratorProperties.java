@@ -17,6 +17,7 @@
 package com.github.gavlyukovskiy.boot.jdbc.decorator;
 
 import com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy.DataSourceProxyProperties;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy.P6SpyProperties;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -35,4 +36,7 @@ public class DataSourceDecoratorProperties {
 
     @NestedConfigurationProperty
     private DataSourceProxyProperties dataSourceProxy = new DataSourceProxyProperties();
+
+    @NestedConfigurationProperty
+    private P6SpyProperties p6spy = new P6SpyProperties();
 }
