@@ -16,6 +16,7 @@
 
 package com.github.gavlyukovskiy.boot.jdbc.decorator;
 
+import com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy.DataSourceProxyProperties;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;

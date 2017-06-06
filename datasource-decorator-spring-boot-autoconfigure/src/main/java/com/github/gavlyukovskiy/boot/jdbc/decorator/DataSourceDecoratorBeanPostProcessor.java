@@ -24,8 +24,9 @@ import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 
 import javax.sql.DataSource;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * {@link BeanPostProcessor} that wraps all data source beans in {@link DataSource}
@@ -50,17 +51,29 @@ public class DataSourceDecoratorBeanPostProcessor implements BeanPostProcessor, 
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        if (bean instanceof DataSource && !this.properties.getExcludeBeans().contains(beanName)) {
+        if (bean instanceof DataSource && !properties.getExcludeBeans().contains(beanName)) {
             DataSource dataSource = (DataSource) bean;
             DataSource decoratedDataSource = dataSource;
-            List<DataSourceDecorator> decorators = new ArrayList<>();
-            decorators.addAll(this.applicationContext.getBeansOfType(DataSourceDecorator.class).values());
-            AnnotationAwareOrderComparator.sort(decorators);
-            for (DataSourceDecorator decorator : decorators) {
+            Map<String, DataSourceDecorator> decorators = new LinkedHashMap<>();
+            applicationContext.getBeansOfType(DataSourceDecorator.class)
+                    .entrySet()
+                    .stream()
+                    .sorted(Entry.comparingByValue(AnnotationAwareOrderComparator.INSTANCE))
+                    .forEach(entry -> decorators.put(entry.getKey(), entry.getValue()));
+            StringBuilder decoratingChain = new StringBuilder(beanName);
+            for (Entry<String, DataSourceDecorator> decoratorEntry : decorators.entrySet()) {
+                String decoratorBeanName = decoratorEntry.getKey();
+                DataSourceDecorator decorator = decoratorEntry.getValue();
+
+                DataSource dataSourceBeforeDecorating = decoratedDataSource;
                 decoratedDataSource = decorator.decorate(beanName, decoratedDataSource);
+
+                if (dataSourceBeforeDecorating != decoratedDataSource) {
+                    decoratingChain.insert(0, decoratorBeanName + " -> ");
+                }
             }
             if (dataSource != decoratedDataSource) {
-                return new DecoratedDataSource(dataSource, decoratedDataSource);
+                return new DecoratedDataSource(dataSource, decoratedDataSource, decoratingChain.toString());
             }
         }
         return bean;

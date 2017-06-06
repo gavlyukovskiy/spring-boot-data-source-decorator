@@ -43,10 +43,15 @@ public class DecoratedDataSource implements DataSource {
      * {@link DataSource} with all decorators set, used to delegate all calls.
      */
     private final DataSource decoratedDataSource;
+    /**
+     * Holds chain of decorators bean names
+     */
+    private final String decoratingChain;
 
-    DecoratedDataSource(DataSource realDataSource, DataSource decoratedDataSource) {
+    DecoratedDataSource(DataSource realDataSource, DataSource decoratedDataSource, String decoratingChain) {
         this.realDataSource = realDataSource;
         this.decoratedDataSource = decoratedDataSource;
+        this.decoratingChain = decoratingChain;
     }
 
     public DataSource getRealDataSource() {
@@ -55,6 +60,10 @@ public class DecoratedDataSource implements DataSource {
 
     public DataSource getDecoratedDataSource() {
         return this.decoratedDataSource;
+    }
+
+    public String getDecoratingChain() {
+        return decoratingChain;
     }
 
     @Override
