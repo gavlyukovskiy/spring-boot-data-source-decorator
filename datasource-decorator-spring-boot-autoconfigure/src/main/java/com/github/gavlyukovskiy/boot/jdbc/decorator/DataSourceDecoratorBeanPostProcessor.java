@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.github.gavlyukovskiy.decorator.boot;
+package com.github.gavlyukovskiy.boot.jdbc.decorator;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;

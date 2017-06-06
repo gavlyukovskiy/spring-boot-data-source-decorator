@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-/**
- * Auto-configuration for JDBC Decorators.
- */
-package com.github.gavlyukovskiy.decorator.boot;
+package com.github.gavlyukovskiy.boot.jdbc.decorator;
+
+import javax.sql.DataSource;
+
+public interface DataSourceDecorator {
+
+    DataSource decorate(String beanName, DataSource dataSource);
+}

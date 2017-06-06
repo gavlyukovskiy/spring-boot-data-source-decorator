@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.github.gavlyukovskiy.decorator.boot;
+package com.github.gavlyukovskiy.boot.jdbc.decorator;
 
-import com.github.gavlyukovskiy.decorator.boot.metadata.DecoratedDataSourcePoolMetadataProvider;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.metadata.DecoratedDataSourcePoolMetadataProvider;
 import com.p6spy.engine.spy.P6DataSource;
 import com.p6spy.engine.spy.P6SpyLoadableOptions;
 import com.p6spy.engine.spy.P6SpyOptions;

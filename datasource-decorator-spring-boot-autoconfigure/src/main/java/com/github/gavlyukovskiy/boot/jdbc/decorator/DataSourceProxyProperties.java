@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.github.gavlyukovskiy.decorator.boot;
+package com.github.gavlyukovskiy.boot.jdbc.decorator;
 
 import lombok.Getter;
 import lombok.Setter;
