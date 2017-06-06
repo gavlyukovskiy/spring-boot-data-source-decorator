@@ -8,7 +8,7 @@ import java.util.Objects;
 
 class RuntimeListenerHolder {
 
-    private static List<JdbcEventListener> listeners = Collections.emptyList();
+    private static List<JdbcEventListener> listeners;
 
     private RuntimeListenerHolder() {
     }
