@@ -57,7 +57,7 @@ public class ProxyDataSourceAutoconfigurationTests {
     public void init() {
         EnvironmentTestUtils.addEnvironment(context,
                 "spring.datasource.initialize:false",
-                "spring.datasource.url:jdbc:hsqldb:mem:testdb-" + new Random().nextInt());
+                "spring.datasource.url:jdbc:h2:mem:testdb-" + new Random().nextInt());
         context.setClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "com.p6spy"));
     }
 

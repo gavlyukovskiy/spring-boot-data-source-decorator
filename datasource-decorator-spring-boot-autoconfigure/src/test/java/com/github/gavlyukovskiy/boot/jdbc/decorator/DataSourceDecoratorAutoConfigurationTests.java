@@ -57,7 +57,7 @@ public class DataSourceDecoratorAutoConfigurationTests {
     public void init() {
         EnvironmentTestUtils.addEnvironment(this.context,
                 "spring.datasource.initialize:false",
-                "spring.datasource.url:jdbc:hsqldb:mem:testdb-" + new Random().nextInt());
+                "spring.datasource.url:jdbc:h2:mem:testdb-" + new Random().nextInt());
     }
 
     @After
@@ -74,7 +74,10 @@ public class DataSourceDecoratorAutoConfigurationTests {
                 PropertyPlaceholderAutoConfiguration.class);
         this.context.refresh();
 
-        assertDataSourceInDefaultOrder(org.apache.tomcat.jdbc.pool.DataSource.class);
+        DataSource dataSource = this.context.getBean(DataSource.class);
+
+        assertThat(((DecoratedDataSource) dataSource).getDecoratingChain())
+                .isEqualTo("p6SpyDataSourceDecorator -> proxyDataSourceDecorator -> flexyPoolDataSourceDecorator -> dataSource");
     }
 
     @Test
@@ -83,21 +86,10 @@ public class DataSourceDecoratorAutoConfigurationTests {
                 DataSourceDecoratorAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class);
         this.context.refresh();
-        DataSource dataSource = this.context.getBean(DataSource.class);
-        assertThat(dataSource).isNotNull();
-        assertThat(dataSource).isInstanceOf(DecoratedDataSource.class);
-        DataSource proxyDataSource = ((DecoratedDataSource) dataSource).getDecoratedDataSource();
-        assertThat(proxyDataSource).isInstanceOf(ProxyDataSource.class);
+        DecoratedDataSource dataSource = this.context.getBean(DecoratedDataSource.class);
 
-        DataSource p6DataSource = (DataSource) new DirectFieldAccessor(proxyDataSource)
-                .getPropertyValue("dataSource");
-        assertThat(p6DataSource).isNotNull();
-        assertThat(p6DataSource).isInstanceOf(P6DataSource.class);
-
-        DataSource realDataSource = (DataSource) new DirectFieldAccessor(p6DataSource)
-                .getPropertyValue("realDataSource");
-        assertThat(realDataSource).isNotNull();
-        assertThat(realDataSource).isInstanceOf(org.apache.tomcat.jdbc.pool.DataSource.class);
+        assertThat(dataSource.getDecoratingChain())
+                .isEqualTo("p6SpyDataSourceDecorator -> proxyDataSourceDecorator -> dataSource");
     }
 
     @Test
@@ -107,21 +99,11 @@ public class DataSourceDecoratorAutoConfigurationTests {
                 PropertyPlaceholderAutoConfiguration.class);
         this.context.setClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool"));
         this.context.refresh();
-        DataSource dataSource = this.context.getBean(DataSource.class);
-        assertThat(dataSource).isNotNull();
-        assertThat(dataSource).isInstanceOf(DecoratedDataSource.class);
-        DataSource proxyDataSource = ((DecoratedDataSource) dataSource).getDecoratedDataSource();
-        assertThat(proxyDataSource).isInstanceOf(ProxyDataSource.class);
+        DecoratedDataSource dataSource = this.context.getBean(DecoratedDataSource.class);
 
-        DataSource p6DataSource = (DataSource) new DirectFieldAccessor(proxyDataSource)
-                .getPropertyValue("dataSource");
-        assertThat(p6DataSource).isNotNull();
-        assertThat(p6DataSource).isInstanceOf(P6DataSource.class);
-
-        DataSource realDataSource = (DataSource) new DirectFieldAccessor(p6DataSource)
-                .getPropertyValue("realDataSource");
-        assertThat(realDataSource).isNotNull();
-        assertThat(realDataSource).isInstanceOf(org.apache.tomcat.jdbc.pool.DataSource.class);
+        assertThat(dataSource.getRealDataSource()).isInstanceOf(org.apache.tomcat.jdbc.pool.DataSource.class);
+        assertThat(dataSource.getDecoratingChain())
+                .isEqualTo("p6SpyDataSourceDecorator -> proxyDataSourceDecorator -> dataSource");
     }
 
     @Test
@@ -163,11 +145,17 @@ public class DataSourceDecoratorAutoConfigurationTests {
                 PropertyPlaceholderAutoConfiguration.class);
         this.context.refresh();
 
-        assertDataSourceInDefaultOrder(CustomDataSourceProxy.class);
-
         DataSource dataSource = this.context.getBean(DataSource.class);
+        assertThat(dataSource).isNotNull();
+
+        DataSource customDataSource = ((DecoratedDataSource) dataSource).getDecoratedDataSource();
+        assertThat(customDataSource).isInstanceOf(CustomDataSourceProxy.class);
+
         DataSource realDataSource = ((DecoratedDataSource) dataSource).getRealDataSource();
         assertThat(realDataSource).isInstanceOf(org.apache.tomcat.jdbc.pool.DataSource.class);
+
+        assertThat(((DecoratedDataSource) dataSource).getDecoratingChain())
+                .isEqualTo("customDataSourceDecorator -> p6SpyDataSourceDecorator -> proxyDataSourceDecorator -> flexyPoolDataSourceDecorator -> dataSource");
     }
 
     @Test
@@ -200,28 +188,40 @@ public class DataSourceDecoratorAutoConfigurationTests {
         assertThat(secondDataSource).isInstanceOf(BasicDataSource.class);
     }
 
-    private void assertDataSourceInDefaultOrder(Class<? extends DataSource> realDataSourceClass) {
-        DecoratedDataSource dataSource = this.context.getBean(DecoratedDataSource.class);
-        assertThat(dataSource).isNotNull();
+    @Test
+    public void testDecoratingChainBuiltCorrectly() throws Exception {
+        System.setProperty(PropertyLoader.PROPERTIES_FILE_PATH, "db/decorator/flexy-pool.properties");
+        this.context.register(DataSourceAutoConfiguration.class,
+                DataSourceDecoratorAutoConfiguration.class,
+                PropertyPlaceholderAutoConfiguration.class);
+        this.context.refresh();
 
-        DataSource flexyDataSource = dataSource.getDecoratedDataSource();
-        assertThat(flexyDataSource).isNotNull();
-        assertThat(flexyDataSource).isInstanceOf(FlexyPoolDataSource.class);
+        DataSource dataSource = this.context.getBean(DataSource.class);
 
-        DataSource proxyDataSource = (DataSource) new DirectFieldAccessor(flexyDataSource)
-                .getPropertyValue("targetDataSource");
-        assertThat(proxyDataSource).isNotNull();
-        assertThat(proxyDataSource).isInstanceOf(ProxyDataSource.class);
+        DecoratedDataSource dataSource1 = this.context.getBean(DecoratedDataSource.class);
+        assertThat(dataSource1).isNotNull();
 
-        DataSource p6DataSource = (DataSource) new DirectFieldAccessor(proxyDataSource)
-                .getPropertyValue("dataSource");
+        DataSource p6DataSource = dataSource1.getDecoratedDataSource();
         assertThat(p6DataSource).isNotNull();
         assertThat(p6DataSource).isInstanceOf(P6DataSource.class);
 
-        DataSource realDataSource = (DataSource) new DirectFieldAccessor(p6DataSource)
+        DataSource proxyDataSource = (DataSource) new DirectFieldAccessor(p6DataSource)
                 .getPropertyValue("realDataSource");
+        assertThat(proxyDataSource).isNotNull();
+        assertThat(proxyDataSource).isInstanceOf(ProxyDataSource.class);
+
+        DataSource flexyDataSource = (DataSource) new DirectFieldAccessor(proxyDataSource)
+                .getPropertyValue("dataSource");
+        assertThat(flexyDataSource).isNotNull();
+        assertThat(flexyDataSource).isInstanceOf(FlexyPoolDataSource.class);
+
+        DataSource realDataSource = (DataSource) new DirectFieldAccessor(flexyDataSource)
+                .getPropertyValue("targetDataSource");
         assertThat(realDataSource).isNotNull();
-        assertThat(realDataSource).isInstanceOf(realDataSourceClass);
+        assertThat(realDataSource).isInstanceOf((Class<? extends DataSource>) org.apache.tomcat.jdbc.pool.DataSource.class);
+
+        assertThat(((DecoratedDataSource) dataSource).getDecoratingChain())
+                .isEqualTo("p6SpyDataSourceDecorator -> proxyDataSourceDecorator -> flexyPoolDataSourceDecorator -> dataSource");
     }
 
     @Configuration

@@ -11,6 +11,7 @@ dependencies {
     compileOnly("com.vladmihalcea.flexy-pool:flexy-pool-core:1.2.7")
 
     testCompile("junit:junit:4.12")
+    testCompile("com.h2database:h2:1.4.193")
     testCompile("org.assertj:assertj-core:3.6.2")
     testCompile("org.springframework.boot:spring-boot-test:1.4.2.RELEASE")
 
