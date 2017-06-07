@@ -73,7 +73,7 @@ spring.datasource.decorator.p6spy.log-file=spy.log
 
 Also you can configure P6Spy manually using one of available configuration methods. For more information please refer to the [P6Spy Configuration Guide](http://p6spy.readthedocs.io/en/latest/configandusage.html)   
 
-**datasource-proxy**
+**Datasource Proxy**
 
 After adding datasource-proxy starter you'll start getting all sql queries in the logs.
 
