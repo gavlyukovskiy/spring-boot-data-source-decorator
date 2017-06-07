@@ -133,7 +133,7 @@ public class DataSourceProxyProperties {
             return null;
         }
         for (SLF4JLogLevel slf4JLogLevel : SLF4JLogLevel.values()) {
-            if (slf4JLogLevel.name().equals(logLevel)) {
+            if (slf4JLogLevel.name().equalsIgnoreCase(logLevel)) {
                 return slf4JLogLevel;
             }
         }
@@ -149,10 +149,10 @@ public class DataSourceProxyProperties {
             return Level.parse(logLevel);
         }
         catch (IllegalArgumentException e) {
-            if (logLevel.equals("DEBUG")) {
+            if (logLevel.equalsIgnoreCase("DEBUG")) {
                 return Level.FINE;
             }
-            if (logLevel.equals("WARN")) {
+            if (logLevel.equalsIgnoreCase("WARN")) {
                 return Level.WARNING;
             }
             throw new IllegalArgumentException("Unresolved log level " + logLevel + " for java.util.logging", e);
@@ -164,7 +164,7 @@ public class DataSourceProxyProperties {
             return null;
         }
         for (CommonsLogLevel commonsLogLevel : CommonsLogLevel.values()) {
-            if (commonsLogLevel.name().equals(logLevel)) {
+            if (commonsLogLevel.name().equalsIgnoreCase(logLevel)) {
                 return commonsLogLevel;
             }
         }
