@@ -37,7 +37,17 @@ Maven:
 
 **P6Spy**
 
-After adding p6spy starter you'll start getting all sql queries in the logs.
+After adding p6spy starter you'll start getting all sql queries in the logs:
+```text
+2017-06-07 21:42:08.120  INFO 5456 --- [ool-1-worker-57] p6spy                                    : #1496860928120 | took 0ms | statement | connection 0|SELECT NOW()
+;
+2017-06-07 21:51:07.802  INFO 5456 --- [ool-1-worker-50] p6spy                                    : #1496861467802 | took 0ms | statement | connection 1|SELECT NOW()
+;
+2017-06-07 21:51:07.803  INFO 5456 --- [ool-1-worker-43] p6spy                                    : #1496861467803 | took 0ms | statement | connection 2|SELECT NOW()
+;
+2017-06-07 21:51:08.806  INFO 5456 --- [ool-1-worker-36] p6spy                                    : #1496861468806 | took 0ms | statement | connection 3|SELECT NOW()
+;
+```
 
 By default all `JdbcEventListener` beans are registered in P6Spy:
 ```java
@@ -75,7 +85,30 @@ Also you can configure P6Spy manually using one of available configuration metho
 
 **Datasource Proxy**
 
-After adding datasource-proxy starter you'll start getting all sql queries in the logs.
+After adding datasource-proxy starter you'll start getting all sql queries in the logs with level `DEBUG`:
+```text
+2017-06-07 21:58:06.630  DEBUG 8492 --- [ool-1-worker-57] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:, Time:0, Success:True
+Type:Statement, Batch:False, QuerySize:1, BatchSize:0
+Query:["SELECT NOW()"]
+Params:[]
+2017-06-07 21:58:06.630  DEBUG 8492 --- [ool-1-worker-43] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:, Time:0, Success:True
+Type:Statement, Batch:False, QuerySize:1, BatchSize:0
+Query:["SELECT NOW()"]
+Params:[]
+2017-06-07 21:58:06.630  DEBUG 8492 --- [ool-1-worker-50] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:, Time:0, Success:True
+Type:Statement, Batch:False, QuerySize:1, BatchSize:0
+Query:["SELECT NOW()"]
+Params:[]
+```
+You can configure levels of query and slow query listeners using appropriate level of your logging library (slf4j, jul, commons, sysout)
+```text
+spring.datasource.decorator.datasource-proxy.logging=slf4j
+spring.datasource.decorator.datasource-proxy.query.log-level=debug
+spring.datasource.decorator.datasource-proxy.slow-query.log-level=warn
+```
 
 By default all `QueryExecutionListener` beans are registered in `ProxyDataSourceBuilder`:
 ```java
