@@ -2,6 +2,7 @@
 #*
 *#
 .#*
+.gradle
 .classpath
 .project
 .settings/

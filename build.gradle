@@ -6,6 +6,7 @@ buildscript {
 
 plugins {
     id "com.jfrog.bintray" version "1.7.3"
+    id "pl.allegro.tech.build.axion-release" version "1.6.0"
 }
 
 def pomConfig = {
@@ -30,14 +31,21 @@ def pomConfig = {
 }
 
 subprojects {
-
-    group 'com.github.gavlyukovskiy'
-    version '1.1.0.RELEASE'
-
     apply plugin: 'java'
     apply plugin: 'maven'
     apply plugin: 'maven-publish'
     apply plugin: 'com.jfrog.bintray'
+
+    scmVersion {
+        versionIncrementer 'incrementMinor'
+
+        nextVersion {
+            suffix = 'rc'
+        }
+    }
+
+    group 'com.github.gavlyukovskiy'
+    version = scmVersion.version
 
     sourceCompatibility = 1.8
 
@@ -76,7 +84,7 @@ subprojects {
             version {
                 name = project.version
                 released  = new Date()
-                vcsTag = "v${project.version}"
+                vcsTag = scmVersion.tag.prefix + scmVersion.tag.versionSeparator + scmVersion.version
             }
         }
     }
