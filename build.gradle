@@ -38,6 +38,12 @@ subprojects {
 
     scmVersion {
         versionIncrementer 'incrementMinor'
+        tag {
+            prefix = ''
+            versionSeparator = ''
+            serialize = { tag, version -> tag }
+            deserialize = { tag, position, tagName -> tagName }
+        }
 
         nextVersion {
             suffix = 'rc'
