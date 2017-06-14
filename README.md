@@ -108,14 +108,8 @@ Type:Statement, Batch:False, QuerySize:1, BatchSize:0
 Query:["SELECT NOW()"]
 Params:[]
 ```
-You can configure levels of query and slow query listeners using appropriate level of your logging library (slf4j, jul, commons, sysout)
-```text
-spring.datasource.decorator.datasource-proxy.logging=slf4j
-spring.datasource.decorator.datasource-proxy.query.log-level=debug
-spring.datasource.decorator.datasource-proxy.slow-query.log-level=warn
-```
 
-By default all `QueryExecutionListener` beans are registered in `ProxyDataSourceBuilder`:
+By default all `QueryExecutionListener` beans are registered in `ProxyDataSourceBuilder`, as well you can use Spring Context for `ParameterTransformer` and `QueryTransformer`.:
 ```java
 @Bean
 public QueryExecutionListener queryExecutionListener() {
@@ -131,12 +125,38 @@ public QueryExecutionListener queryExecutionListener() {
         }
     };
 }
+
+@Bean
+public ParameterTransformer parameterTransformer() {
+    return new MyParameterTransformer();
+}
+
+@Bean
+public QueryTransformer queryTransformer() {
+    return new MyQueryTransformer();
+}
 ```
+You can configure logging, query/slow query listeners and more using your `application.properties`:
+```text
+# One of logging libraries (slf4j, jul, common, sysout)
+spring.datasource.decorator.datasource-proxy.logging=slf4j
 
-As well you can use Spring Context for `ParameterTransformer` and `QueryTransformer`.
+spring.datasource.decorator.datasource-proxy.query.enable-logging=true
+spring.datasource.decorator.datasource-proxy.query.log-level=debug
+# Logger name to log all queries, default depends on chosen logging, e.g. net.ttddyy.dsproxy.listener.logging.SLF4JQueryLoggingListener
+spring.datasource.decorator.datasource-proxy.query.logger-name=
 
-You can use properties with prefix `spring.datasource.decorator.datasource-proxy` to configure query/slow query listeners, logging levels, thresholds and more.
+spring.datasource.decorator.datasource-proxy.slow-query.enable-logging=true
+spring.datasource.decorator.datasource-proxy.slow-query.log-level=warn
+spring.datasource.decorator.datasource-proxy.slow-query.logger-name=
+# Number of seconds to consider query as slow and log it
+spring.datasource.decorator.datasource-proxy.slow-query.threshold=300
 
+spring.datasource.decorator.datasource-proxy.multiline=true
+spring.datasource.decorator.datasource-proxy.json-format=false
+# Enable Query Metrics
+spring.datasource.decorator.datasource-proxy.count-query=false
+```
 
 **Custom Decorators**
 
