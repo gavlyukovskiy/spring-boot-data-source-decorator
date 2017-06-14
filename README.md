@@ -90,7 +90,7 @@ Also you can configure P6Spy manually using one of available configuration metho
 
 **Datasource Proxy**
 
-After adding datasource-proxy starter you'll start getting all sql queries in the logs with level `DEBUG`:
+After adding datasource-proxy starter you'll start getting all sql queries in the logs with level `DEBUG` and slow sql queries with level `WARN`:
 ```text
 2017-06-07 21:58:06.630  DEBUG 8492 --- [ool-1-worker-57] n.t.d.l.l.SLF4JQueryLoggingListener      : 
 Name:, Time:0, Success:True
@@ -106,6 +106,11 @@ Params:[]
 Name:, Time:0, Success:True
 Type:Statement, Batch:False, QuerySize:1, BatchSize:0
 Query:["SELECT NOW()"]
+Params:[]
+2017-06-07 22:10:50.478  WARN 8492 --- [pool-1-thread-1] n.t.d.l.logging.SLF4JSlowQueryListener   : 
+Name:, Time:0, Success:False
+Type:Statement, Batch:False, QuerySize:1, BatchSize:0
+Query:["SELECT SLEEP(301000)"]
 Params:[]
 ```
 
