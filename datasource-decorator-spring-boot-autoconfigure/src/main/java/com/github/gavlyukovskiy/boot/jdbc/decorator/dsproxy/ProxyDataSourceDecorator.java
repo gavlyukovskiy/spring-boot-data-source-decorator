@@ -15,7 +15,7 @@ class ProxyDataSourceDecorator implements DataSourceDecorator, Ordered {
 
     @Override
     public DataSource decorate(String beanName, DataSource dataSource) {
-        return proxyDataSourceBuilder.dataSource(dataSource).build();
+        return proxyDataSourceBuilder.dataSource(dataSource).name(beanName).build();
     }
 
     @Override

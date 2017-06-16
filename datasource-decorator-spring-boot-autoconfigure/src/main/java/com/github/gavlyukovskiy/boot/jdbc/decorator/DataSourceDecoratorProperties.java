@@ -35,7 +35,7 @@ public class DataSourceDecoratorProperties {
     private Collection<String> excludeBeans = Collections.emptyList();
 
     @NestedConfigurationProperty
-    private DataSourceProxyProperties dataSourceProxy = new DataSourceProxyProperties();
+    private DataSourceProxyProperties datasourceProxy = new DataSourceProxyProperties();
 
     @NestedConfigurationProperty
     private P6SpyProperties p6spy = new P6SpyProperties();

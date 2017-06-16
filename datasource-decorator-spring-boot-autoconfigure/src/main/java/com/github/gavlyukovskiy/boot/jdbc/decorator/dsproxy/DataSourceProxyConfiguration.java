@@ -39,7 +39,7 @@ public class DataSourceProxyConfiguration {
     @ConditionalOnMissingBean
     public ProxyDataSourceBuilder proxyDataSourceBuilder() {
         ProxyDataSourceBuilder proxyDataSourceBuilder = ProxyDataSourceBuilder.create();
-        dataSourceDecoratorProperties.getDataSourceProxy().configure(proxyDataSourceBuilder);
+        dataSourceDecoratorProperties.getDatasourceProxy().configure(proxyDataSourceBuilder);
         if (listeners != null) {
             listeners.forEach(proxyDataSourceBuilder::listener);
         }

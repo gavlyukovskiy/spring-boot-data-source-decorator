@@ -84,7 +84,7 @@ public class ProxyDataSourceAutoconfigurationTests {
     @Test
     public void testRegisterLogAndSlowQueryLogUsingSlf4j() throws Exception {
         EnvironmentTestUtils.addEnvironment(context,
-                "spring.datasource.decorator.data-source-proxy.logging:slf4j");
+                "spring.datasource.decorator.datasource-proxy.logging:slf4j");
         context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class);
@@ -100,7 +100,7 @@ public class ProxyDataSourceAutoconfigurationTests {
     @Test
     public void testRegisterLogAndSlowQueryLogUsingJUL() throws Exception {
         EnvironmentTestUtils.addEnvironment(context,
-                "spring.datasource.decorator.dataSourceProxy.logging:jul");
+                "spring.datasource.decorator.datasourceProxy.logging:jul");
         context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class);
@@ -116,7 +116,7 @@ public class ProxyDataSourceAutoconfigurationTests {
     @Test
     public void testRegisterLogAndSlowQueryLogUsingApacheCommons() throws Exception {
         EnvironmentTestUtils.addEnvironment(context,
-                "spring.datasource.decorator.dataSourceProxy.logging:commons");
+                "spring.datasource.decorator.datasourceProxy.logging:commons");
         context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class);
