@@ -27,8 +27,6 @@ import net.ttddyy.dsproxy.listener.logging.JULQueryLoggingListener;
 import net.ttddyy.dsproxy.listener.logging.JULSlowQueryListener;
 import net.ttddyy.dsproxy.listener.logging.SLF4JQueryLoggingListener;
 import net.ttddyy.dsproxy.listener.logging.SLF4JSlowQueryListener;
-import net.ttddyy.dsproxy.listener.logging.SystemOutQueryLoggingListener;
-import net.ttddyy.dsproxy.listener.logging.SystemOutSlowQueryListener;
 import net.ttddyy.dsproxy.support.ProxyDataSource;
 import net.ttddyy.dsproxy.transform.ParameterTransformer;
 import net.ttddyy.dsproxy.transform.QueryTransformer;
@@ -68,7 +66,7 @@ public class ProxyDataSourceAutoconfigurationTests {
     }
 
     @Test
-    public void testRegisterLogAndSlowQueryLogByDefaultToSysOut() throws Exception {
+    public void testRegisterLogAndSlowQueryLogByDefaultToSlf4j() throws Exception {
         context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class);
@@ -77,8 +75,8 @@ public class ProxyDataSourceAutoconfigurationTests {
         DataSource dataSource = context.getBean(DataSource.class);
         ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
         ChainListener chainListener = (ChainListener) proxyDataSource.getInterceptorHolder().getListener();
-        assertThat(chainListener.getListeners()).extracting("class").contains(SystemOutSlowQueryListener.class);
-        assertThat(chainListener.getListeners()).extracting("class").contains(SystemOutQueryLoggingListener.class);
+        assertThat(chainListener.getListeners()).extracting("class").contains(SLF4JSlowQueryListener.class);
+        assertThat(chainListener.getListeners()).extracting("class").contains(SLF4JQueryLoggingListener.class);
     }
 
     @Test
