@@ -47,7 +47,7 @@ public class DataSourceProxyProperties {
     /**
      * Logging to use for logging queries.
      */
-    private DataSourceProxyLogging logging = DataSourceProxyLogging.SYSOUT;
+    private DataSourceProxyLogging logging = DataSourceProxyLogging.SLF4J;
 
     private Query query = new Query();
     private SlowQuery slowQuery = new SlowQuery();
