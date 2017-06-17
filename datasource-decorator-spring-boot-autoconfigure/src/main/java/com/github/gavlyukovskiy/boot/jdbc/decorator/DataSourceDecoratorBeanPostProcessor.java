@@ -27,6 +27,7 @@ import javax.sql.DataSource;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 /**
  * {@link BeanPostProcessor} that wraps all data source beans in {@link DataSource}
@@ -66,7 +67,8 @@ public class DataSourceDecoratorBeanPostProcessor implements BeanPostProcessor, 
                 DataSourceDecorator decorator = decoratorEntry.getValue();
 
                 DataSource dataSourceBeforeDecorating = decoratedDataSource;
-                decoratedDataSource = decorator.decorate(beanName, decoratedDataSource);
+                decoratedDataSource = Objects.requireNonNull(decorator.decorate(beanName, decoratedDataSource),
+                        "DataSourceDecorator (" + decoratorBeanName + ", " + decorator + ") should not return null");
 
                 if (dataSourceBeforeDecorating != decoratedDataSource) {
                     decoratingChain.insert(0, decoratorBeanName + " -> ");

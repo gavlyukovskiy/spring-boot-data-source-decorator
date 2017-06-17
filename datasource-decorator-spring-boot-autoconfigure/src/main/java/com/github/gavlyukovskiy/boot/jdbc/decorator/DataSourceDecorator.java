@@ -18,7 +18,21 @@ package com.github.gavlyukovskiy.boot.jdbc.decorator;
 
 import javax.sql.DataSource;
 
+/**
+ * Decorator for context {@link DataSource} beans.
+ *
+ * @author Arthur Gavlyukovskiy
+ */
 public interface DataSourceDecorator {
 
+    /**
+     * Decorates given {@link DataSource} instance.
+     * Should either return wrapped {@link DataSource} or same instance.
+     *
+     * @param beanName name of a bean
+     * @param dataSource bean instance
+     *
+     * @return decorated {@link DataSource} or given {@param dataSource} without changes.
+     */
     DataSource decorate(String beanName, DataSource dataSource);
 }
