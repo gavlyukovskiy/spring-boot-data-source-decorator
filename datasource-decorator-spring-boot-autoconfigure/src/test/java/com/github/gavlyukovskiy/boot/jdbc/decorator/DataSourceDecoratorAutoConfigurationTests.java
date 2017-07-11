@@ -81,18 +81,6 @@ public class DataSourceDecoratorAutoConfigurationTests {
     }
 
     @Test
-    public void testDecoratingWhenDefaultProxyProviderInstanceThrowException() throws Exception {
-        this.context.register(DataSourceAutoConfiguration.class,
-                DataSourceDecoratorAutoConfiguration.class,
-                PropertyPlaceholderAutoConfiguration.class);
-        this.context.refresh();
-        DecoratedDataSource dataSource = this.context.getBean(DecoratedDataSource.class);
-
-        assertThat(dataSource.getDecoratingChain())
-                .isEqualTo("p6SpyDataSourceDecorator -> proxyDataSourceDecorator -> dataSource");
-    }
-
-    @Test
     public void testDecoratingWhenDefaultProxyProviderNotAvailable() throws Exception {
         this.context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,

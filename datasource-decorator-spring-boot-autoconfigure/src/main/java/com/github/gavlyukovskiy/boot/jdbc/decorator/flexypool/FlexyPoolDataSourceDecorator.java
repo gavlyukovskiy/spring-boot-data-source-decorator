@@ -18,20 +18,66 @@ package com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool;
 
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecorator;
 import com.vladmihalcea.flexypool.FlexyPoolDataSource;
+import com.vladmihalcea.flexypool.adaptor.PoolAdapterFactory;
+import com.vladmihalcea.flexypool.config.Configuration;
+import com.vladmihalcea.flexypool.strategy.ConnectionAcquiringStrategyFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 
 import javax.sql.DataSource;
 
-class FlexyPoolDataSourceDecorator implements DataSourceDecorator, Ordered {
+import java.util.List;
+
+public class FlexyPoolDataSourceDecorator<T extends DataSource> implements DataSourceDecorator, Ordered {
+
+    private final ConnectionAcquiringStrategyFactory<?, T>[] connectionAcquiringStrategyFactories;
+    private final PoolAdapterFactory<T> poolAdapterFactory;
+    private final Class<T> dataSourceClass;
+
+    @Autowired(required = false)
+    private List<FlexyPoolConfigurationBuilderCustomizer> customizers;
+
+    public FlexyPoolDataSourceDecorator(
+            List<ConnectionAcquiringStrategyFactory<?, T>> connectionAcquiringStrategyFactories,
+            PoolAdapterFactory<T> poolAdapterFactory,
+            Class<T> dataSourceClass) {
+        this.connectionAcquiringStrategyFactories = toArrayNullSafe(connectionAcquiringStrategyFactories);
+        this.poolAdapterFactory = poolAdapterFactory;
+        this.dataSourceClass = dataSourceClass;
+    }
+
+    FlexyPoolDataSourceDecorator() {
+        this.connectionAcquiringStrategyFactories = null;
+        this.poolAdapterFactory = null;
+        this.dataSourceClass = null;
+    }
 
     @Override
     public DataSource decorate(String beanName, DataSource dataSource) {
-        try {
+        if (dataSourceClass == null) {
+            // property based configuration
             return new FlexyPoolDataSource<>(dataSource);
         }
-        catch (Exception e) {
-            return dataSource;
+        if (dataSourceClass.isInstance(dataSource)) {
+            Configuration.Builder<T> configurationBuilder = new Configuration.Builder<>(
+                    beanName,
+                    dataSourceClass.cast(dataSource),
+                    poolAdapterFactory
+            );
+            if (customizers != null) {
+                customizers.forEach(customizer -> customizer.customize(beanName, configurationBuilder, dataSourceClass));
+            }
+            return new FlexyPoolDataSource<>(configurationBuilder.build(), connectionAcquiringStrategyFactories);
         }
+        return dataSource;
+    }
+
+    @SuppressWarnings("unchecked")
+    private ConnectionAcquiringStrategyFactory<?, T>[] toArrayNullSafe(List<ConnectionAcquiringStrategyFactory<?, T>> factories) {
+        if (factories == null) {
+            return new ConnectionAcquiringStrategyFactory[0];
+        }
+        return factories.toArray(new ConnectionAcquiringStrategyFactory[factories.size()]);
     }
 
     @Override
