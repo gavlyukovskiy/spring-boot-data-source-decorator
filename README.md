@@ -185,7 +185,9 @@ You can declare bean `MetricsFactory` and besides of JMX metrics will be exporte
 ```
 
 All beans of type `ConnectionAcquiringStrategyFactory` are used to provide `ConnectionAcquiringStrategy` for the pool. 
+
 `MetricsFactory` and `ConnectionProxyFactory` beans can be used to customize metrics and connection decorators. 
+
 `EventListener<? extends Event>` beans can be registered to subscribe on events of flexy-pool (e.g. `ConnectionAcquireTimeThresholdExceededEvent`, `ConnectionLeaseTimeThresholdExceededEvent`). 
 
 You can configure your `FlexyPoolDataSource` by using bean `FlexyPoolConfigurationBuilderCustomizer` or properties:
