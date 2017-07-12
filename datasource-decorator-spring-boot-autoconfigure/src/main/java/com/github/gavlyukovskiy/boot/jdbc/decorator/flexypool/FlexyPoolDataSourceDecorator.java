@@ -56,7 +56,9 @@ class FlexyPoolDataSourceDecorator<T extends DataSource> implements DataSourceDe
     public DataSource decorate(String beanName, DataSource dataSource) {
         if (dataSourceClass == null) {
             // property based configuration
-            return new FlexyPoolDataSource<>(dataSource);
+            FlexyPoolDataSource<DataSource> flexyPoolDataSource = new FlexyPoolDataSource<>(dataSource);
+            flexyPoolDataSource.start();
+            return flexyPoolDataSource;
         }
         if (dataSourceClass.isInstance(dataSource)) {
             Configuration.Builder<T> configurationBuilder = new Configuration.Builder<>(
@@ -67,7 +69,9 @@ class FlexyPoolDataSourceDecorator<T extends DataSource> implements DataSourceDe
             if (customizers != null) {
                 customizers.forEach(customizer -> customizer.customize(beanName, configurationBuilder, dataSourceClass));
             }
-            return new FlexyPoolDataSource<>(configurationBuilder.build(), connectionAcquiringStrategyFactories);
+            FlexyPoolDataSource<T> flexyPoolDataSource = new FlexyPoolDataSource<>(configurationBuilder.build(), connectionAcquiringStrategyFactories);
+            flexyPoolDataSource.start();
+            return flexyPoolDataSource;
         }
         return dataSource;
     }

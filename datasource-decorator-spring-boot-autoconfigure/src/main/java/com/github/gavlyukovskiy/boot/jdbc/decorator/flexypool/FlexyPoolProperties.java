@@ -16,6 +16,7 @@
 
 package com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool;
 
+import com.vladmihalcea.flexypool.config.Configuration;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -43,8 +44,8 @@ public class FlexyPoolProperties {
         @Getter
         @Setter
         public static class IncrementPool {
-            private int maxOverflowPoolSize = 5;
-            private int timeoutMillis = 50;
+            private int maxOverflowPoolSize = 15;
+            private int timeoutMillis = 500;
         }
     }
 
@@ -62,7 +63,7 @@ public class FlexyPoolProperties {
             @Getter
             @Setter
             public static class Log {
-                private long millis = 5000L;
+                private long millis = Configuration.DEFAULT_METRIC_LOG_REPORTER_MILLIS;
             }
 
             @Getter
