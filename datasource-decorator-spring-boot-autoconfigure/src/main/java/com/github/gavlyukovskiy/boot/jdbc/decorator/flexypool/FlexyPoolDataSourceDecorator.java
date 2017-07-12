@@ -28,7 +28,7 @@ import javax.sql.DataSource;
 
 import java.util.List;
 
-public class FlexyPoolDataSourceDecorator<T extends DataSource> implements DataSourceDecorator, Ordered {
+class FlexyPoolDataSourceDecorator<T extends DataSource> implements DataSourceDecorator, Ordered {
 
     private final ConnectionAcquiringStrategyFactory<?, T>[] connectionAcquiringStrategyFactories;
     private final PoolAdapterFactory<T> poolAdapterFactory;

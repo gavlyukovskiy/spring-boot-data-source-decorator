@@ -46,7 +46,7 @@ import javax.sql.DataSource;
 @AutoConfigureAfter(DataSourceAutoConfiguration.class)
 @Import({ P6SpyConfiguration.class,
           DataSourceProxyConfiguration.class,
-          FlexyPoolConfiguration.class })
+          FlexyPoolConfiguration.Ordered.class })
 public class DataSourceDecoratorAutoConfiguration {
 
     @Bean

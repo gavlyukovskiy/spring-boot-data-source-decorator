@@ -67,7 +67,7 @@ public class P6SpyConfiguration {
                 System.setProperty("p6spy.config.modulelist", DEFAULT_P6SPY_MODULES + "," + RuntimeListenerSupportFactory.class.getName());
             }
             else {
-                log.info("JdbcEventListener(s) " + listeners + " will not be applied since enable-runtime-listeners is false or modulelist is overridden");
+                log.warn("JdbcEventListener(s) " + listeners + " will not be applied since enable-runtime-listeners is false or modulelist is overridden");
             }
         }
         if (p6spy.isMultiline() && !definedOptions.contains("logMessageFormat")) {
