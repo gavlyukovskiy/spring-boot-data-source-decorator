@@ -142,7 +142,7 @@ public QueryTransformer queryTransformer() {
 }
 ```
 You can configure logging, query/slow query listeners and more using your `application.properties`:
-```text
+```properties
 # One of logging libraries (slf4j, jul, common, sysout)
 spring.datasource.decorator.datasource-proxy.logging=slf4j
 
@@ -162,6 +162,11 @@ spring.datasource.decorator.datasource-proxy.json-format=false
 # Enable Query Metrics
 spring.datasource.decorator.datasource-proxy.count-query=false
 ```
+
+**Flexy Pool**
+
+If the `flexy-pool-spring-boot-starter` is added to the classpath your datasource will be wrapped to the `FlexyPoolDataSource`. 
+
 
 **Custom Decorators**
 
