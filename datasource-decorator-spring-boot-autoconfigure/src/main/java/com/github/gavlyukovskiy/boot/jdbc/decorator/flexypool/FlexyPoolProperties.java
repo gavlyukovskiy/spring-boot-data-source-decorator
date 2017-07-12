@@ -33,57 +33,57 @@ public class FlexyPoolProperties {
     public static class AcquiringStrategy {
         private Retry retry = new Retry();
         private IncrementPool incrementPool = new IncrementPool();
-    }
 
-    @Getter
-    @Setter
-    public static class Retry {
-        private int attempts = 2;
-    }
+        @Getter
+        @Setter
+        public static class Retry {
+            private int attempts = 2;
+        }
 
-    @Getter
-    @Setter
-    public static class IncrementPool {
-        private int maxOverflowPoolSize = 5;
-        private int timeoutMillis = 50;
+        @Getter
+        @Setter
+        public static class IncrementPool {
+            private int maxOverflowPoolSize = 5;
+            private int timeoutMillis = 50;
+        }
     }
 
     @Getter
     @Setter
     public static class Metrics {
         private Reporter reporter = new Reporter();
-    }
 
-    @Getter
-    @Setter
-    public static class Reporter {
-        private Log log = new Log();
-        private Jmx jmx = new Jmx();
-    }
+        @Getter
+        @Setter
+        public static class Reporter {
+            private Log log = new Log();
+            private Jmx jmx = new Jmx();
 
-    @Getter
-    @Setter
-    public static class Log {
-        private long millis = 5000L;
-    }
+            @Getter
+            @Setter
+            public static class Log {
+                private long millis = 5000L;
+            }
 
-    @Getter
-    @Setter
-    public static class Jmx {
-        private boolean enabled = true;
-        private boolean autoStart = false;
+            @Getter
+            @Setter
+            public static class Jmx {
+                private boolean enabled = true;
+                private boolean autoStart = false;
+            }
+        }
     }
 
     @Getter
     @Setter
     public static class Threshold {
         private Connection connection = new Connection();
-    }
 
-    @Getter
-    @Setter
-    public static class Connection {
-        private long acquire = 50L;
-        private long lease = 1000L;
+        @Getter
+        @Setter
+        public static class Connection {
+            private long acquire = 50L;
+            private long lease = 1000L;
+        }
     }
 }

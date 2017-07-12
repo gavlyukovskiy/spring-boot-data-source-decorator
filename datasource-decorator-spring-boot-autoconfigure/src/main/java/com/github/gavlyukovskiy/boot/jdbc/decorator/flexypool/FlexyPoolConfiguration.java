@@ -17,6 +17,8 @@
 package com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool;
 
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorProperties;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool.FlexyPoolProperties.AcquiringStrategy.IncrementPool;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool.FlexyPoolProperties.AcquiringStrategy.Retry;
 import com.vladmihalcea.flexypool.FlexyPoolDataSource;
 import com.vladmihalcea.flexypool.adaptor.DBCP2PoolAdapter;
 import com.vladmihalcea.flexypool.adaptor.HikariCPPoolAdapter;
@@ -74,14 +76,14 @@ public class FlexyPoolConfiguration {
             factoryClasses = Collections.emptyList();
         }
         if (!factoryClasses.contains(IncrementPoolOnTimeoutConnectionAcquiringStrategy.Factory.class)) {
-            FlexyPoolProperties.IncrementPool incrementPool = flexyPool.getAcquiringStrategy().getIncrementPool();
+            IncrementPool incrementPool = flexyPool.getAcquiringStrategy().getIncrementPool();
             if (incrementPool.getMaxOverflowPoolSize() > 0) {
                 newFactories.add(new IncrementPoolOnTimeoutConnectionAcquiringStrategy.Factory<>(
                         incrementPool.getMaxOverflowPoolSize(), incrementPool.getTimeoutMillis()));
             }
         }
         if (!factoryClasses.contains(RetryConnectionAcquiringStrategy.Factory.class)) {
-            FlexyPoolProperties.Retry retry = flexyPool.getAcquiringStrategy().getRetry();
+            Retry retry = flexyPool.getAcquiringStrategy().getRetry();
             if (retry.getAttempts() > 0) {
                 newFactories.add(new RetryConnectionAcquiringStrategy.Factory<>(retry.getAttempts()));
             }
@@ -221,25 +223,8 @@ public class FlexyPoolConfiguration {
         public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
             ConditionMessage.Builder message = ConditionMessage.forCondition("FlexyPoolConfigurationAvailable");
             String propertiesFilePath = System.getProperty(PropertyLoader.PROPERTIES_FILE_PATH);
-            if (propertiesFilePath != null) {
-                URL propertiesFileUrl;
-                try {
-                    propertiesFileUrl = new URL(propertiesFilePath);
-                } catch (MalformedURLException ignored) {
-                    propertiesFileUrl = ClassLoaderUtils.getResource(propertiesFilePath);
-                    if (propertiesFileUrl == null) {
-                        File f = new File(propertiesFilePath);
-                        if (f.exists() && f.isFile()) {
-                            try {
-                                propertiesFileUrl = f.toURI().toURL();
-                            } catch (MalformedURLException ignored2) {
-                            }
-                        }
-                    }
-                }
-                if (propertiesFileUrl != null) {
-                    return ConditionOutcome.match(message.found("FlexyPool configuration file").items(propertiesFilePath));
-                }
+            if (propertiesFilePath != null && ClassLoaderUtils.getResource(propertiesFilePath) != null) {
+                return ConditionOutcome.match(message.found("FlexyPool configuration file").items(propertiesFilePath));
             }
             if (ClassLoaderUtils.getResource(PropertyLoader.PROPERTIES_FILE_NAME) != null) {
                 return ConditionOutcome.match(message.found("FlexyPool configuration file").items(PropertyLoader.PROPERTIES_FILE_NAME));

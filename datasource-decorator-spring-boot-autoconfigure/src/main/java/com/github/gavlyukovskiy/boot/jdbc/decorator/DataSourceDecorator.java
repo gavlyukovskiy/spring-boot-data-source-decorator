@@ -32,7 +32,7 @@ public interface DataSourceDecorator {
      * @param beanName name of a bean
      * @param dataSource bean instance
      *
-     * @return decorated {@link DataSource} or given {@param dataSource} without changes.
+     * @return decorated {@link DataSource} or given {@link DataSource} without changes.
      */
     DataSource decorate(String beanName, DataSource dataSource);
 }
