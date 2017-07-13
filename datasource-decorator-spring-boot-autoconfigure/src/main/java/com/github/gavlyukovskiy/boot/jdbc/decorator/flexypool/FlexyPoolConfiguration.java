@@ -19,6 +19,7 @@ package com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorProperties;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool.FlexyPoolProperties.AcquiringStrategy.IncrementPool;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool.FlexyPoolProperties.AcquiringStrategy.Retry;
+import com.github.gavlyukovskiy.cloud.sleuth.SleuthListenerAutoConfiguration;
 import com.vladmihalcea.flexypool.FlexyPoolDataSource;
 import com.vladmihalcea.flexypool.adaptor.DBCP2PoolAdapter;
 import com.vladmihalcea.flexypool.adaptor.HikariCPPoolAdapter;
@@ -36,6 +37,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionMessage;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -52,9 +54,6 @@ import org.springframework.core.type.AnnotatedTypeMetadata;
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -62,6 +61,13 @@ import java.util.stream.Collectors;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
+/**
+ * Configuration for integration with flexy-pool, allows to use define custom {@link ConnectionAcquiringStrategyFactory},
+ * {@link MetricsFactory}, {@link ConnectionProxyFactory} and {@link EventListener}.
+ *
+ * @author Arthur Gavlyukovskiy
+ * @since 1.2
+ */
 public class FlexyPoolConfiguration {
 
     static <T extends DataSource> List<ConnectionAcquiringStrategyFactory<?, T>> mergeFactories(
@@ -99,6 +105,7 @@ public class FlexyPoolConfiguration {
             Dbcp2FlexyConfiguration.class,
             FlexyPoolCustomizerConfiguration.class
     })
+    @AutoConfigureAfter(SleuthListenerAutoConfiguration.class)
     public static class Ordered {
     }
 

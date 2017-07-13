@@ -16,10 +16,15 @@
 
 package com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool;
 
-import com.vladmihalcea.flexypool.config.Configuration;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * Properties for configuring flexy-pool.
+ *
+ * @author Arthur Gavlyukovskiy
+ * @since 1.2
+ */
 @Getter
 @Setter
 public class FlexyPoolProperties {
@@ -63,7 +68,7 @@ public class FlexyPoolProperties {
             @Getter
             @Setter
             public static class Log {
-                private long millis = Configuration.DEFAULT_METRIC_LOG_REPORTER_MILLIS;
+                private long millis = 300000;
             }
 
             @Getter

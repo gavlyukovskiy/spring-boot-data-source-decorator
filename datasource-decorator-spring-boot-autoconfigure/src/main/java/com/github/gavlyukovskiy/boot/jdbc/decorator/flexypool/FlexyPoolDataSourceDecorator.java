@@ -27,8 +27,13 @@ import org.springframework.core.Ordered;
 import javax.sql.DataSource;
 
 import java.util.List;
-
-class FlexyPoolDataSourceDecorator<T extends DataSource> implements DataSourceDecorator, Ordered {
+/**
+ * {@link Ordered} decorator for {@link FlexyPoolDataSource}. Supposed to be the first to be able to adjust pool size at runtime.
+ *
+ * @author Arthur Gavlyukovskiy
+ * @since 1.1
+ */
+public class FlexyPoolDataSourceDecorator<T extends DataSource> implements DataSourceDecorator, Ordered {
 
     private final ConnectionAcquiringStrategyFactory<?, T>[] connectionAcquiringStrategyFactories;
     private final PoolAdapterFactory<T> poolAdapterFactory;

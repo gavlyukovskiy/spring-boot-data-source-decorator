@@ -16,9 +16,15 @@
 
 package com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy;
 
+import com.p6spy.engine.spy.P6LoadableOptions;
 import com.p6spy.engine.spy.P6SpyOptions;
 import com.p6spy.engine.spy.option.P6OptionsRepository;
 
+/**
+ * No-op {@link P6LoadableOptions} to load default settings.
+ *
+ * @author Arthur Gavlyukovskiy
+ */
 class RuntimeListenerSupportLoadableOptions extends P6SpyOptions {
 
     RuntimeListenerSupportLoadableOptions(P6OptionsRepository optionsRepository) {

@@ -17,13 +17,14 @@
 package com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy;
 
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorProperties;
-import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecorator;
+import com.github.gavlyukovskiy.cloud.sleuth.SleuthListenerAutoConfiguration;
 import net.ttddyy.dsproxy.listener.QueryExecutionListener;
 import net.ttddyy.dsproxy.support.ProxyDataSource;
 import net.ttddyy.dsproxy.support.ProxyDataSourceBuilder;
 import net.ttddyy.dsproxy.transform.ParameterTransformer;
 import net.ttddyy.dsproxy.transform.QueryTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -31,12 +32,13 @@ import org.springframework.context.annotation.Bean;
 import java.util.List;
 
 /**
- * Configuration for datasource-proxy, allows to use define custom {@link QueryExecutionListener}s,
+ * Configuration for integration with datasource-proxy, allows to use define custom {@link QueryExecutionListener},
  * {@link ParameterTransformer} and {@link QueryTransformer}.
  *
  * @author Arthur Gavlyukovskiy
  */
 @ConditionalOnClass(ProxyDataSource.class)
+@AutoConfigureAfter(SleuthListenerAutoConfiguration.class)
 public class DataSourceProxyConfiguration {
 
     @Autowired
@@ -69,7 +71,7 @@ public class DataSourceProxyConfiguration {
     }
 
     @Bean
-    public DataSourceDecorator proxyDataSourceDecorator(ProxyDataSourceBuilder proxyDataSourceBuilder) {
+    public ProxyDataSourceDecorator proxyDataSourceDecorator(ProxyDataSourceBuilder proxyDataSourceBuilder) {
         return new ProxyDataSourceDecorator(proxyDataSourceBuilder);
     }
 }

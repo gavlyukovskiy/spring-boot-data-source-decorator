@@ -31,7 +31,7 @@ import java.util.logging.Level;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
- * Configuration for datasource-proxy
+ * Properties for datasource-proxy
  *
  * @see ProxyDataSourceBuilder
  *

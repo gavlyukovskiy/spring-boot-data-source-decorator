@@ -20,9 +20,14 @@ import com.p6spy.engine.event.JdbcEventListener;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * Properties for configuring p6spy.
+ *
+ * @author Arthur Gavlyukovskiy
+ */
 @Getter
 @Setter
-public class P6SpyProperties {
+public class P6Properties {
 
     /**
      * Enables runtime listeners, uses all {@link JdbcEventListener} beans.

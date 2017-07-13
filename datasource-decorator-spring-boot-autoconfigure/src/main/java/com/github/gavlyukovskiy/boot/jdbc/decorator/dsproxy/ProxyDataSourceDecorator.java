@@ -17,12 +17,18 @@
 package com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy;
 
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecorator;
+import net.ttddyy.dsproxy.support.ProxyDataSource;
 import net.ttddyy.dsproxy.support.ProxyDataSourceBuilder;
 import org.springframework.core.Ordered;
 
 import javax.sql.DataSource;
 
-class ProxyDataSourceDecorator implements DataSourceDecorator, Ordered {
+/**
+ * {@link Ordered} decorator for {@link ProxyDataSource}.
+ *
+ * @author Arthur Gavlyukovskiy
+ */
+public class ProxyDataSourceDecorator implements DataSourceDecorator, Ordered {
     private final ProxyDataSourceBuilder proxyDataSourceBuilder;
 
     ProxyDataSourceDecorator(ProxyDataSourceBuilder proxyDataSourceBuilder) {

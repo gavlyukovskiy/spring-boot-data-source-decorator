@@ -16,8 +16,8 @@
 
 package com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy;
 
-import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecorator;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorProperties;
+import com.github.gavlyukovskiy.cloud.sleuth.SleuthListenerAutoConfiguration;
 import com.p6spy.engine.event.JdbcEventListener;
 import com.p6spy.engine.logging.P6LogFactory;
 import com.p6spy.engine.spy.P6DataSource;
@@ -28,6 +28,7 @@ import com.p6spy.engine.spy.option.SpyDotProperties;
 import com.p6spy.engine.spy.option.SystemProperties;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 
@@ -42,10 +43,16 @@ import java.util.stream.Stream;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
+/**
+ * Configuration for integration with p6spy, allows to define custom {@link JdbcEventListener}.
+ *
+ * @author Arthur Gavlyukovskiy
+ */
 @ConditionalOnClass(P6DataSource.class)
-public class P6SpyConfiguration {
+@AutoConfigureAfter(SleuthListenerAutoConfiguration.class)
+public class P6Configuration {
 
-    private static final Logger log = getLogger(P6SpyConfiguration.class);
+    private static final Logger log = getLogger(P6Configuration.class);
 
     private static final String DEFAULT_P6SPY_MODULES = Stream.of(P6SpyFactory.class, P6LogFactory.class)
             .map(Class::getName)
@@ -59,7 +66,7 @@ public class P6SpyConfiguration {
 
     @PostConstruct
     public void init() {
-        P6SpyProperties p6spy = dataSourceDecoratorProperties.getP6spy();
+        P6Properties p6spy = dataSourceDecoratorProperties.getP6spy();
         Set<String> definedOptions = findDefinedOptions();
         if (listeners != null) {
             if (p6spy.isEnableRuntimeListeners() && !definedOptions.contains("modulelist")) {
@@ -107,7 +114,7 @@ public class P6SpyConfiguration {
     }
 
     @Bean
-    public DataSourceDecorator p6SpyDataSourceDecorator() {
-        return new P6SpyDataSourceDecorator();
+    public P6DataSourceDecorator p6SpyDataSourceDecorator() {
+        return new P6DataSourceDecorator();
     }
 }

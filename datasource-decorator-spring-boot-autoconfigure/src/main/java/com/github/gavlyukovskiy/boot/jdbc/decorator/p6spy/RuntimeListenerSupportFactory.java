@@ -31,6 +31,8 @@ import java.util.Objects;
  * If any listener is added into context this factory will be added to the P6Spy 'modulelist'.
  *
  * If P6Spy 'modulelist' is overridden, factory will not be registered thus listeners will not be applied.
+ *
+ * @author Arthur Gavlyukovskiy
  */
 public class RuntimeListenerSupportFactory implements P6Factory {
 

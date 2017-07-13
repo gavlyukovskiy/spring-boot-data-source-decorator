@@ -18,7 +18,7 @@ package com.github.gavlyukovskiy.boot.jdbc.decorator;
 
 import com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy.DataSourceProxyProperties;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool.FlexyPoolProperties;
-import com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy.P6SpyProperties;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy.P6Properties;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -27,6 +27,11 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import java.util.Collection;
 import java.util.Collections;
 
+/**
+ * Properties for configuring proxy providers.
+ *
+ * @author Arthur Gavlyukovskiy
+ */
 @Getter
 @Setter
 @ConfigurationProperties(prefix = "spring.datasource.decorator")
@@ -39,7 +44,7 @@ public class DataSourceDecoratorProperties {
     private DataSourceProxyProperties datasourceProxy = new DataSourceProxyProperties();
 
     @NestedConfigurationProperty
-    private P6SpyProperties p6spy = new P6SpyProperties();
+    private P6Properties p6spy = new P6Properties();
 
     @NestedConfigurationProperty
     private FlexyPoolProperties flexyPool = new FlexyPoolProperties();
