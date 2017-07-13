@@ -23,7 +23,10 @@ import org.springframework.cloud.sleuth.Span;
 import org.springframework.cloud.sleuth.Tracer;
 import org.springframework.cloud.sleuth.util.ExceptionUtils;
 
+import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -35,16 +38,15 @@ import java.util.stream.Collectors;
 public class TracingQueryExecutionListener implements QueryExecutionListener {
 
     private final Tracer tracer;
-    private final DataSourceLookupUtil dataSourceLookupUtil;
+    private Map<String, String> resolvedDataSourceProxyNames = new ConcurrentHashMap<>();
 
-    TracingQueryExecutionListener(Tracer tracer, DataSourceLookupUtil dataSourceLookupUtil) {
+    TracingQueryExecutionListener(Tracer tracer) {
         this.tracer = tracer;
-        this.dataSourceLookupUtil = dataSourceLookupUtil;
     }
 
     @Override
     public void beforeQuery(ExecutionInfo execInfo, List<QueryInfo> queryInfoList) {
-        String dataSourceName = dataSourceLookupUtil.dataSourceUrl(execInfo);
+        String dataSourceName = dataSourceUrl(execInfo);
         Span span = tracer.createSpan(dataSourceName + "/query");
         span.tag("query", queryInfoList.stream().map(QueryInfo::getQuery).collect(Collectors.joining("\n")));
     }
@@ -56,5 +58,16 @@ public class TracingQueryExecutionListener implements QueryExecutionListener {
             span.tag(Span.SPAN_ERROR_TAG_NAME, ExceptionUtils.getExceptionMessage(execInfo.getThrowable()));
         }
         tracer.close(span);
+    }
+
+    private String dataSourceUrl(ExecutionInfo executionInfo) {
+        return resolvedDataSourceProxyNames.computeIfAbsent(executionInfo.getDataSourceName(), dataSourceName -> {
+            try {
+                return executionInfo.getStatement().getConnection().getMetaData().getURL();
+            }
+            catch (SQLException e) {
+                return "jdbc:";
+            }
+        });
     }
 }

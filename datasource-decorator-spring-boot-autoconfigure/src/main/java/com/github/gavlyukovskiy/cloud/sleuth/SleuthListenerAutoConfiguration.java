@@ -40,10 +40,4 @@ import org.springframework.context.annotation.Import;
     SleuthListenerConfiguration.ProxyDataSourceConfiguration.class
 })
 public class SleuthListenerAutoConfiguration {
-
-    @Bean
-    @ConditionalOnMissingBean
-    public DataSourceLookupUtil dataSourceNameLookupUtil() {
-        return new DataSourceLookupUtil();
-    }
 }

@@ -26,7 +26,10 @@ import org.springframework.cloud.sleuth.Tracer;
 import org.springframework.cloud.sleuth.util.ExceptionUtils;
 import org.springframework.util.StringUtils;
 
+import javax.sql.CommonDataSource;
 import java.sql.SQLException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Listener to represent each connection and sql query as a span.
@@ -37,25 +40,26 @@ import java.sql.SQLException;
 public class TracingJdbcEventListener extends SimpleJdbcEventListener {
 
     private final Tracer tracer;
-    private final DataSourceLookupUtil dataSourceLookupUtil;
+    private Map<CommonDataSource, String> resolvedP6SpyNames = new ConcurrentHashMap<>();
 
-    TracingJdbcEventListener(Tracer tracer, DataSourceLookupUtil dataSourceLookupUtil) {
+    TracingJdbcEventListener(Tracer tracer) {
         this.tracer = tracer;
-        this.dataSourceLookupUtil = dataSourceLookupUtil;
     }
 
     @Override
     public void onConnectionWrapped(ConnectionInformation connectionInformation) {
-        String dataSourceName = dataSourceLookupUtil.dataSourceUrl(connectionInformation);
+        String dataSourceName = dataSourceUrl(connectionInformation);
         tracer.createSpan(dataSourceName + "/connection");
+        tracer.addTag(Span.SPAN_LOCAL_COMPONENT_TAG_NAME, "database");
     }
 
     @Override
     public void onBeforeAnyExecute(StatementInformation statementInformation) {
         ConnectionInformation connectionInformation = statementInformation.getConnectionInformation();
         Span connectionSpan = tracer.getCurrentSpan();
-        String dataSourceName = dataSourceLookupUtil.dataSourceUrl(connectionInformation);
+        String dataSourceName = dataSourceUrl(connectionInformation);
         tracer.createSpan(dataSourceName + "/query", connectionSpan);
+        tracer.addTag(Span.SPAN_LOCAL_COMPONENT_TAG_NAME, "database");
     }
 
     @Override
@@ -127,5 +131,16 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
             connectionSpan.tag(Span.SPAN_ERROR_TAG_NAME, ExceptionUtils.getExceptionMessage(e));
         }
         tracer.close(connectionSpan);
+    }
+
+    private String dataSourceUrl(ConnectionInformation connectionInformation) {
+        return resolvedP6SpyNames.computeIfAbsent(connectionInformation.getDataSource(), dataSource -> {
+            try {
+                return connectionInformation.getConnection().getMetaData().getURL();
+            }
+            catch (SQLException e) {
+                return "jdbc:";
+            }
+        });
     }
 }

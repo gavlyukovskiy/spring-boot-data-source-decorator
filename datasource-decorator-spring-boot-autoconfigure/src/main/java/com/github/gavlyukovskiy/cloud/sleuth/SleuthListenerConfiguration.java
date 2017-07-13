@@ -35,8 +35,8 @@ class SleuthListenerConfiguration {
     static class P6SpyConfiguration {
 
         @Bean
-        public TracingJdbcEventListener tracingJdbcEventListener(Tracer tracer, DataSourceLookupUtil dataSourceLookupUtil) {
-            return new TracingJdbcEventListener(tracer, dataSourceLookupUtil);
+        public TracingJdbcEventListener tracingJdbcEventListener(Tracer tracer) {
+            return new TracingJdbcEventListener(tracer);
         }
     }
 
@@ -45,8 +45,8 @@ class SleuthListenerConfiguration {
     static class ProxyDataSourceConfiguration {
 
         @Bean
-        public TracingQueryExecutionListener tracingQueryExecutionListener(Tracer tracer, DataSourceLookupUtil dataSourceLookupUtil) {
-            return new TracingQueryExecutionListener(tracer, dataSourceLookupUtil);
+        public TracingQueryExecutionListener tracingQueryExecutionListener(Tracer tracer) {
+            return new TracingQueryExecutionListener(tracer);
         }
     }
 }
