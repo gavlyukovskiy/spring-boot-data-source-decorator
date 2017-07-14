@@ -234,7 +234,7 @@ Details of query span:
 **Custom Decorators**
 
 Custom data source decorators are supported through declaring beans of type `DataSourceDecorator`
-```
+```java
 @Bean
 public DataSourceDecorator customDecorator() {
   return (beanName, dataSource) -> new DataSourceWrapper(dataSource);
