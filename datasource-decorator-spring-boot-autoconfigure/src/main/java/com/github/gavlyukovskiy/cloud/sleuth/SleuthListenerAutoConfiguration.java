@@ -16,14 +16,14 @@
 
 package com.github.gavlyukovskiy.cloud.sleuth;
 
+import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorAutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.sleuth.Tracer;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 
 /**
@@ -35,6 +35,7 @@ import org.springframework.context.annotation.Import;
 @ConditionalOnClass(Tracer.class)
 @ConditionalOnBean(Tracer.class)
 @AutoConfigureAfter(TraceAutoConfiguration.class)
+@AutoConfigureBefore(DataSourceDecoratorAutoConfiguration.class)
 @Import({
     SleuthListenerConfiguration.P6SpyConfiguration.class,
     SleuthListenerConfiguration.ProxyDataSourceConfiguration.class

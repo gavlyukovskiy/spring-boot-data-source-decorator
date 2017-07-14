@@ -29,6 +29,9 @@ import javax.sql.DataSource;
  */
 public class P6DataSourceDecorator implements DataSourceDecorator, Ordered {
 
+    P6DataSourceDecorator() {
+    }
+
     @Override
     public DataSource decorate(String beanName, DataSource dataSource) {
         return new P6DataSource(dataSource);

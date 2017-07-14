@@ -44,9 +44,11 @@ import javax.sql.DataSource;
 @ConditionalOnProperty(prefix = "spring.datasource.decorator", name = "enabled", havingValue = "true", matchIfMissing = true)
 @ConditionalOnBean(DataSource.class)
 @AutoConfigureAfter(DataSourceAutoConfiguration.class)
-@Import({ P6Configuration.class,
-          DataSourceProxyConfiguration.class,
-          FlexyPoolConfiguration.Ordered.class })
+@Import({
+        P6Configuration.class,
+        DataSourceProxyConfiguration.class,
+        FlexyPoolConfiguration.Ordered.class
+})
 public class DataSourceDecoratorAutoConfiguration {
 
     @Bean

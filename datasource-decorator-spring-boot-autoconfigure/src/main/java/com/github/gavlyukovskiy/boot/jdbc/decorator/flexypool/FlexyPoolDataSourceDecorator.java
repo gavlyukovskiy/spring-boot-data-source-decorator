@@ -33,22 +33,24 @@ import java.util.List;
  * @author Arthur Gavlyukovskiy
  * @since 1.1
  */
-public class FlexyPoolDataSourceDecorator<T extends DataSource> implements DataSourceDecorator, Ordered {
+public class FlexyPoolDataSourceDecorator implements DataSourceDecorator, Ordered {
 
-    private final ConnectionAcquiringStrategyFactory<?, T>[] connectionAcquiringStrategyFactories;
-    private final PoolAdapterFactory<T> poolAdapterFactory;
-    private final Class<T> dataSourceClass;
+    private final ConnectionAcquiringStrategyFactory<?, DataSource>[] connectionAcquiringStrategyFactories;
+    private final PoolAdapterFactory<DataSource> poolAdapterFactory;
+    private final Class<DataSource> dataSourceClass;
 
     @Autowired(required = false)
     private List<FlexyPoolConfigurationBuilderCustomizer> customizers;
 
-    public FlexyPoolDataSourceDecorator(
+    @SuppressWarnings("unchecked")
+    <T extends DataSource> FlexyPoolDataSourceDecorator(
             List<ConnectionAcquiringStrategyFactory<?, T>> connectionAcquiringStrategyFactories,
             PoolAdapterFactory<T> poolAdapterFactory,
             Class<T> dataSourceClass) {
-        this.connectionAcquiringStrategyFactories = toArrayNullSafe(connectionAcquiringStrategyFactories);
-        this.poolAdapterFactory = poolAdapterFactory;
-        this.dataSourceClass = dataSourceClass;
+        this.connectionAcquiringStrategyFactories = (ConnectionAcquiringStrategyFactory<?, DataSource>[])
+                connectionAcquiringStrategyFactories.toArray(new ConnectionAcquiringStrategyFactory[0]);
+        this.poolAdapterFactory = (PoolAdapterFactory<DataSource>) poolAdapterFactory;
+        this.dataSourceClass = (Class<DataSource>) dataSourceClass;
     }
 
     FlexyPoolDataSourceDecorator() {
@@ -66,7 +68,7 @@ public class FlexyPoolDataSourceDecorator<T extends DataSource> implements DataS
             return flexyPoolDataSource;
         }
         if (dataSourceClass.isInstance(dataSource)) {
-            Configuration.Builder<T> configurationBuilder = new Configuration.Builder<>(
+            Configuration.Builder<DataSource> configurationBuilder = new Configuration.Builder<>(
                     beanName,
                     dataSourceClass.cast(dataSource),
                     poolAdapterFactory
@@ -74,19 +76,11 @@ public class FlexyPoolDataSourceDecorator<T extends DataSource> implements DataS
             if (customizers != null) {
                 customizers.forEach(customizer -> customizer.customize(beanName, configurationBuilder, dataSourceClass));
             }
-            FlexyPoolDataSource<T> flexyPoolDataSource = new FlexyPoolDataSource<>(configurationBuilder.build(), connectionAcquiringStrategyFactories);
+            FlexyPoolDataSource<DataSource> flexyPoolDataSource = new FlexyPoolDataSource<>(configurationBuilder.build(), connectionAcquiringStrategyFactories);
             flexyPoolDataSource.start();
             return flexyPoolDataSource;
         }
         return dataSource;
-    }
-
-    @SuppressWarnings("unchecked")
-    private ConnectionAcquiringStrategyFactory<?, T>[] toArrayNullSafe(List<ConnectionAcquiringStrategyFactory<?, T>> factories) {
-        if (factories == null) {
-            return new ConnectionAcquiringStrategyFactory[0];
-        }
-        return factories.toArray(new ConnectionAcquiringStrategyFactory[factories.size()]);
     }
 
     @Override

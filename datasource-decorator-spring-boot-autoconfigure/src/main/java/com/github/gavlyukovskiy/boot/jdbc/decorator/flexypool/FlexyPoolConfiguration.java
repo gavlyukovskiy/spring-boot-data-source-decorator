@@ -155,8 +155,8 @@ public class FlexyPoolConfiguration {
         private DataSourceDecoratorProperties dataSourceDecoratorProperties;
 
         @Bean
-        public FlexyPoolDataSourceDecorator<HikariDataSource> flexyPoolDataSourceDecorator() {
-            return new FlexyPoolDataSourceDecorator<>(
+        public FlexyPoolDataSourceDecorator flexyPoolDataSourceDecorator() {
+            return new FlexyPoolDataSourceDecorator(
                     mergeFactories(connectionAcquiringStrategyFactories, dataSourceDecoratorProperties.getFlexyPool()),
                     HikariCPPoolAdapter.FACTORY, HikariDataSource.class);
         }
@@ -174,8 +174,8 @@ public class FlexyPoolConfiguration {
         private DataSourceDecoratorProperties dataSourceDecoratorProperties;
 
         @Bean
-        public FlexyPoolDataSourceDecorator<org.apache.tomcat.jdbc.pool.DataSource> flexyPoolDataSourceDecorator() {
-            return new FlexyPoolDataSourceDecorator<>(
+        public FlexyPoolDataSourceDecorator flexyPoolDataSourceDecorator() {
+            return new FlexyPoolDataSourceDecorator(
                     mergeFactories(connectionAcquiringStrategyFactories, dataSourceDecoratorProperties.getFlexyPool()),
                     TomcatCPPoolAdapter.FACTORY, org.apache.tomcat.jdbc.pool.DataSource.class);
         }
@@ -193,8 +193,8 @@ public class FlexyPoolConfiguration {
         private DataSourceDecoratorProperties dataSourceDecoratorProperties;
 
         @Bean
-        public FlexyPoolDataSourceDecorator<BasicDataSource> flexyPoolDataSourceDecorator() {
-            return new FlexyPoolDataSourceDecorator<>(
+        public FlexyPoolDataSourceDecorator flexyPoolDataSourceDecorator() {
+            return new FlexyPoolDataSourceDecorator(
                     mergeFactories(connectionAcquiringStrategyFactories, dataSourceDecoratorProperties.getFlexyPool()),
                     DBCP2PoolAdapter.FACTORY, BasicDataSource.class);
         }
@@ -219,8 +219,8 @@ public class FlexyPoolConfiguration {
         }
 
         @Bean
-        public FlexyPoolDataSourceDecorator<javax.sql.DataSource> flexyPoolDataSourceDecorator() {
-            return new FlexyPoolDataSourceDecorator<>();
+        public FlexyPoolDataSourceDecorator flexyPoolDataSourceDecorator() {
+            return new FlexyPoolDataSourceDecorator();
         }
     }
 

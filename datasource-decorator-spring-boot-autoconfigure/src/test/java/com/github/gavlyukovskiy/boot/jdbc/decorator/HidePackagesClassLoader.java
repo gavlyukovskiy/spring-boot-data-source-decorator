@@ -19,11 +19,11 @@ package com.github.gavlyukovskiy.boot.jdbc.decorator;
 import java.net.URL;
 import java.net.URLClassLoader;
 
-final class HidePackagesClassLoader extends URLClassLoader {
+public final class HidePackagesClassLoader extends URLClassLoader {
 
     private final String[] hiddenPackages;
 
-    HidePackagesClassLoader(String... hiddenPackages) {
+    public HidePackagesClassLoader(String... hiddenPackages) {
         super(new URL[0], DataSourceDecoratorAutoConfigurationTests.class.getClassLoader());
         this.hiddenPackages = hiddenPackages;
     }

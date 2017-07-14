@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package com.github.gavlyukovskiy.boot.jdbc.decorator;
+package com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy;
 
+import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorAutoConfiguration;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.DecoratedDataSource;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.HidePackagesClassLoader;
 import com.p6spy.engine.common.ConnectionInformation;
 import com.p6spy.engine.event.JdbcEventListener;
 import com.p6spy.engine.spy.P6DataSource;
-import com.vladmihalcea.flexypool.config.PropertyLoader;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,7 +40,7 @@ import java.util.Random;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
-public class P6SpyAutoconfigurationTests {
+public class P6SpyConfigurationTests {
 
     private final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 
@@ -52,7 +54,6 @@ public class P6SpyAutoconfigurationTests {
 
     @After
     public void restore() {
-        System.clearProperty(PropertyLoader.PROPERTIES_FILE_PATH);
         context.close();
     }
 

@@ -68,7 +68,7 @@ public class DataSourceDecoratorAutoConfigurationTests {
 
     @Test
     public void testDecoratingInDefaultOrder() throws Exception {
-        System.setProperty(PropertyLoader.PROPERTIES_FILE_PATH, "db/decorator/flexy-pool.properties");
+        //System.setProperty(PropertyLoader.PROPERTIES_FILE_PATH, "db/decorator/flexy-pool.properties");
         this.context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class);

@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-package com.github.gavlyukovskiy.boot.jdbc.decorator;
+package com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy;
 
-import com.vladmihalcea.flexypool.config.PropertyLoader;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorAutoConfiguration;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.DecoratedDataSource;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.HidePackagesClassLoader;
 import net.ttddyy.dsproxy.ExecutionInfo;
 import net.ttddyy.dsproxy.QueryInfo;
 import net.ttddyy.dsproxy.listener.ChainListener;
@@ -47,7 +49,7 @@ import java.util.Random;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
-public class ProxyDataSourceAutoconfigurationTests {
+public class ProxyDataSourceConfigurationTests {
 
     private final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 
@@ -61,7 +63,6 @@ public class ProxyDataSourceAutoconfigurationTests {
 
     @After
     public void restore() {
-        System.clearProperty(PropertyLoader.PROPERTIES_FILE_PATH);
         context.close();
     }
 
