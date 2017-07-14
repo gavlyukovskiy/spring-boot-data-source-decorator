@@ -74,11 +74,15 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
 
     @Override
     public void onAfterExecuteQuery(PreparedStatementInformation statementInformation, long timeElapsedNanos, SQLException e) {
+        Span statementSpan = tracer.getCurrentSpan();
+        statementSpan.logEvent("executed");
         onAfterExecuteQueryWithoutClosingSpan(statementInformation, timeElapsedNanos, e);
     }
 
     @Override
     public void onAfterExecuteQuery(StatementInformation statementInformation, long timeElapsedNanos, String sql, SQLException e) {
+        Span statementSpan = tracer.getCurrentSpan();
+        statementSpan.logEvent("executed");
         onAfterExecuteQueryWithoutClosingSpan(statementInformation, timeElapsedNanos, e);
     }
 

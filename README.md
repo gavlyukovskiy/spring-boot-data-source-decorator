@@ -212,6 +212,24 @@ spring.datasource.decorator.flexy-pool.threshold.connection.acquire=50
 spring.datasource.decorator.flexy-pool.threshold.connection.lease=1000
 ```
 
+**Spring Cloud Sleuth**
+
+With P6Spy span will be created for:
+ * opening connection including events for commits and rollbacks 
+ * executing query including sql text in the tags, if the query returns `ResultSet` time between execution and closing is included in the span
+
+With Datasource Proxy span will be created for:
+ * executing query including sql text (without parameters) in the tags.
+
+
+Example request:
+![alt text](images/zipkin.png)
+
+Details of connection span:
+![alt text](images/connection-span.png)
+
+Details of query span:
+![alt text](images/query-span.png)
 
 **Custom Decorators**
 
