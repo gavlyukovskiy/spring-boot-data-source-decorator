@@ -14,10 +14,10 @@ dependencies {
 
     compileOnly("p6spy:p6spy:3.0.0")
     compileOnly("net.ttddyy:datasource-proxy:1.4.1")
-    compileOnly("com.vladmihalcea.flexy-pool:flexy-pool-core:1.2.7")
-    compileOnly("com.vladmihalcea.flexy-pool:flexy-dbcp2:1.2.7")
-    compileOnly("com.vladmihalcea.flexy-pool:flexy-hikaricp:1.2.7")
-    compileOnly("com.vladmihalcea.flexy-pool:flexy-tomcatcp:1.2.7")
+    compileOnly("com.vladmihalcea.flexy-pool:flexy-pool-core:1.2.9")
+    compileOnly("com.vladmihalcea.flexy-pool:flexy-dbcp2:1.2.9")
+    compileOnly("com.vladmihalcea.flexy-pool:flexy-hikaricp:1.2.9")
+    compileOnly("com.vladmihalcea.flexy-pool:flexy-tomcatcp:1.2.9")
 
     compileOnly("org.springframework.cloud:spring-cloud-sleuth-core:1.2.1.RELEASE")
 
@@ -28,10 +28,10 @@ dependencies {
 
     testCompile("p6spy:p6spy:3.0.0")
     testCompile("net.ttddyy:datasource-proxy:1.4.1")
-    testCompile("com.vladmihalcea.flexy-pool:flexy-pool-core:1.2.7")
-    testCompile("com.vladmihalcea.flexy-pool:flexy-dbcp2:1.2.7")
-    testCompile("com.vladmihalcea.flexy-pool:flexy-hikaricp:1.2.7")
-    testCompile("com.vladmihalcea.flexy-pool:flexy-tomcatcp:1.2.7")
+    testCompile("com.vladmihalcea.flexy-pool:flexy-pool-core:1.2.9")
+    testCompile("com.vladmihalcea.flexy-pool:flexy-dbcp2:1.2.9")
+    testCompile("com.vladmihalcea.flexy-pool:flexy-hikaricp:1.2.9")
+    testCompile("com.vladmihalcea.flexy-pool:flexy-tomcatcp:1.2.9")
 
     testCompile("commons-dbcp:commons-dbcp:1.4")
     testCompile("org.apache.commons:commons-dbcp2:2.1.1")
