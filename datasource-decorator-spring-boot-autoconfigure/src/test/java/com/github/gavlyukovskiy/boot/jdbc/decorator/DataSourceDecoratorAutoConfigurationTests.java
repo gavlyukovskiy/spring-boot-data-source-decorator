@@ -68,7 +68,6 @@ public class DataSourceDecoratorAutoConfigurationTests {
 
     @Test
     public void testDecoratingInDefaultOrder() throws Exception {
-        //System.setProperty(PropertyLoader.PROPERTIES_FILE_PATH, "db/decorator/flexy-pool.properties");
         this.context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class);
@@ -78,6 +77,20 @@ public class DataSourceDecoratorAutoConfigurationTests {
 
         assertThat(((DecoratedDataSource) dataSource).getDecoratingChain())
                 .isEqualTo("p6SpyDataSourceDecorator -> proxyDataSourceDecorator -> flexyPoolDataSourceDecorator -> dataSource");
+    }
+
+    @Test
+    public void testNoDecoratingForExcludeBeans() throws Exception {
+        EnvironmentTestUtils.addEnvironment(this.context,
+                "spring.datasource.decorator.exclude-beans:dataSource");
+        this.context.register(DataSourceAutoConfiguration.class,
+                DataSourceDecoratorAutoConfiguration.class,
+                PropertyPlaceholderAutoConfiguration.class);
+        this.context.refresh();
+
+        DataSource dataSource = this.context.getBean(DataSource.class);
+
+        assertThat(dataSource).isInstanceOf(org.apache.tomcat.jdbc.pool.DataSource.class);
     }
 
     @Test
