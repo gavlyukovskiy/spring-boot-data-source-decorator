@@ -231,6 +231,8 @@ Details of connection span:
 Details of query span:
 ![alt text](images/query-span.png)
 
+![alt text](images/query-span-error.png)
+
 **Custom Decorators**
 
 Custom data source decorators are supported through declaring beans of type `DataSourceDecorator`

@@ -34,8 +34,7 @@ import org.springframework.context.annotation.Import;
  */
 @ConditionalOnClass(Tracer.class)
 @ConditionalOnBean(Tracer.class)
-@AutoConfigureAfter(TraceAutoConfiguration.class)
-@AutoConfigureBefore(DataSourceDecoratorAutoConfiguration.class)
+@AutoConfigureAfter({ TraceAutoConfiguration.class, DataSourceDecoratorAutoConfiguration.class })
 @Import({
     SleuthListenerConfiguration.P6SpyConfiguration.class,
     SleuthListenerConfiguration.ProxyDataSourceConfiguration.class

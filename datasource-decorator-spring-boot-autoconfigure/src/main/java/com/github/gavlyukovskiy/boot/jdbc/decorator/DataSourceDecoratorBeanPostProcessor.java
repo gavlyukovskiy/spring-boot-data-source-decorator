@@ -17,14 +17,19 @@
 package com.github.gavlyukovskiy.boot.jdbc.decorator;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 
 import javax.sql.DataSource;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -35,15 +40,10 @@ import java.util.Objects;
  *
  * @author Arthur Gavlyukovskiy
  */
-public class DataSourceDecoratorBeanPostProcessor implements BeanPostProcessor, Ordered {
+public class DataSourceDecoratorBeanPostProcessor implements BeanPostProcessor, Ordered, ApplicationContextAware {
 
-    private final ApplicationContext applicationContext;
-    private final DataSourceDecoratorProperties properties;
-
-    DataSourceDecoratorBeanPostProcessor(ApplicationContext applicationContext, DataSourceDecoratorProperties properties) {
-        this.applicationContext = applicationContext;
-        this.properties = properties;
-    }
+    private ApplicationContext applicationContext;
+    private DataSourceDecoratorProperties dataSourceDecoratorProperties;
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
@@ -52,7 +52,7 @@ public class DataSourceDecoratorBeanPostProcessor implements BeanPostProcessor, 
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        if (bean instanceof DataSource && !properties.getExcludeBeans().contains(beanName)) {
+        if (bean instanceof DataSource && !getDataSourceDecoratorProperties().getExcludeBeans().contains(beanName)) {
             DataSource dataSource = (DataSource) bean;
             DataSource decoratedDataSource = dataSource;
             Map<String, DataSourceDecorator> decorators = new LinkedHashMap<>();
@@ -81,8 +81,20 @@ public class DataSourceDecoratorBeanPostProcessor implements BeanPostProcessor, 
         return bean;
     }
 
+    private DataSourceDecoratorProperties getDataSourceDecoratorProperties() {
+        if (dataSourceDecoratorProperties == null) {
+            dataSourceDecoratorProperties = applicationContext.getBean(DataSourceDecoratorProperties.class);
+        }
+        return dataSourceDecoratorProperties;
+    }
+
     @Override
     public int getOrder() {
         return Ordered.LOWEST_PRECEDENCE - 10;
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 }
