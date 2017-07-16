@@ -54,9 +54,9 @@ public class FlexyPoolDataSourceDecorator implements DataSourceDecorator, Ordere
     }
 
     FlexyPoolDataSourceDecorator() {
-        this.connectionAcquiringStrategyFactories = null;
-        this.poolAdapterFactory = null;
-        this.dataSourceClass = null;
+        connectionAcquiringStrategyFactories = null;
+        poolAdapterFactory = null;
+        dataSourceClass = null;
     }
 
     @Override

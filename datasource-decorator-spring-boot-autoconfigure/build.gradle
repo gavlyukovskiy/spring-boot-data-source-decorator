@@ -33,6 +33,8 @@ dependencies {
     testCompile("com.vladmihalcea.flexy-pool:flexy-hikaricp:1.2.9")
     testCompile("com.vladmihalcea.flexy-pool:flexy-tomcatcp:1.2.9")
 
+    testCompile("org.springframework.cloud:spring-cloud-sleuth-core:1.2.1.RELEASE")
+
     testCompile("commons-dbcp:commons-dbcp:1.4")
     testCompile("org.apache.commons:commons-dbcp2:2.1.1")
     testCompile("org.apache.tomcat:tomcat-jdbc:8.5.13")

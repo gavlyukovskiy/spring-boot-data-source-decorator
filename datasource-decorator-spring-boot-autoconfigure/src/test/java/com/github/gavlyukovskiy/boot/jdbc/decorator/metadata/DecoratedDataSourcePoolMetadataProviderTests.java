@@ -49,42 +49,42 @@ public class DecoratedDataSourcePoolMetadataProviderTests {
 
 	@Before
 	public void init() {
-		EnvironmentTestUtils.addEnvironment(this.context,
+		EnvironmentTestUtils.addEnvironment(context,
 			"spring.datasource.initialize:false",
 			"spring.datasource.url:jdbc:hsqldb:mem:testdb-" + new Random().nextInt());
 	}
 
 	@After
 	public void after() {
-		this.context.close();
+        context.close();
 	}
 
 	@Test
 	public void testReturnDataSourcePoolMetadataProviderForHikari() {
-		EnvironmentTestUtils.addEnvironment(this.context,
+		EnvironmentTestUtils.addEnvironment(context,
 			"spring.datasource.type:" + HikariDataSource.class.getName());
-		this.context.register(DataSourceAutoConfiguration.class,
+        context.register(DataSourceAutoConfiguration.class,
 			DataSourceDecoratorAutoConfiguration.class,
 			PropertyPlaceholderAutoConfiguration.class);
-		this.context.refresh();
+        context.refresh();
 
-		DataSource dataSource = this.context.getBean(DataSource.class);
+		DataSource dataSource = context.getBean(DataSource.class);
 		assertThat(dataSource).isInstanceOf(DecoratedDataSource.class);
-		DecoratedDataSourcePoolMetadataProvider poolMetadataProvider = this.context.getBean(DecoratedDataSourcePoolMetadataProvider.class);
+		DecoratedDataSourcePoolMetadataProvider poolMetadataProvider = context.getBean(DecoratedDataSourcePoolMetadataProvider.class);
 		DataSourcePoolMetadata dataSourcePoolMetadata = poolMetadataProvider.getDataSourcePoolMetadata(dataSource);
 		assertThat(dataSourcePoolMetadata).isInstanceOf(HikariDataSourcePoolMetadata.class);
 	}
 
 	@Test
 	public void testReturnDataSourcePoolMetadataProviderForTomcat() {
-		this.context.register(DataSourceAutoConfiguration.class,
+        context.register(DataSourceAutoConfiguration.class,
 			DataSourceDecoratorAutoConfiguration.class,
 			PropertyPlaceholderAutoConfiguration.class);
-		this.context.refresh();
+        context.refresh();
 
-		DataSource dataSource = this.context.getBean(DataSource.class);
+		DataSource dataSource = context.getBean(DataSource.class);
 		assertThat(dataSource).isInstanceOf(DecoratedDataSource.class);
-		DecoratedDataSourcePoolMetadataProvider poolMetadataProvider = this.context.getBean(DecoratedDataSourcePoolMetadataProvider.class);
+		DecoratedDataSourcePoolMetadataProvider poolMetadataProvider = context.getBean(DecoratedDataSourcePoolMetadataProvider.class);
 		DataSourcePoolMetadata dataSourcePoolMetadata = poolMetadataProvider.getDataSourcePoolMetadata(dataSource);
 		assertThat(dataSourcePoolMetadata).isInstanceOf(TomcatDataSourcePoolMetadata.class);
 	}
@@ -92,47 +92,47 @@ public class DecoratedDataSourcePoolMetadataProviderTests {
 	@Test
 	@Deprecated
 	public void testReturnDataSourcePoolMetadataProviderForDbcp() {
-		EnvironmentTestUtils.addEnvironment(this.context,
+		EnvironmentTestUtils.addEnvironment(context,
 			"spring.datasource.type:" + org.apache.commons.dbcp.BasicDataSource.class.getName());
-		this.context.register(DataSourceAutoConfiguration.class,
+        context.register(DataSourceAutoConfiguration.class,
 			DataSourceDecoratorAutoConfiguration.class,
 			PropertyPlaceholderAutoConfiguration.class);
-		this.context.refresh();
+        context.refresh();
 
-		DataSource dataSource = this.context.getBean(DataSource.class);
+		DataSource dataSource = context.getBean(DataSource.class);
 		assertThat(dataSource).isInstanceOf(DecoratedDataSource.class);
-		DecoratedDataSourcePoolMetadataProvider poolMetadataProvider = this.context.getBean(DecoratedDataSourcePoolMetadataProvider.class);
+		DecoratedDataSourcePoolMetadataProvider poolMetadataProvider = context.getBean(DecoratedDataSourcePoolMetadataProvider.class);
 		DataSourcePoolMetadata dataSourcePoolMetadata = poolMetadataProvider.getDataSourcePoolMetadata(dataSource);
 		assertThat(dataSourcePoolMetadata).isInstanceOf(CommonsDbcpDataSourcePoolMetadata.class);
 	}
 
 	@Test
 	public void testReturnDataSourcePoolMetadataProviderForDbcp2() {
-		EnvironmentTestUtils.addEnvironment(this.context,
+		EnvironmentTestUtils.addEnvironment(context,
 			"spring.datasource.type:" + org.apache.commons.dbcp2.BasicDataSource.class.getName());
-		this.context.register(DataSourceAutoConfiguration.class,
+        context.register(DataSourceAutoConfiguration.class,
 			DataSourceDecoratorAutoConfiguration.class,
 			PropertyPlaceholderAutoConfiguration.class);
-		this.context.refresh();
+        context.refresh();
 
-		DataSource dataSource = this.context.getBean(DataSource.class);
+		DataSource dataSource = context.getBean(DataSource.class);
 		assertThat(dataSource).isInstanceOf(DecoratedDataSource.class);
-		DecoratedDataSourcePoolMetadataProvider poolMetadataProvider = this.context.getBean(DecoratedDataSourcePoolMetadataProvider.class);
+		DecoratedDataSourcePoolMetadataProvider poolMetadataProvider = context.getBean(DecoratedDataSourcePoolMetadataProvider.class);
 		DataSourcePoolMetadata dataSourcePoolMetadata = poolMetadataProvider.getDataSourcePoolMetadata(dataSource);
 		assertThat(dataSourcePoolMetadata).isInstanceOf(CommonsDbcp2DataSourcePoolMetadata.class);
 	}
 
 	@Test
 	public void testReturnNullForNonProxy() {
-		EnvironmentTestUtils.addEnvironment(this.context,
+		EnvironmentTestUtils.addEnvironment(context,
 			"spring.datasource.decorator.exclude-beans:dataSource");
-		this.context.register(DataSourceAutoConfiguration.class,
+        context.register(DataSourceAutoConfiguration.class,
 			DataSourceDecoratorAutoConfiguration.class,
 			PropertyPlaceholderAutoConfiguration.class);
-		this.context.refresh();
+        context.refresh();
 
-		DataSource dataSource = this.context.getBean(DataSource.class);
-		DecoratedDataSourcePoolMetadataProvider poolMetadataProvider = this.context.getBean(DecoratedDataSourcePoolMetadataProvider.class);
+		DataSource dataSource = context.getBean(DataSource.class);
+		DecoratedDataSourcePoolMetadataProvider poolMetadataProvider = context.getBean(DecoratedDataSourcePoolMetadataProvider.class);
 		DataSourcePoolMetadata dataSourcePoolMetadata = poolMetadataProvider.getDataSourcePoolMetadata(dataSource);
 		assertThat(dataSourcePoolMetadata).isNull();
 	}

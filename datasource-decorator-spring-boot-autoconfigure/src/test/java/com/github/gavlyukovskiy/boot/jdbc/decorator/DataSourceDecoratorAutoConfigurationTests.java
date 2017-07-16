@@ -55,7 +55,7 @@ public class DataSourceDecoratorAutoConfigurationTests {
 
     @Before
     public void init() {
-        EnvironmentTestUtils.addEnvironment(this.context,
+        EnvironmentTestUtils.addEnvironment(context,
                 "spring.datasource.initialize:false",
                 "spring.datasource.url:jdbc:h2:mem:testdb-" + new Random().nextInt());
     }
@@ -63,17 +63,17 @@ public class DataSourceDecoratorAutoConfigurationTests {
     @After
     public void restore() {
         System.clearProperty(PropertyLoader.PROPERTIES_FILE_PATH);
-        this.context.close();
+        context.close();
     }
 
     @Test
     public void testDecoratingInDefaultOrder() throws Exception {
-        this.context.register(DataSourceAutoConfiguration.class,
+        context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class);
-        this.context.refresh();
+        context.refresh();
 
-        DataSource dataSource = this.context.getBean(DataSource.class);
+        DataSource dataSource = context.getBean(DataSource.class);
 
         assertThat(((DecoratedDataSource) dataSource).getDecoratingChain())
                 .isEqualTo("p6SpyDataSourceDecorator -> proxyDataSourceDecorator -> flexyPoolDataSourceDecorator -> dataSource");
@@ -81,26 +81,26 @@ public class DataSourceDecoratorAutoConfigurationTests {
 
     @Test
     public void testNoDecoratingForExcludeBeans() throws Exception {
-        EnvironmentTestUtils.addEnvironment(this.context,
+        EnvironmentTestUtils.addEnvironment(context,
                 "spring.datasource.decorator.exclude-beans:dataSource");
-        this.context.register(DataSourceAutoConfiguration.class,
+        context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class);
-        this.context.refresh();
+        context.refresh();
 
-        DataSource dataSource = this.context.getBean(DataSource.class);
+        DataSource dataSource = context.getBean(DataSource.class);
 
         assertThat(dataSource).isInstanceOf(org.apache.tomcat.jdbc.pool.DataSource.class);
     }
 
     @Test
     public void testDecoratingWhenDefaultProxyProviderNotAvailable() throws Exception {
-        this.context.register(DataSourceAutoConfiguration.class,
+        context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class);
-        this.context.setClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool"));
-        this.context.refresh();
-        DecoratedDataSource dataSource = this.context.getBean(DecoratedDataSource.class);
+        context.setClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool"));
+        context.refresh();
+        DecoratedDataSource dataSource = context.getBean(DecoratedDataSource.class);
 
         assertThat(dataSource.getRealDataSource()).isInstanceOf(org.apache.tomcat.jdbc.pool.DataSource.class);
         assertThat(dataSource.getDecoratingChain())
@@ -109,14 +109,14 @@ public class DataSourceDecoratorAutoConfigurationTests {
 
     @Test
     public void testDecoratedHikariSpecificPropertiesIsSet() throws Exception {
-        EnvironmentTestUtils.addEnvironment(this.context,
+        EnvironmentTestUtils.addEnvironment(context,
                 "spring.datasource.type:" + HikariDataSource.class.getName(),
                 "spring.datasource.hikari.catalog:test_catalog");
-        this.context.register(DataSourceAutoConfiguration.class,
+        context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class);
-        this.context.refresh();
-        DataSource dataSource = this.context.getBean(DataSource.class);
+        context.refresh();
+        DataSource dataSource = context.getBean(DataSource.class);
         assertThat(dataSource).isNotNull();
         assertThat(dataSource).isInstanceOf(DecoratedDataSource.class);
         DataSource realDataSource = ((DecoratedDataSource) dataSource).getRealDataSource();
@@ -126,12 +126,12 @@ public class DataSourceDecoratorAutoConfigurationTests {
 
     @Test
     public void testDefaultDataSourceIsDecorated() throws Exception {
-        this.context.register(TestDataSourceConfiguration.class,
+        context.register(TestDataSourceConfiguration.class,
                 DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class);
-        this.context.refresh();
-        DataSource dataSource = this.context.getBean(DataSource.class);
+        context.refresh();
+        DataSource dataSource = context.getBean(DataSource.class);
         assertThat(dataSource).isInstanceOf(DecoratedDataSource.class);
         DataSource realDataSource = ((DecoratedDataSource) dataSource).getRealDataSource();
         assertThat(realDataSource).isInstanceOf(BasicDataSource.class);
@@ -140,13 +140,13 @@ public class DataSourceDecoratorAutoConfigurationTests {
     @Test
     public void testCustomDataSourceDecoratorApplied() throws Exception {
         System.setProperty(PropertyLoader.PROPERTIES_FILE_PATH, "db/decorator/flexy-pool.properties");
-        this.context.register(TestDataSourceDecoratorConfiguration.class,
+        context.register(TestDataSourceDecoratorConfiguration.class,
                 DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class);
-        this.context.refresh();
+        context.refresh();
 
-        DataSource dataSource = this.context.getBean(DataSource.class);
+        DataSource dataSource = context.getBean(DataSource.class);
         assertThat(dataSource).isNotNull();
 
         DataSource customDataSource = ((DecoratedDataSource) dataSource).getDecoratedDataSource();
@@ -161,45 +161,45 @@ public class DataSourceDecoratorAutoConfigurationTests {
 
     @Test
     public void testDecoratingCanBeDisabled() throws Exception {
-        EnvironmentTestUtils.addEnvironment(this.context,
+        EnvironmentTestUtils.addEnvironment(context,
                 "spring.datasource.decorator.enabled:false");
-        this.context.register(DataSourceAutoConfiguration.class,
+        context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class);
-        this.context.refresh();
+        context.refresh();
 
-        DataSource dataSource = this.context.getBean(DataSource.class);
+        DataSource dataSource = context.getBean(DataSource.class);
         assertThat(dataSource).isInstanceOf(org.apache.tomcat.jdbc.pool.DataSource.class);
     }
 
     @Test
     public void testDecoratingCanBeDisabledForSpecificBeans() throws Exception {
-        EnvironmentTestUtils.addEnvironment(this.context,
+        EnvironmentTestUtils.addEnvironment(context,
                 "spring.datasource.decorator.exclude-beans:secondDataSource");
-        this.context.register(TestMultiDataSourceConfiguration.class,
+        context.register(TestMultiDataSourceConfiguration.class,
                 DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class);
-        this.context.refresh();
+        context.refresh();
 
-        DataSource dataSource = this.context.getBean("dataSource", DataSource.class);
+        DataSource dataSource = context.getBean("dataSource", DataSource.class);
         assertThat(dataSource).isInstanceOf(DecoratedDataSource.class);
 
-        DataSource secondDataSource = this.context.getBean("secondDataSource", DataSource.class);
+        DataSource secondDataSource = context.getBean("secondDataSource", DataSource.class);
         assertThat(secondDataSource).isInstanceOf(BasicDataSource.class);
     }
 
     @Test
     public void testDecoratingChainBuiltCorrectly() throws Exception {
         System.setProperty(PropertyLoader.PROPERTIES_FILE_PATH, "db/decorator/flexy-pool.properties");
-        this.context.register(DataSourceAutoConfiguration.class,
+        context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class);
-        this.context.refresh();
+        context.refresh();
 
-        DataSource dataSource = this.context.getBean(DataSource.class);
+        DataSource dataSource = context.getBean(DataSource.class);
 
-        DecoratedDataSource dataSource1 = this.context.getBean(DecoratedDataSource.class);
+        DecoratedDataSource dataSource1 = context.getBean(DecoratedDataSource.class);
         assertThat(dataSource1).isNotNull();
 
         DataSource p6DataSource = dataSource1.getDecoratedDataSource();
@@ -232,11 +232,11 @@ public class DataSourceDecoratorAutoConfigurationTests {
 
         @Bean
         public DataSource dataSource() {
-            this.pool = new BasicDataSource();
-            this.pool.setDriverClassName("org.hsqldb.jdbcDriver");
-            this.pool.setUrl("jdbc:hsqldb:target/overridedb");
-            this.pool.setUsername("sa");
-            return this.pool;
+            pool = new BasicDataSource();
+            pool.setDriverClassName("org.hsqldb.jdbcDriver");
+            pool.setUrl("jdbc:hsqldb:target/overridedb");
+            pool.setUsername("sa");
+            return pool;
         }
 
     }
@@ -259,20 +259,20 @@ public class DataSourceDecoratorAutoConfigurationTests {
         @Bean
         @Primary
         public DataSource dataSource() {
-            this.pool = new BasicDataSource();
-            this.pool.setDriverClassName("org.hsqldb.jdbcDriver");
-            this.pool.setUrl("jdbc:hsqldb:target/db");
-            this.pool.setUsername("sa");
-            return this.pool;
+            pool = new BasicDataSource();
+            pool.setDriverClassName("org.hsqldb.jdbcDriver");
+            pool.setUrl("jdbc:hsqldb:target/db");
+            pool.setUsername("sa");
+            return pool;
         }
 
         @Bean
         public DataSource secondDataSource() {
-            this.pool = new BasicDataSource();
-            this.pool.setDriverClassName("org.hsqldb.jdbcDriver");
-            this.pool.setUrl("jdbc:hsqldb:target/db2");
-            this.pool.setUsername("sa");
-            return this.pool;
+            pool = new BasicDataSource();
+            pool.setDriverClassName("org.hsqldb.jdbcDriver");
+            pool.setUrl("jdbc:hsqldb:target/db2");
+            pool.setUsername("sa");
+            return pool;
         }
 
     }

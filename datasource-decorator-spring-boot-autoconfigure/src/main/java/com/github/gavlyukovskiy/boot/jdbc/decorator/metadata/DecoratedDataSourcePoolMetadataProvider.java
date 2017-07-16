@@ -44,7 +44,7 @@ public class DecoratedDataSourcePoolMetadataProvider implements DataSourcePoolMe
 
     @PostConstruct
     public void init() {
-        Collection<DataSourcePoolMetadataProvider> delegates = this.applicationContext
+        Collection<DataSourcePoolMetadataProvider> delegates = applicationContext
                 .getBeansOfType(DataSourcePoolMetadataProvider.class).values();
         List<DataSourcePoolMetadataProvider> realDataSourceProviders = new ArrayList<>();
         for (DataSourcePoolMetadataProvider delegate : delegates) {
@@ -52,7 +52,7 @@ public class DecoratedDataSourcePoolMetadataProvider implements DataSourcePoolMe
                 realDataSourceProviders.add(delegate);
             }
         }
-        this.provider = new DataSourcePoolMetadataProviders(realDataSourceProviders);
+        provider = new DataSourcePoolMetadataProviders(realDataSourceProviders);
     }
 
     /**
@@ -69,7 +69,7 @@ public class DecoratedDataSourcePoolMetadataProvider implements DataSourcePoolMe
             return null;
         }
         DataSource realDataSource = ((DecoratedDataSource) dataSource).getRealDataSource();
-        return this.provider.getDataSourcePoolMetadata(realDataSource);
+        return provider.getDataSourcePoolMetadata(realDataSource);
     }
 
     @Override

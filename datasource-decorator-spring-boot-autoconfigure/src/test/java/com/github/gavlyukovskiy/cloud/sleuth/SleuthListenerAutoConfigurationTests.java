@@ -14,40 +14,39 @@
  * limitations under the License.
  */
 
-package com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy;
+package com.github.gavlyukovskiy.cloud.sleuth;
 
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorAutoConfiguration;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DecoratedDataSource;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.HidePackagesClassLoader;
-import com.p6spy.engine.common.ConnectionInformation;
 import com.p6spy.engine.event.CompoundJdbcEventListener;
 import com.p6spy.engine.event.JdbcEventListener;
-import com.p6spy.engine.spy.P6DataSource;
 import com.p6spy.engine.spy.P6Factory;
 import com.p6spy.engine.spy.P6ModuleManager;
+import com.vladmihalcea.flexypool.config.PropertyLoader;
+import net.ttddyy.dsproxy.listener.ChainListener;
+import net.ttddyy.dsproxy.support.ProxyDataSource;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.boot.autoconfigure.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.test.util.EnvironmentTestUtils;
+import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
+import org.springframework.cloud.sleuth.log.SleuthLogAutoConfiguration;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class P6SpyConfigurationTests {
+public class SleuthListenerAutoConfigurationTests {
 
     private final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 
@@ -56,7 +55,6 @@ public class P6SpyConfigurationTests {
         EnvironmentTestUtils.addEnvironment(context,
                 "spring.datasource.initialize:false",
                 "spring.datasource.url:jdbc:h2:mem:testdb-" + new Random().nextInt());
-        context.setClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "net.ttddyy.dsproxy"));
     }
 
     @After
@@ -65,32 +63,36 @@ public class P6SpyConfigurationTests {
     }
 
     @Test
-    public void testCustomListeners() throws Exception {
-        context.register(CustomListenerConfiguration.class,
-                DataSourceAutoConfiguration.class,
+    public void testAddsP6SpyListener() {
+        context.setClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "net.ttddyy.dsproxy"));
+        context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
+                TraceAutoConfiguration.class,
+                SleuthLogAutoConfiguration.class,
+                SleuthListenerAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class);
         context.refresh();
 
         DataSource dataSource = context.getBean(DataSource.class);
+        assertThat(dataSource).isInstanceOf(DecoratedDataSource.class);
+        assertThat(findP6Listeners()).extracting("class").contains(TracingJdbcEventListener.class);
+    }
 
-        assertThat(findP6Listeners()).extracting("class").contains(WrappingCountingListener.class);
-        assertThat(findP6Listeners()).extracting("class").contains(ClosingCountingListener.class);
+    @Test
+    public void testAddsDatasourceProxyListener() {
+        context.setClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "com.p6spy"));
+        context.register(DataSourceAutoConfiguration.class,
+                DataSourceDecoratorAutoConfiguration.class,
+                TraceAutoConfiguration.class,
+                SleuthLogAutoConfiguration.class,
+                SleuthListenerAutoConfiguration.class,
+                PropertyPlaceholderAutoConfiguration.class);
+        context.refresh();
 
-        WrappingCountingListener wrappingCountingListener = context.getBean(WrappingCountingListener.class);
-        ClosingCountingListener closingCountingListener = context.getBean(ClosingCountingListener.class);
-        P6DataSource p6DataSource = (P6DataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
-
-        assertThat(wrappingCountingListener.wrappedCount).isEqualTo(0);
-
-        Connection connection = p6DataSource.getConnection();
-
-        assertThat(wrappingCountingListener.wrappedCount).isEqualTo(1);
-        assertThat(closingCountingListener.wrappedCount).isEqualTo(0);
-
-        connection.close();
-
-        assertThat(closingCountingListener.wrappedCount).isEqualTo(1);
+        DataSource dataSource = context.getBean(DataSource.class);
+        ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
+        ChainListener chainListener = (ChainListener) proxyDataSource.getInterceptorHolder().getListener();
+        assertThat(chainListener.getListeners()).extracting("class").contains(TracingQueryExecutionListener.class);
     }
 
     private List<JdbcEventListener> findP6Listeners() {
@@ -106,39 +108,5 @@ public class P6SpyConfigurationTests {
                     return Stream.of(listener);
                 })
                 .collect(Collectors.toList());
-    }
-
-    @Configuration
-    static class CustomListenerConfiguration {
-
-        @Bean
-        public WrappingCountingListener wrappingCountingListener() {
-            return new WrappingCountingListener();
-        }
-
-        @Bean
-        public ClosingCountingListener closingCountingListener() {
-            return new ClosingCountingListener();
-        }
-    }
-
-    static class WrappingCountingListener extends JdbcEventListener {
-
-        int wrappedCount = 0;
-
-        @Override
-        public void onConnectionWrapped(ConnectionInformation connectionInformation) {
-            wrappedCount++;
-        }
-    }
-
-    static class ClosingCountingListener extends JdbcEventListener {
-
-        int wrappedCount = 0;
-
-        @Override
-        public void onAfterConnectionClose(ConnectionInformation connectionInformation, SQLException e) {
-            wrappedCount++;
-        }
     }
 }

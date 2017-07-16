@@ -31,7 +31,7 @@ public final class HidePackagesClassLoader extends URLClassLoader {
     @Override
     protected Class<?> loadClass(String name, boolean resolve)
             throws ClassNotFoundException {
-        for (String hiddenPackage : this.hiddenPackages) {
+        for (String hiddenPackage : hiddenPackages) {
             if (name.startsWith(hiddenPackage)) {
                 throw new ClassNotFoundException();
             }

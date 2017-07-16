@@ -105,7 +105,6 @@ public class FlexyPoolConfiguration {
             Dbcp2FlexyConfiguration.class,
             FlexyPoolCustomizerConfiguration.class
     })
-    @AutoConfigureAfter(SleuthListenerAutoConfiguration.class)
     public static class Ordered {
     }
 

@@ -55,11 +55,11 @@ public class DecoratedDataSource implements DataSource {
     }
 
     public DataSource getRealDataSource() {
-        return this.realDataSource;
+        return realDataSource;
     }
 
     public DataSource getDecoratedDataSource() {
-        return this.decoratedDataSource;
+        return decoratedDataSource;
     }
 
     public String getDecoratingChain() {
@@ -68,47 +68,47 @@ public class DecoratedDataSource implements DataSource {
 
     @Override
     public Connection getConnection() throws SQLException {
-        return this.decoratedDataSource.getConnection();
+        return decoratedDataSource.getConnection();
     }
 
     @Override
     public Connection getConnection(String username, String password) throws SQLException {
-        return this.decoratedDataSource.getConnection(username, password);
+        return decoratedDataSource.getConnection(username, password);
     }
 
     @Override
     public PrintWriter getLogWriter() throws SQLException {
-        return this.decoratedDataSource.getLogWriter();
+        return decoratedDataSource.getLogWriter();
     }
 
     @Override
     public void setLogWriter(PrintWriter out) throws SQLException {
-        this.decoratedDataSource.setLogWriter(out);
+        decoratedDataSource.setLogWriter(out);
     }
 
     @Override
     public void setLoginTimeout(int seconds) throws SQLException {
-        this.decoratedDataSource.setLoginTimeout(seconds);
+        decoratedDataSource.setLoginTimeout(seconds);
     }
 
     @Override
     public int getLoginTimeout() throws SQLException {
-        return this.decoratedDataSource.getLoginTimeout();
+        return decoratedDataSource.getLoginTimeout();
     }
 
     @Override
     @UsesJava7
     public Logger getParentLogger() throws SQLFeatureNotSupportedException {
-        return this.decoratedDataSource.getParentLogger();
+        return decoratedDataSource.getParentLogger();
     }
 
     @Override
     public <T> T unwrap(Class<T> iface) throws SQLException {
-        return this.decoratedDataSource.unwrap(iface);
+        return decoratedDataSource.unwrap(iface);
     }
 
     @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
-        return this.decoratedDataSource.isWrapperFor(iface);
+        return decoratedDataSource.isWrapperFor(iface);
     }
 }
