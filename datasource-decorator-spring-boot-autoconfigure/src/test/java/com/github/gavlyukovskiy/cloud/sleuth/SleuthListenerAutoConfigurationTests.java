@@ -79,6 +79,20 @@ public class SleuthListenerAutoConfigurationTests {
     }
 
     @Test
+    public void testDoesntAddP6SpyListenerIfNoTracer() {
+        context.setClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "net.ttddyy.dsproxy"));
+        context.register(DataSourceAutoConfiguration.class,
+                DataSourceDecoratorAutoConfiguration.class,
+                SleuthListenerAutoConfiguration.class,
+                PropertyPlaceholderAutoConfiguration.class);
+        context.refresh();
+
+        DataSource dataSource = context.getBean(DataSource.class);
+        assertThat(dataSource).isInstanceOf(DecoratedDataSource.class);
+        assertThat(findP6Listeners()).extracting("class").doesNotContain(TracingJdbcEventListener.class);
+    }
+
+    @Test
     public void testAddsDatasourceProxyListener() {
         context.setClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "com.p6spy"));
         context.register(DataSourceAutoConfiguration.class,
@@ -93,6 +107,21 @@ public class SleuthListenerAutoConfigurationTests {
         ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
         ChainListener chainListener = (ChainListener) proxyDataSource.getInterceptorHolder().getListener();
         assertThat(chainListener.getListeners()).extracting("class").contains(TracingQueryExecutionListener.class);
+    }
+
+    @Test
+    public void testDoesntAddDatasourceProxyListenerIfNoTracer() {
+        context.setClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "com.p6spy"));
+        context.register(DataSourceAutoConfiguration.class,
+                DataSourceDecoratorAutoConfiguration.class,
+                SleuthListenerAutoConfiguration.class,
+                PropertyPlaceholderAutoConfiguration.class);
+        context.refresh();
+
+        DataSource dataSource = context.getBean(DataSource.class);
+        ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
+        ChainListener chainListener = (ChainListener) proxyDataSource.getInterceptorHolder().getListener();
+        assertThat(chainListener.getListeners()).extracting("class").doesNotContain(TracingQueryExecutionListener.class);
     }
 
     private List<JdbcEventListener> findP6Listeners() {

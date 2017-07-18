@@ -41,12 +41,18 @@ public class RuntimeListenerSupportFactory implements P6Factory {
     private final CompoundJdbcEventListener listener;
 
     public RuntimeListenerSupportFactory() {
-        Assert.state(listeners != null, "This factory should not been initialized if there are no listeners available");
+        Assert.state(listeners != null, "This factory should not been initialized if there are no listeners are set");
         listener = new CompoundJdbcEventListener(listeners);
     }
 
     static void setListeners(List<JdbcEventListener> listeners) {
-        RuntimeListenerSupportFactory.listeners = Objects.requireNonNull(listeners, "listeners should not be null");
+        Assert.state(RuntimeListenerSupportFactory.listeners == null, "Listeners are already set");
+        Objects.requireNonNull(listeners, "listeners should not be null");
+        RuntimeListenerSupportFactory.listeners = listeners;
+    }
+
+    static void unsetListeners() {
+        RuntimeListenerSupportFactory.listeners = null;
     }
 
     @Override

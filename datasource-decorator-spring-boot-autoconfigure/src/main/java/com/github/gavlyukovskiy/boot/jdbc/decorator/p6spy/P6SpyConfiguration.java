@@ -20,6 +20,7 @@ import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorPropertie
 import com.p6spy.engine.event.JdbcEventListener;
 import com.p6spy.engine.logging.P6LogFactory;
 import com.p6spy.engine.spy.P6DataSource;
+import com.p6spy.engine.spy.P6ModuleManager;
 import com.p6spy.engine.spy.P6SpyFactory;
 import com.p6spy.engine.spy.option.EnvironmentVariables;
 import com.p6spy.engine.spy.option.P6OptionsSource;
@@ -31,11 +32,12 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -61,23 +63,28 @@ public class P6SpyConfiguration {
     @Autowired(required = false)
     private List<JdbcEventListener> listeners;
 
+    private Map<String, String> initialP6SpyOptions;
+
     @PostConstruct
     public void init() {
         P6SpyProperties p6spy = dataSourceDecoratorProperties.getP6spy();
-        Set<String> definedOptions = findDefinedOptions();
+        initialP6SpyOptions = findDefinedOptions();
         if (listeners != null) {
-            if (p6spy.isEnableRuntimeListeners() && !definedOptions.contains("modulelist")) {
+            if (p6spy.isEnableRuntimeListeners() && !initialP6SpyOptions.containsKey("modulelist")) {
                 RuntimeListenerSupportFactory.setListeners(listeners);
                 System.setProperty("p6spy.config.modulelist", DEFAULT_P6SPY_MODULES + "," + RuntimeListenerSupportFactory.class.getName());
+            }
+            else if (p6spy.isEnableRuntimeListeners() && initialP6SpyOptions.get("modulelist").contains(RuntimeListenerSupportFactory.class.getName())) {
+                RuntimeListenerSupportFactory.setListeners(listeners);
             }
             else {
                 log.warn("JdbcEventListener(s) " + listeners + " will not be applied since enable-runtime-listeners is false or modulelist is overridden");
             }
         }
-        if (p6spy.isMultiline() && !definedOptions.contains("logMessageFormat")) {
+        if (p6spy.isMultiline() && !initialP6SpyOptions.containsKey("logMessageFormat")) {
             System.setProperty("p6spy.config.logMessageFormat", "com.p6spy.engine.spy.appender.MultiLineFormat");
         }
-        if (!definedOptions.contains("appender")) {
+        if (!initialP6SpyOptions.containsKey("appender")) {
             switch (p6spy.getLogging()) {
                 case SYSOUT:
                     System.setProperty("p6spy.config.appender", "com.p6spy.engine.spy.appender.StdoutLogger");
@@ -90,12 +97,39 @@ public class P6SpyConfiguration {
                     break;
             }
         }
-        if (!definedOptions.contains("logfile")) {
+        if (!initialP6SpyOptions.containsKey("logfile")) {
             System.setProperty("p6spy.config.logfile", p6spy.getLogFile());
         }
+        // If factories were loaded before this method is initialized changing properties will not be applied
+        // Changes done in this method could not override anything user specified, therefore it is safe to call reload
+        P6ModuleManager.getInstance().reload();
     }
 
-    private Set<String> findDefinedOptions() {
+    @PreDestroy
+    public void destroy() {
+        P6SpyProperties p6spy = dataSourceDecoratorProperties.getP6spy();
+        if (listeners != null) {
+            if (p6spy.isEnableRuntimeListeners() && !initialP6SpyOptions.containsKey("modulelist")) {
+                RuntimeListenerSupportFactory.unsetListeners();
+                System.clearProperty("p6spy.config.modulelist");
+            }
+            else if (p6spy.isEnableRuntimeListeners() && initialP6SpyOptions.get("modulelist").contains(RuntimeListenerSupportFactory.class.getName())) {
+                RuntimeListenerSupportFactory.unsetListeners();
+            }
+        }
+        if (p6spy.isMultiline() && !initialP6SpyOptions.containsKey("logMessageFormat")) {
+            System.clearProperty("p6spy.config.logMessageFormat");
+        }
+        if (!initialP6SpyOptions.containsKey("appender")) {
+            System.clearProperty("p6spy.config.appender");
+        }
+        if (!initialP6SpyOptions.containsKey("logfile")) {
+            System.clearProperty("p6spy.config.logfile");
+        }
+        P6ModuleManager.getInstance().reload();
+    }
+
+    private Map<String, String> findDefinedOptions() {
         SpyDotProperties spyDotProperties = null;
         try {
             spyDotProperties = new SpyDotProperties();
@@ -106,8 +140,10 @@ public class P6SpyConfiguration {
                 .filter(Objects::nonNull)
                 .map(P6OptionsSource::getOptions)
                 .filter(Objects::nonNull)
-                .flatMap(options -> options.keySet().stream())
-                .collect(Collectors.toSet());
+                .flatMap(options -> options.entrySet().stream())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+                        // always using value from the first P6OptionsSource
+                        (value1, value2) -> value1));
     }
 
     @Bean
