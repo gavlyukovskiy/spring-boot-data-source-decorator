@@ -17,7 +17,7 @@
 package com.github.gavlyukovskiy.cloud.sleuth;
 
 import com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy.ProxyDataSourceDecorator;
-import com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy.P6DataSourceDecorator;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy.P6SpyDataSourceDecorator;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.sleuth.Tracer;
@@ -31,7 +31,7 @@ import org.springframework.context.annotation.Bean;
  */
 class SleuthListenerConfiguration {
 
-    @ConditionalOnBean(P6DataSourceDecorator.class)
+    @ConditionalOnBean(P6SpyDataSourceDecorator.class)
     static class P6SpyConfiguration {
 
         @Bean

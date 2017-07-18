@@ -27,7 +27,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class P6Properties {
+public class P6SpyProperties {
 
     /**
      * Enables runtime listeners, uses all {@link JdbcEventListener} beans.

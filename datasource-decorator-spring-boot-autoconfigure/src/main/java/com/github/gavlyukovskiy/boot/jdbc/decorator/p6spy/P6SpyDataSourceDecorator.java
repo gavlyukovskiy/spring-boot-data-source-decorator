@@ -27,9 +27,9 @@ import javax.sql.DataSource;
  *
  * @author Arthur Gavlyukovskiy
  */
-public class P6DataSourceDecorator implements DataSourceDecorator, Ordered {
+public class P6SpyDataSourceDecorator implements DataSourceDecorator, Ordered {
 
-    P6DataSourceDecorator() {
+    P6SpyDataSourceDecorator() {
     }
 
     @Override

@@ -19,7 +19,7 @@ package com.github.gavlyukovskiy.boot.jdbc.decorator;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy.DataSourceProxyConfiguration;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool.FlexyPoolConfiguration;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.metadata.DecoratedDataSourcePoolMetadataProvider;
-import com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy.P6Configuration;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy.P6SpyConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -44,7 +44,7 @@ import javax.sql.DataSource;
 @ConditionalOnBean(DataSource.class)
 @AutoConfigureAfter(DataSourceAutoConfiguration.class)
 @Import({
-        P6Configuration.class,
+        P6SpyConfiguration.class,
         DataSourceProxyConfiguration.class,
         FlexyPoolConfiguration.Ordered.class
 })

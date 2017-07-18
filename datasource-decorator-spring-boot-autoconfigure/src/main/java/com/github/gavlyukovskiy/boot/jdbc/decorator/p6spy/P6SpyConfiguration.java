@@ -47,9 +47,9 @@ import static org.slf4j.LoggerFactory.getLogger;
  * @author Arthur Gavlyukovskiy
  */
 @ConditionalOnClass(P6DataSource.class)
-public class P6Configuration {
+public class P6SpyConfiguration {
 
-    private static final Logger log = getLogger(P6Configuration.class);
+    private static final Logger log = getLogger(P6SpyConfiguration.class);
 
     private static final String DEFAULT_P6SPY_MODULES = Stream.of(P6SpyFactory.class, P6LogFactory.class)
             .map(Class::getName)
@@ -63,7 +63,7 @@ public class P6Configuration {
 
     @PostConstruct
     public void init() {
-        P6Properties p6spy = dataSourceDecoratorProperties.getP6spy();
+        P6SpyProperties p6spy = dataSourceDecoratorProperties.getP6spy();
         Set<String> definedOptions = findDefinedOptions();
         if (listeners != null) {
             if (p6spy.isEnableRuntimeListeners() && !definedOptions.contains("modulelist")) {
@@ -111,7 +111,7 @@ public class P6Configuration {
     }
 
     @Bean
-    public P6DataSourceDecorator p6SpyDataSourceDecorator() {
-        return new P6DataSourceDecorator();
+    public P6SpyDataSourceDecorator p6SpyDataSourceDecorator() {
+        return new P6SpyDataSourceDecorator();
     }
 }
