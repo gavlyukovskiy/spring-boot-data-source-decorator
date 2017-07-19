@@ -24,7 +24,7 @@ dependencies {
     testCompile("junit:junit:4.12")
     testCompile("com.h2database:h2:1.4.193")
     testCompile("org.assertj:assertj-core:3.6.2")
-    testCompile("org.springframework.boot:spring-boot-test:1.4.2.RELEASE")
+    testCompile("org.springframework.boot:spring-boot-starter-test:1.4.2.RELEASE")
 
     testCompile("p6spy:p6spy:3.0.0")
     testCompile("net.ttddyy:datasource-proxy:1.4.1")

@@ -47,8 +47,9 @@ public class TracingQueryExecutionListener implements QueryExecutionListener {
     @Override
     public void beforeQuery(ExecutionInfo execInfo, List<QueryInfo> queryInfoList) {
         String dataSourceName = dataSourceUrl(execInfo);
-        Span span = tracer.createSpan(dataSourceName + "/query");
-        span.tag("query", queryInfoList.stream().map(QueryInfo::getQuery).collect(Collectors.joining("\n")));
+        tracer.createSpan(dataSourceName + "/query");
+        tracer.addTag("sql", queryInfoList.stream().map(QueryInfo::getQuery).collect(Collectors.joining("\n")));
+        tracer.addTag(Span.SPAN_LOCAL_COMPONENT_TAG_NAME, "database");
     }
 
     @Override
@@ -56,6 +57,9 @@ public class TracingQueryExecutionListener implements QueryExecutionListener {
         Span span = tracer.getCurrentSpan();
         if (execInfo.getThrowable() != null) {
             span.tag(Span.SPAN_ERROR_TAG_NAME, ExceptionUtils.getExceptionMessage(execInfo.getThrowable()));
+        }
+        if (execInfo.getMethod().getName().equals("executeUpdate")) {
+            span.tag(SleuthListenerConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(execInfo.getResult()));
         }
         tracer.close(span);
     }
