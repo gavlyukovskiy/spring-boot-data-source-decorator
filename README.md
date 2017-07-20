@@ -219,7 +219,7 @@ With P6Spy span will be created for:
  * `<db_host>/query` - executing query including sql text in the tags, if the query returns `ResultSet` time between execution and closing is included in the span
 
 With Datasource Proxy span will be created for:
- * executing query including sql text (without parameters) in the tags.
+ * `<db_host>/query` - executing query including sql text (without parameters) in the tags.
 
 
 Example request:
