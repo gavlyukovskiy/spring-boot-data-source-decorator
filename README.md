@@ -1,9 +1,10 @@
 **Spring Boot DataSource Decorator**
 
 Spring Boot autoconfiguration for integration with 
-* [P6Spy](https://github.com/p6spy/p6spy)
-* [Datasource Proxy](https://github.com/ttddyy/datasource-proxy)
-* [FlexyPool](https://github.com/vladmihalcea/flexy-pool)
+* [P6Spy](https://github.com/p6spy/p6spy) - adds ability to intercept and log sql queries, including interception of a most `Connection`, `Statement` and `ResultSet` methods invocations
+* [Datasource Proxy](https://github.com/ttddyy/datasource-proxy) - more lightweight than p6spy, supports only `beforeQuery` and `afterQuery` events  
+* [FlexyPool](https://github.com/vladmihalcea/flexy-pool) - adds connection pool metrics (jmx, codahale, dropwizard) and flexible strategies for adjusting pool size on demand
+* [Spring Cloud Sleuth](https://github.com/spring-cloud/spring-cloud-sleuth) - library for distributed tracing, if found in classpath enables jdbc connections (p6spy) and queries (p6spy, datasource-proxy) tracing 
 
 **Why Should I Care**
 
@@ -19,9 +20,9 @@ Add one of the starters to the classpath of a Spring Boot application and your d
 
 Gradle:
 ```groovy
-compile('com.github.gavlyukovskiy:p6spy-spring-boot-starter')
-compile('com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter')
-compile('com.github.gavlyukovskiy:flexy-pool-spring-boot-starter')
+compile('com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.2.0')
+compile('com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.2.0')
+compile('com.github.gavlyukovskiy:flexy-pool-spring-boot-starter:1.2.0')
 ```
 
 Maven:
@@ -29,16 +30,21 @@ Maven:
 <dependency>
     <groupId>com.github.gavlyukovskiy</groupId>
     <artifactId>p6spy-spring-boot-starter</artifactId>
+    <version>1.2.0</version>
 </dependency>
 <dependency>
     <groupId>com.github.gavlyukovskiy</groupId>
     <artifactId>datasource-proxy-spring-boot-starter</artifactId>
+    <version>1.2.0</version>
 </dependency>
 <dependency>
     <groupId>com.github.gavlyukovskiy</groupId>
     <artifactId>flexy-pool-spring-boot-starter</artifactId>
+    <version>1.2.0</version>
 </dependency>
 ```
+
+NOTE: To use FlexyPool you must add `PoolAdapter` for your particular connection pool.
 
 **P6Spy**
 
