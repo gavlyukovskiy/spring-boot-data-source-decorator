@@ -23,7 +23,6 @@ import com.p6spy.engine.event.CompoundJdbcEventListener;
 import com.p6spy.engine.event.JdbcEventListener;
 import com.p6spy.engine.spy.P6Factory;
 import com.p6spy.engine.spy.P6ModuleManager;
-import com.vladmihalcea.flexypool.config.PropertyLoader;
 import net.ttddyy.dsproxy.listener.ChainListener;
 import net.ttddyy.dsproxy.support.ProxyDataSource;
 import org.junit.After;
