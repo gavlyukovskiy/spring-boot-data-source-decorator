@@ -20,6 +20,7 @@ import com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy.DataSourceProxyConfi
 import com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool.FlexyPoolConfiguration;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.metadata.DecoratedDataSourcePoolMetadataProvider;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy.P6SpyConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -31,6 +32,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
+import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 
 /**
@@ -39,7 +41,7 @@ import javax.sql.DataSource;
  * @author Arthur Gavlyukovskiy
  */
 @Configuration
-@EnableConfigurationProperties(DataSourceDecoratorProperties.class)
+@EnableConfigurationProperties({ DataSourceDecoratorProperties.class, SpringDataSourceDecoratorProperties.class })
 @ConditionalOnProperty(prefix = "spring.datasource.decorator", name = "enabled", havingValue = "true", matchIfMissing = true)
 @ConditionalOnBean(DataSource.class)
 @AutoConfigureAfter(DataSourceAutoConfiguration.class)
@@ -49,6 +51,17 @@ import javax.sql.DataSource;
         FlexyPoolConfiguration.Ordered.class
 })
 public class DataSourceDecoratorAutoConfiguration {
+
+    @Autowired
+    private SpringDataSourceDecoratorProperties springDataSourceDecoratorProperties;
+
+    @Autowired
+    private DataSourceDecoratorProperties dataSourceDecoratorProperties;
+
+    @PostConstruct
+    public void initializeDeprecatedProperties() {
+        springDataSourceDecoratorProperties.replacePropertiesAndWarn(dataSourceDecoratorProperties);
+    }
 
     @Bean
     @ConditionalOnBean(DataSourceDecorator.class)

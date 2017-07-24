@@ -35,6 +35,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -53,10 +54,6 @@ public class P6SpyConfiguration {
 
     private static final Logger log = getLogger(P6SpyConfiguration.class);
 
-    private static final String DEFAULT_P6SPY_MODULES = Stream.of(P6SpyFactory.class, P6LogFactory.class)
-            .map(Class::getName)
-            .collect(Collectors.joining(","));
-
     @Autowired
     private DataSourceDecoratorProperties dataSourceDecoratorProperties;
 
@@ -69,22 +66,35 @@ public class P6SpyConfiguration {
     public void init() {
         P6SpyProperties p6spy = dataSourceDecoratorProperties.getP6spy();
         initialP6SpyOptions = findDefinedOptions();
-        if (listeners != null) {
-            if (p6spy.isEnableRuntimeListeners() && !initialP6SpyOptions.containsKey("modulelist")) {
-                RuntimeListenerSupportFactory.setListeners(listeners);
-                System.setProperty("p6spy.config.modulelist", DEFAULT_P6SPY_MODULES + "," + RuntimeListenerSupportFactory.class.getName());
-            }
-            else if (p6spy.isEnableRuntimeListeners() && initialP6SpyOptions.get("modulelist").contains(RuntimeListenerSupportFactory.class.getName())) {
+        String customModuleList = initialP6SpyOptions.get("modulelist");
+        if (customModuleList != null) {
+            log.info("P6Spy modulelist is overridden, some p6spy configuration features will not be applied");
+            if (listeners != null && p6spy.isEnableRuntimeListeners() && customModuleList.contains(RuntimeListenerSupportFactory.class.getName())) {
                 RuntimeListenerSupportFactory.setListeners(listeners);
             }
-            else {
-                log.warn("JdbcEventListener(s) " + listeners + " will not be applied since enable-runtime-listeners is false or modulelist is overridden");
+        }
+        else {
+            List<String> moduleList = new ArrayList<>();
+            // default factory, holds P6Spy configuration
+            moduleList.add(P6SpyFactory.class.getName());
+            if (p6spy.isEnableLogging()) {
+                moduleList.add(P6LogFactory.class.getName());
             }
+            if (listeners != null) {
+                if (p6spy.isEnableRuntimeListeners()) {
+                    RuntimeListenerSupportFactory.setListeners(listeners);
+                    moduleList.add(RuntimeListenerSupportFactory.class.getName());
+                }
+                else {
+                    log.info("JdbcEventListener(s) " + listeners + " will not be applied since enable-runtime-listeners is false");
+                }
+            }
+            System.setProperty("p6spy.config.modulelist", moduleList.stream().collect(Collectors.joining(",")));
         }
         if (p6spy.isMultiline() && !initialP6SpyOptions.containsKey("logMessageFormat")) {
             System.setProperty("p6spy.config.logMessageFormat", "com.p6spy.engine.spy.appender.MultiLineFormat");
         }
-        if (!initialP6SpyOptions.containsKey("appender")) {
+        if (p6spy.isEnableLogging() && !initialP6SpyOptions.containsKey("appender")) {
             switch (p6spy.getLogging()) {
                 case SYSOUT:
                     System.setProperty("p6spy.config.appender", "com.p6spy.engine.spy.appender.StdoutLogger");
@@ -108,12 +118,14 @@ public class P6SpyConfiguration {
     @PreDestroy
     public void destroy() {
         P6SpyProperties p6spy = dataSourceDecoratorProperties.getP6spy();
-        if (listeners != null) {
-            if (p6spy.isEnableRuntimeListeners() && !initialP6SpyOptions.containsKey("modulelist")) {
+        if (p6spy.isEnableRuntimeListeners() && !initialP6SpyOptions.containsKey("modulelist")) {
+            if (listeners != null) {
                 RuntimeListenerSupportFactory.unsetListeners();
-                System.clearProperty("p6spy.config.modulelist");
             }
-            else if (p6spy.isEnableRuntimeListeners() && initialP6SpyOptions.get("modulelist").contains(RuntimeListenerSupportFactory.class.getName())) {
+            System.clearProperty("p6spy.config.modulelist");
+        }
+        else if (p6spy.isEnableRuntimeListeners() && initialP6SpyOptions.get("modulelist").contains(RuntimeListenerSupportFactory.class.getName())) {
+            if (listeners != null) {
                 RuntimeListenerSupportFactory.unsetListeners();
             }
         }

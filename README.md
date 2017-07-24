@@ -9,7 +9,7 @@ Spring Boot autoconfiguration for integration with
 **Why Should I Care**
 
 Of course you can just create `DataSource` bean wrapped in any proxy you want, but what will you get using this library:
-* ability to configure your datasource using `spring.datasource.hikari.*`, `spring.datasource.dbcp2.*`, `spring.datasource.tomcat.*`
+* ability to configure your datasource using `datasource.hikari.*`, `datasource.dbcp2.*`, `datasource.tomcat.*`
 * `/metrics` - will display your actual datasource stats (active, usage)
 * ability to disable proxying quick on appropriate environment
 * configure each library using only Spring Context without pain
@@ -83,13 +83,15 @@ This done by adding `RuntimeListenerSupportFactory` into P6Spy `modulelist`, ove
 You can configure small set of parameters in your application properties:
 ```properties
 # Register RuntimeListenerSupportFactory if JdbcEventListener beans were found
-spring.datasource.decorator.p6spy.enable-runtime-listeners=true
+datasource.decorator.p6spy.enable-runtime-listeners=true
+# Register P6LogFactory to log JDBC events
+datasource.decorator.p6spy.enable-logging=true
 # Use com.p6spy.engine.spy.appender.MultiLineFormat instead of com.p6spy.engine.spy.appender.SingleLineFormat
-spring.datasource.decorator.p6spy.multiline=true
+datasource.decorator.p6spy.multiline=true
 # Use logging for default listeners [slf4j, sysout, file]
-spring.datasource.decorator.p6spy.logging=slf4j
+datasource.decorator.p6spy.logging=slf4j
 # Log file to use (only with logging=file)
-spring.datasource.decorator.p6spy.log-file=spy.log
+datasource.decorator.p6spy.log-file=spy.log
 ```
 
 Also you can configure P6Spy manually using one of available configuration methods. For more information please refer to the [P6Spy Configuration Guide](http://p6spy.readthedocs.io/en/latest/configandusage.html)   
@@ -150,23 +152,23 @@ public QueryTransformer queryTransformer() {
 You can configure logging, query/slow query listeners and more using your `application.properties`:
 ```properties
 # One of logging libraries (slf4j, jul, common, sysout)
-spring.datasource.decorator.datasource-proxy.logging=slf4j
+datasource.decorator.datasource-proxy.logging=slf4j
 
-spring.datasource.decorator.datasource-proxy.query.enable-logging=true
-spring.datasource.decorator.datasource-proxy.query.log-level=debug
+datasource.decorator.datasource-proxy.query.enable-logging=true
+datasource.decorator.datasource-proxy.query.log-level=debug
 # Logger name to log all queries, default depends on chosen logging, e.g. net.ttddyy.dsproxy.listener.logging.SLF4JQueryLoggingListener
-spring.datasource.decorator.datasource-proxy.query.logger-name=
+datasource.decorator.datasource-proxy.query.logger-name=
 
-spring.datasource.decorator.datasource-proxy.slow-query.enable-logging=true
-spring.datasource.decorator.datasource-proxy.slow-query.log-level=warn
-spring.datasource.decorator.datasource-proxy.slow-query.logger-name=
+datasource.decorator.datasource-proxy.slow-query.enable-logging=true
+datasource.decorator.datasource-proxy.slow-query.log-level=warn
+datasource.decorator.datasource-proxy.slow-query.logger-name=
 # Number of seconds to consider query as slow and log it
-spring.datasource.decorator.datasource-proxy.slow-query.threshold=300
+datasource.decorator.datasource-proxy.slow-query.threshold=300
 
-spring.datasource.decorator.datasource-proxy.multiline=true
-spring.datasource.decorator.datasource-proxy.json-format=false
+datasource.decorator.datasource-proxy.multiline=true
+datasource.decorator.datasource-proxy.json-format=false
 # Enable Query Metrics
-spring.datasource.decorator.datasource-proxy.count-query=false
+datasource.decorator.datasource-proxy.count-query=false
 ```
 
 **Flexy Pool**
@@ -199,23 +201,23 @@ All beans of type `ConnectionAcquiringStrategyFactory` are used to provide `Conn
 You can configure your `FlexyPoolDataSource` by using bean `FlexyPoolConfigurationBuilderCustomizer` or properties:
 ```properties
 # Increments pool size if connection acquire request has timed out
-spring.datasource.decorator.flexy-pool.acquiring-strategy.increment-pool.max-overflow-pool-size=15
-spring.datasource.decorator.flexy-pool.acquiring-strategy.increment-pool.timeout-millis=500
+datasource.decorator.flexy-pool.acquiring-strategy.increment-pool.max-overflow-pool-size=15
+datasource.decorator.flexy-pool.acquiring-strategy.increment-pool.timeout-millis=500
 
 # Retries on getting connection
-spring.datasource.decorator.flexy-pool.acquiring-strategy.retry.attempts=2
+datasource.decorator.flexy-pool.acquiring-strategy.retry.attempts=2
 
 # Enable metrics exporting to the JMX
-spring.datasource.decorator.flexy-pool.metrics.reporter.jmx.enabled=true
-spring.datasource.decorator.flexy-pool.metrics.reporter.jmx.auto-start=false
+datasource.decorator.flexy-pool.metrics.reporter.jmx.enabled=true
+datasource.decorator.flexy-pool.metrics.reporter.jmx.auto-start=false
 
 # Millis between two consecutive log reports
-spring.datasource.decorator.flexy-pool.metrics.reporter.log.millis=300000
+datasource.decorator.flexy-pool.metrics.reporter.log.millis=300000
 
 # Enable logging and publishing ConnectionAcquireTimeThresholdExceededEvent when a connection acquire request has timed out
-spring.datasource.decorator.flexy-pool.threshold.connection.acquire=50
+datasource.decorator.flexy-pool.threshold.connection.acquire=50
 # Enable logging and publishing ConnectionLeaseTimeThresholdExceededEvent when a connection lease has exceeded the given time threshold
-spring.datasource.decorator.flexy-pool.threshold.connection.lease=1000
+datasource.decorator.flexy-pool.threshold.connection.lease=1000
 ```
 
 **Spring Cloud Sleuth**
@@ -251,4 +253,4 @@ public DataSourceDecorator customDecorator() {
 
 **Disable Decorating**
 
-If you want to disable decorating set `spring.datasource.decorator.excludeBeans` with bean names you want to exclude or set `spring.datasource.decorator.enabled` to `false` if you want to disable all decorators for all datasources.
+If you want to disable decorating set `datasource.decorator.excludeBeans` with bean names you want to exclude or set `datasource.decorator.enabled` to `false` if you want to disable all decorators for all datasources.

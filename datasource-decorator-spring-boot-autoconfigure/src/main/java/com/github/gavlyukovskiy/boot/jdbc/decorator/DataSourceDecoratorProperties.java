@@ -34,7 +34,7 @@ import java.util.Collections;
  */
 @Getter
 @Setter
-@ConfigurationProperties(prefix = "spring.datasource.decorator")
+@ConfigurationProperties(prefix = "datasource.decorator")
 public class DataSourceDecoratorProperties {
 
     private boolean enabled = true;

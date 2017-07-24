@@ -17,6 +17,7 @@
 package com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy;
 
 import com.p6spy.engine.event.JdbcEventListener;
+import com.p6spy.engine.logging.P6LogFactory;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -35,6 +36,12 @@ public class P6SpyProperties {
      * @see RuntimeListenerSupportFactory
      */
     private boolean enableRuntimeListeners = true;
+    /**
+     * Enables logging JDBC events.
+     *
+     * @see P6LogFactory
+     */
+    private boolean enableLogging = true;
     /**
      * Enables multiline output.
      */
