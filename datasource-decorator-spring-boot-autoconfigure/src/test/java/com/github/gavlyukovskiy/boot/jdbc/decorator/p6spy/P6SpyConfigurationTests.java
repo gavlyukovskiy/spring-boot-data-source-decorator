@@ -54,8 +54,8 @@ public class P6SpyConfigurationTests {
     @Before
     public void init() {
         EnvironmentTestUtils.addEnvironment(context,
-                "spring.datasource.initialize:false",
-                "spring.datasource.url:jdbc:h2:mem:testdb-" + new Random().nextInt());
+                "datasource.initialize:false",
+                "datasource.url:jdbc:h2:mem:testdb-" + new Random().nextInt());
         context.setClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "net.ttddyy.dsproxy"));
     }
 

@@ -41,8 +41,8 @@ public class TracingQueryExecutionListenerTests {
     public void init() {
         dbUrl = "jdbc:h2:mem:testdb-" + new Random().nextInt();
         EnvironmentTestUtils.addEnvironment(context,
-                "spring.datasource.initialize:false",
-                "spring.datasource.url:" + dbUrl);
+                "datasource.initialize:false",
+                "datasource.url:" + dbUrl);
         context.setClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "com.p6spy"));
         context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,

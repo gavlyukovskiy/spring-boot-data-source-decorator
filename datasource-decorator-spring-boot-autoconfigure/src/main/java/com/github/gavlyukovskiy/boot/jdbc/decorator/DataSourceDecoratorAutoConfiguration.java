@@ -42,7 +42,7 @@ import javax.sql.DataSource;
  */
 @Configuration
 @EnableConfigurationProperties({ DataSourceDecoratorProperties.class, SpringDataSourceDecoratorProperties.class })
-@ConditionalOnProperty(prefix = "spring.datasource.decorator", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "datasource.decorator", name = "enabled", havingValue = "true", matchIfMissing = true)
 @ConditionalOnBean(DataSource.class)
 @AutoConfigureAfter(DataSourceAutoConfiguration.class)
 @Import({

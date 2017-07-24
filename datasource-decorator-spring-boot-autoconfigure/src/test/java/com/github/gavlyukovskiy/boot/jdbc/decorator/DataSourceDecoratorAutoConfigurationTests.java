@@ -56,8 +56,8 @@ public class DataSourceDecoratorAutoConfigurationTests {
     @Before
     public void init() {
         EnvironmentTestUtils.addEnvironment(context,
-                "spring.datasource.initialize:false",
-                "spring.datasource.url:jdbc:h2:mem:testdb-" + new Random().nextInt());
+                "datasource.initialize:false",
+                "datasource.url:jdbc:h2:mem:testdb-" + new Random().nextInt());
     }
 
     @After
@@ -82,7 +82,7 @@ public class DataSourceDecoratorAutoConfigurationTests {
     @Test
     public void testNoDecoratingForExcludeBeans() throws Exception {
         EnvironmentTestUtils.addEnvironment(context,
-                "spring.datasource.decorator.exclude-beans:dataSource");
+                "datasource.decorator.exclude-beans:dataSource");
         context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class);
@@ -110,8 +110,8 @@ public class DataSourceDecoratorAutoConfigurationTests {
     @Test
     public void testDecoratedHikariSpecificPropertiesIsSet() throws Exception {
         EnvironmentTestUtils.addEnvironment(context,
-                "spring.datasource.type:" + HikariDataSource.class.getName(),
-                "spring.datasource.hikari.catalog:test_catalog");
+                "datasource.type:" + HikariDataSource.class.getName(),
+                "datasource.hikari.catalog:test_catalog");
         context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class);
@@ -162,7 +162,7 @@ public class DataSourceDecoratorAutoConfigurationTests {
     @Test
     public void testDecoratingCanBeDisabled() throws Exception {
         EnvironmentTestUtils.addEnvironment(context,
-                "spring.datasource.decorator.enabled:false");
+                "datasource.decorator.enabled:false");
         context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class);
@@ -175,7 +175,7 @@ public class DataSourceDecoratorAutoConfigurationTests {
     @Test
     public void testDecoratingCanBeDisabledForSpecificBeans() throws Exception {
         EnvironmentTestUtils.addEnvironment(context,
-                "spring.datasource.decorator.exclude-beans:secondDataSource");
+                "datasource.decorator.exclude-beans:secondDataSource");
         context.register(TestMultiDataSourceConfiguration.class,
                 DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,

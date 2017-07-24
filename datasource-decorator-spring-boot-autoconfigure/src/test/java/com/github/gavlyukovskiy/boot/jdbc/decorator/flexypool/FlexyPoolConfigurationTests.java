@@ -55,8 +55,8 @@ public class FlexyPoolConfigurationTests {
     @Before
     public void init() {
         EnvironmentTestUtils.addEnvironment(context,
-                "spring.datasource.initialize:false",
-                "spring.datasource.url:jdbc:h2:mem:testdb-" + new Random().nextInt());
+                "datasource.initialize:false",
+                "datasource.url:jdbc:h2:mem:testdb-" + new Random().nextInt());
         context.setClassLoader(new HidePackagesClassLoader("net.ttddyy.dsproxy", "com.p6spy"));
     }
 
@@ -91,7 +91,7 @@ public class FlexyPoolConfigurationTests {
     @Test
     public void testDecoratingDbcp2DataSource() throws Exception {
         EnvironmentTestUtils.addEnvironment(context,
-                "spring.datasource.type:" + BasicDataSource.class.getName());
+                "datasource.type:" + BasicDataSource.class.getName());
         context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class);
@@ -104,7 +104,7 @@ public class FlexyPoolConfigurationTests {
     @Test
     public void testDecoratingHikariDataSourceWithDefaultStrategies() throws Exception {
         EnvironmentTestUtils.addEnvironment(context,
-                "spring.datasource.type:" + HikariDataSource.class.getName());
+                "datasource.type:" + HikariDataSource.class.getName());
         context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class);
@@ -128,10 +128,10 @@ public class FlexyPoolConfigurationTests {
     @Test
     public void testDecoratingHikariDataSourceWithCustomPropertyStrategies() throws Exception {
         EnvironmentTestUtils.addEnvironment(context,
-                "spring.datasource.type:" + HikariDataSource.class.getName(),
-                "spring.datasource.decorator.flexy-pool.acquiring-strategy.increment-pool.max-overflow-pool-size:15",
-                "spring.datasource.decorator.flexy-pool.acquiring-strategy.increment-pool.timeout-millis:500",
-                "spring.datasource.decorator.flexy-pool.acquiring-strategy.retry.attempts:5");
+                "datasource.type:" + HikariDataSource.class.getName(),
+                "datasource.decorator.flexy-pool.acquiring-strategy.increment-pool.max-overflow-pool-size:15",
+                "datasource.decorator.flexy-pool.acquiring-strategy.increment-pool.timeout-millis:500",
+                "datasource.decorator.flexy-pool.acquiring-strategy.retry.attempts:5");
         context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class,
@@ -155,7 +155,7 @@ public class FlexyPoolConfigurationTests {
     @Test
     public void testDecoratingHikariDataSourceWithCustomBeanStrategies() throws Exception {
         EnvironmentTestUtils.addEnvironment(context,
-                "spring.datasource.type:" + HikariDataSource.class.getName());
+                "datasource.type:" + HikariDataSource.class.getName());
         context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class,

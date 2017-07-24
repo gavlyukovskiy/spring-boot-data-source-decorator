@@ -56,8 +56,8 @@ public class ProxyDataSourceConfigurationTests {
     @Before
     public void init() {
         EnvironmentTestUtils.addEnvironment(context,
-                "spring.datasource.initialize:false",
-                "spring.datasource.url:jdbc:h2:mem:testdb-" + new Random().nextInt());
+                "datasource.initialize:false",
+                "datasource.url:jdbc:h2:mem:testdb-" + new Random().nextInt());
         context.setClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "com.p6spy"));
     }
 
@@ -83,7 +83,7 @@ public class ProxyDataSourceConfigurationTests {
     @Test
     public void testRegisterLogAndSlowQueryLogUsingSlf4j() throws Exception {
         EnvironmentTestUtils.addEnvironment(context,
-                "spring.datasource.decorator.datasource-proxy.logging:slf4j");
+                "datasource.decorator.datasource-proxy.logging:slf4j");
         context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class);
@@ -99,7 +99,7 @@ public class ProxyDataSourceConfigurationTests {
     @Test
     public void testRegisterLogAndSlowQueryLogUsingJUL() throws Exception {
         EnvironmentTestUtils.addEnvironment(context,
-                "spring.datasource.decorator.datasourceProxy.logging:jul");
+                "datasource.decorator.datasourceProxy.logging:jul");
         context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class);
@@ -115,7 +115,7 @@ public class ProxyDataSourceConfigurationTests {
     @Test
     public void testRegisterLogAndSlowQueryLogUsingApacheCommons() throws Exception {
         EnvironmentTestUtils.addEnvironment(context,
-                "spring.datasource.decorator.datasourceProxy.logging:commons");
+                "datasource.decorator.datasourceProxy.logging:commons");
         context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class);

@@ -50,8 +50,8 @@ public class DecoratedDataSourcePoolMetadataProviderTests {
 	@Before
 	public void init() {
 		EnvironmentTestUtils.addEnvironment(context,
-			"spring.datasource.initialize:false",
-			"spring.datasource.url:jdbc:hsqldb:mem:testdb-" + new Random().nextInt());
+			"datasource.initialize:false",
+			"datasource.url:jdbc:hsqldb:mem:testdb-" + new Random().nextInt());
 	}
 
 	@After
@@ -62,7 +62,7 @@ public class DecoratedDataSourcePoolMetadataProviderTests {
 	@Test
 	public void testReturnDataSourcePoolMetadataProviderForHikari() {
 		EnvironmentTestUtils.addEnvironment(context,
-			"spring.datasource.type:" + HikariDataSource.class.getName());
+			"datasource.type:" + HikariDataSource.class.getName());
         context.register(DataSourceAutoConfiguration.class,
 			DataSourceDecoratorAutoConfiguration.class,
 			PropertyPlaceholderAutoConfiguration.class);
@@ -93,7 +93,7 @@ public class DecoratedDataSourcePoolMetadataProviderTests {
 	@Deprecated
 	public void testReturnDataSourcePoolMetadataProviderForDbcp() {
 		EnvironmentTestUtils.addEnvironment(context,
-			"spring.datasource.type:" + org.apache.commons.dbcp.BasicDataSource.class.getName());
+			"datasource.type:" + org.apache.commons.dbcp.BasicDataSource.class.getName());
         context.register(DataSourceAutoConfiguration.class,
 			DataSourceDecoratorAutoConfiguration.class,
 			PropertyPlaceholderAutoConfiguration.class);
@@ -109,7 +109,7 @@ public class DecoratedDataSourcePoolMetadataProviderTests {
 	@Test
 	public void testReturnDataSourcePoolMetadataProviderForDbcp2() {
 		EnvironmentTestUtils.addEnvironment(context,
-			"spring.datasource.type:" + org.apache.commons.dbcp2.BasicDataSource.class.getName());
+			"datasource.type:" + org.apache.commons.dbcp2.BasicDataSource.class.getName());
         context.register(DataSourceAutoConfiguration.class,
 			DataSourceDecoratorAutoConfiguration.class,
 			PropertyPlaceholderAutoConfiguration.class);
@@ -125,7 +125,7 @@ public class DecoratedDataSourcePoolMetadataProviderTests {
 	@Test
 	public void testReturnNullForNonProxy() {
 		EnvironmentTestUtils.addEnvironment(context,
-			"spring.datasource.decorator.exclude-beans:dataSource");
+			"datasource.decorator.exclude-beans:dataSource");
         context.register(DataSourceAutoConfiguration.class,
 			DataSourceDecoratorAutoConfiguration.class,
 			PropertyPlaceholderAutoConfiguration.class);
