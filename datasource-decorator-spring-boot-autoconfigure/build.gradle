@@ -13,7 +13,7 @@ dependencies {
     compileOnly("com.zaxxer:HikariCP:2.5.1")
 
     compileOnly("p6spy:p6spy:3.0.0")
-    compileOnly("net.ttddyy:datasource-proxy:1.4.1")
+    compileOnly("net.ttddyy:datasource-proxy:1.4.2")
     compileOnly("com.vladmihalcea.flexy-pool:flexy-pool-core:1.2.9")
     compileOnly("com.vladmihalcea.flexy-pool:flexy-dbcp2:1.2.9")
     compileOnly("com.vladmihalcea.flexy-pool:flexy-hikaricp:1.2.9")
@@ -27,7 +27,7 @@ dependencies {
     testCompile("org.springframework.boot:spring-boot-starter-test:1.4.2.RELEASE")
 
     testCompile("p6spy:p6spy:3.0.0")
-    testCompile("net.ttddyy:datasource-proxy:1.4.1")
+    testCompile("net.ttddyy:datasource-proxy:1.4.2")
     testCompile("com.vladmihalcea.flexy-pool:flexy-pool-core:1.2.9")
     testCompile("com.vladmihalcea.flexy-pool:flexy-dbcp2:1.2.9")
     testCompile("com.vladmihalcea.flexy-pool:flexy-hikaricp:1.2.9")
