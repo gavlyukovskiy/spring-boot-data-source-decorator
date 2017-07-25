@@ -9,7 +9,7 @@ Spring Boot autoconfiguration for integration with
 **Why Should I Care**
 
 Of course you can just create `DataSource` bean wrapped in any proxy you want, but what will you get using this library:
-* ability to configure your datasource using `datasource.hikari.*`, `datasource.dbcp2.*`, `datasource.tomcat.*`
+* ability to configure your datasource using `spring.datasource.hikari.*`, `spring.datasource.dbcp2.*`, `spring.datasource.tomcat.*`
 * `/metrics` - will display your actual datasource stats (active, usage)
 * ability to disable proxying quick on appropriate environment
 * configure each library using only Spring Context without pain
