@@ -8,10 +8,12 @@ import org.junit.Test;
 import org.springframework.boot.autoconfigure.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.test.util.EnvironmentTestUtils;
+import org.springframework.cloud.sleuth.Sampler;
 import org.springframework.cloud.sleuth.Span;
 import org.springframework.cloud.sleuth.SpanReporter;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.cloud.sleuth.log.SleuthLogAutoConfiguration;
+import org.springframework.cloud.sleuth.sampler.AlwaysSampler;
 import org.springframework.cloud.sleuth.util.ExceptionUtils;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -37,10 +39,10 @@ public class TracingJdbcEventListenerTests {
 
     @Before
     public void init() {
-        dbUrl = "jdbc:h2:mem:testdb-" + new Random().nextInt();
+        dbUrl = "h2:mem:testdb-" + new Random().nextInt();
         EnvironmentTestUtils.addEnvironment(context,
                 "spring.datasource.initialize:false",
-                "spring.datasource.url:" + dbUrl);
+                "spring.datasource.url:jdbc:" + dbUrl);
         context.setClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "net.ttddyy.dsproxy"));
         context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
@@ -89,7 +91,6 @@ public class TracingJdbcEventListenerTests {
         Span statementSpan = spanReporter.getSpans().get(1);
         assertThat(connectionSpan.getName()).isEqualTo(dbUrl + "/connection");
         assertThat(statementSpan.getName()).isEqualTo(dbUrl + "/query");
-        assertThat(statementSpan.logs()).isEmpty();
         assertThat(statementSpan.tags()).containsEntry(SleuthListenerConfiguration.SPAN_SQL_QUERY_TAG_NAME, "SELECT NOW()");
     }
 
@@ -106,7 +107,6 @@ public class TracingJdbcEventListenerTests {
         Span statementSpan = spanReporter.getSpans().get(1);
         assertThat(connectionSpan.getName()).isEqualTo(dbUrl + "/connection");
         assertThat(statementSpan.getName()).isEqualTo(dbUrl + "/query");
-        assertThat(statementSpan.logs()).isEmpty();
         assertThat(statementSpan.tags()).containsEntry(SleuthListenerConfiguration.SPAN_SQL_QUERY_TAG_NAME, "UPDATE INFORMATION_SCHEMA.TABLES SET table_Name = '' WHERE 0 = 1");
         assertThat(statementSpan.tags()).containsEntry(SleuthListenerConfiguration.SPAN_ROW_COUNT_TAG_NAME, "0");
     }
@@ -124,7 +124,6 @@ public class TracingJdbcEventListenerTests {
         Span statementSpan = spanReporter.getSpans().get(1);
         assertThat(connectionSpan.getName()).isEqualTo(dbUrl + "/connection");
         assertThat(statementSpan.getName()).isEqualTo(dbUrl + "/query");
-        assertThat(statementSpan.logs()).isEmpty();
         assertThat(statementSpan.tags()).containsEntry(SleuthListenerConfiguration.SPAN_SQL_QUERY_TAG_NAME, "UPDATE INFORMATION_SCHEMA.TABLES SET table_Name = '' WHERE 0 = 1");
         assertThat(statementSpan.tags()).containsEntry(SleuthListenerConfiguration.SPAN_ROW_COUNT_TAG_NAME, "0");
     }
@@ -175,6 +174,11 @@ public class TracingJdbcEventListenerTests {
         @Bean
         public CollectingSpanReporter spanReporter() {
             return new CollectingSpanReporter();
+        }
+
+        @Bean
+        public Sampler sampler() {
+            return new AlwaysSampler();
         }
     }
 

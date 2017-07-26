@@ -39,10 +39,10 @@ public class TracingQueryExecutionListenerTests {
 
     @Before
     public void init() {
-        dbUrl = "jdbc:h2:mem:testdb-" + new Random().nextInt();
+        dbUrl = "h2:mem:testdb-" + new Random().nextInt();
         EnvironmentTestUtils.addEnvironment(context,
                 "spring.datasource.initialize:false",
-                "spring.datasource.url:" + dbUrl);
+                "spring.datasource.url:jdbc:" + dbUrl);
         context.setClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "com.p6spy"));
         context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
@@ -73,7 +73,6 @@ public class TracingQueryExecutionListenerTests {
         assertThat(spanReporter.getSpans()).hasSize(1);
         Span statementSpan = spanReporter.getSpans().get(0);
         assertThat(statementSpan.getName()).isEqualTo(dbUrl + "/query");
-        assertThat(statementSpan.logs()).isEmpty();
         assertThat(statementSpan.tags()).containsEntry(SleuthListenerConfiguration.SPAN_SQL_QUERY_TAG_NAME, "SELECT NOW()");
     }
 
@@ -88,7 +87,6 @@ public class TracingQueryExecutionListenerTests {
         assertThat(spanReporter.getSpans()).hasSize(1);
         Span statementSpan = spanReporter.getSpans().get(0);
         assertThat(statementSpan.getName()).isEqualTo(dbUrl + "/query");
-        assertThat(statementSpan.logs()).isEmpty();
         assertThat(statementSpan.tags()).containsEntry(SleuthListenerConfiguration.SPAN_SQL_QUERY_TAG_NAME, "UPDATE INFORMATION_SCHEMA.TABLES SET table_Name = '' WHERE 0 = 1");
         assertThat(statementSpan.tags()).containsEntry(SleuthListenerConfiguration.SPAN_ROW_COUNT_TAG_NAME, "0");
     }
@@ -118,7 +116,7 @@ public class TracingQueryExecutionListenerTests {
         }
 
         @Bean
-        public Sampler alwaysSampler() {
+        public Sampler sampler() {
             return new AlwaysSampler();
         }
     }

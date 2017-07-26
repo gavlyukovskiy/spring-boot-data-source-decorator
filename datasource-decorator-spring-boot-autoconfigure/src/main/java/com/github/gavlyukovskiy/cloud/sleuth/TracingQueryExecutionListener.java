@@ -38,16 +38,19 @@ import java.util.stream.Collectors;
 public class TracingQueryExecutionListener implements QueryExecutionListener {
 
     private final Tracer tracer;
+    private final DataSourceSpanNameResolver dataSourceSpanNameResolver;
     private Map<String, String> resolvedDataSourceProxyNames = new ConcurrentHashMap<>();
 
-    TracingQueryExecutionListener(Tracer tracer) {
+    TracingQueryExecutionListener(Tracer tracer, DataSourceSpanNameResolver dataSourceSpanNameResolver) {
         this.tracer = tracer;
+        this.dataSourceSpanNameResolver = dataSourceSpanNameResolver;
     }
 
     @Override
     public void beforeQuery(ExecutionInfo execInfo, List<QueryInfo> queryInfoList) {
-        String dataSourceName = dataSourceUrl(execInfo);
-        tracer.createSpan(dataSourceName + "/query");
+        String dataSourceName = dataSourceSpanName(execInfo);
+        Span span = tracer.createSpan(dataSourceName + SleuthListenerConfiguration.SPAN_QUERY_POSTFIX);
+        span.logEvent(Span.CLIENT_SEND);
         tracer.addTag("sql", queryInfoList.stream().map(QueryInfo::getQuery).collect(Collectors.joining("\n")));
         tracer.addTag(Span.SPAN_LOCAL_COMPONENT_TAG_NAME, "database");
     }
@@ -55,23 +58,26 @@ public class TracingQueryExecutionListener implements QueryExecutionListener {
     @Override
     public void afterQuery(ExecutionInfo execInfo, List<QueryInfo> queryInfoList) {
         Span span = tracer.getCurrentSpan();
+        span.logEvent(Span.CLIENT_RECV);
         if (execInfo.getThrowable() != null) {
-            span.tag(Span.SPAN_ERROR_TAG_NAME, ExceptionUtils.getExceptionMessage(execInfo.getThrowable()));
+            tracer.addTag(Span.SPAN_ERROR_TAG_NAME, ExceptionUtils.getExceptionMessage(execInfo.getThrowable()));
         }
         if (execInfo.getMethod().getName().equals("executeUpdate")) {
-            span.tag(SleuthListenerConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(execInfo.getResult()));
+            tracer.addTag(SleuthListenerConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(execInfo.getResult()));
         }
         tracer.close(span);
     }
 
-    private String dataSourceUrl(ExecutionInfo executionInfo) {
-        return resolvedDataSourceProxyNames.computeIfAbsent(executionInfo.getDataSourceName(), dataSourceName -> {
-            try {
-                return executionInfo.getStatement().getConnection().getMetaData().getURL();
-            }
-            catch (SQLException e) {
-                return "jdbc:";
-            }
-        });
+    private String dataSourceSpanName(ExecutionInfo executionInfo) {
+        String dataSourceSpanName = resolvedDataSourceProxyNames.computeIfAbsent(executionInfo.getDataSourceName(),
+                dataSourceName -> {
+                    try {
+                        return dataSourceSpanNameResolver.resolveName(executionInfo.getStatement().getConnection());
+                    }
+                    catch (SQLException e) {
+                        return null;
+                    }
+                });
+        return dataSourceSpanName != null ? dataSourceSpanName : "unknown:";
     }
 }

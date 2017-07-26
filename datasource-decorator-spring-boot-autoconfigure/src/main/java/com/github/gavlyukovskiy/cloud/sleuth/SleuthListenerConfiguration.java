@@ -33,13 +33,15 @@ class SleuthListenerConfiguration {
 
     public static final String SPAN_SQL_QUERY_TAG_NAME = "sql";
     public static final String SPAN_ROW_COUNT_TAG_NAME = "row-count";
+    public static final String SPAN_CONNECTION_POSTFIX = "/connection";
+    public static final String SPAN_QUERY_POSTFIX = "/query";
 
     @ConditionalOnBean(P6SpyDataSourceDecorator.class)
     static class P6SpyConfiguration {
 
         @Bean
-        public TracingJdbcEventListener tracingJdbcEventListener(Tracer tracer) {
-            return new TracingJdbcEventListener(tracer);
+        public TracingJdbcEventListener tracingJdbcEventListener(Tracer tracer, DataSourceSpanNameResolver dataSourceSpanNameResolver) {
+            return new TracingJdbcEventListener(tracer, dataSourceSpanNameResolver);
         }
     }
 
@@ -48,8 +50,8 @@ class SleuthListenerConfiguration {
     static class ProxyDataSourceConfiguration {
 
         @Bean
-        public TracingQueryExecutionListener tracingQueryExecutionListener(Tracer tracer) {
-            return new TracingQueryExecutionListener(tracer);
+        public TracingQueryExecutionListener tracingQueryExecutionListener(Tracer tracer, DataSourceSpanNameResolver dataSourceSpanNameResolver) {
+            return new TracingQueryExecutionListener(tracer, dataSourceSpanNameResolver);
         }
     }
 }
