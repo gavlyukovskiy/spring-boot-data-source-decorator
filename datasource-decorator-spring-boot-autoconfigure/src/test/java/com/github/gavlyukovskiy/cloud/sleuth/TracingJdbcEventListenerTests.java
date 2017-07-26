@@ -39,8 +39,8 @@ public class TracingJdbcEventListenerTests {
     public void init() {
         dbUrl = "jdbc:h2:mem:testdb-" + new Random().nextInt();
         EnvironmentTestUtils.addEnvironment(context,
-                "datasource.initialize:false",
-                "datasource.url:" + dbUrl);
+                "spring.datasource.initialize:false",
+                "spring.datasource.url:" + dbUrl);
         context.setClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "net.ttddyy.dsproxy"));
         context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,

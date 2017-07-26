@@ -31,6 +31,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
@@ -41,8 +42,8 @@ import javax.sql.DataSource;
  * @author Arthur Gavlyukovskiy
  */
 @Configuration
-@EnableConfigurationProperties({ DataSourceDecoratorProperties.class, SpringDataSourceDecoratorProperties.class })
-@ConditionalOnProperty(prefix = "datasource.decorator", name = "enabled", havingValue = "true", matchIfMissing = true)
+@EnableConfigurationProperties(DataSourceDecoratorProperties.class)
+@ConditionalOnProperty(name = { "decorator.datasource.enabled", "spring.datasource.decorator.enabled" }, havingValue = "true", matchIfMissing = true)
 @ConditionalOnBean(DataSource.class)
 @AutoConfigureAfter(DataSourceAutoConfiguration.class)
 @Import({
@@ -53,14 +54,14 @@ import javax.sql.DataSource;
 public class DataSourceDecoratorAutoConfiguration {
 
     @Autowired
-    private SpringDataSourceDecoratorProperties springDataSourceDecoratorProperties;
+    private SpringDataSourceDecoratorPropertiesMigrator springDataSourceDecoratorPropertiesMigrator;
 
     @Autowired
     private DataSourceDecoratorProperties dataSourceDecoratorProperties;
 
     @PostConstruct
     public void initializeDeprecatedProperties() {
-        springDataSourceDecoratorProperties.replacePropertiesAndWarn(dataSourceDecoratorProperties);
+        springDataSourceDecoratorPropertiesMigrator.replacePropertiesAndWarn(dataSourceDecoratorProperties);
     }
 
     @Bean
@@ -72,5 +73,10 @@ public class DataSourceDecoratorAutoConfiguration {
     @Bean
     public DataSourcePoolMetadataProvider proxyDataSourcePoolMetadataProvider() {
         return new DecoratedDataSourcePoolMetadataProvider();
+    }
+
+    @Bean
+    public SpringDataSourceDecoratorPropertiesMigrator springDataSourceDecoratorPropertiesMigrator(Environment environment) {
+        return new SpringDataSourceDecoratorPropertiesMigrator(environment);
     }
 }

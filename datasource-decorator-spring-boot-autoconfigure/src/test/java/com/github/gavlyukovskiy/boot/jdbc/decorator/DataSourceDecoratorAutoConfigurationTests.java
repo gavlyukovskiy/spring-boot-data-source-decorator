@@ -82,7 +82,7 @@ public class DataSourceDecoratorAutoConfigurationTests {
     @Test
     public void testNoDecoratingForExcludeBeans() throws Exception {
         EnvironmentTestUtils.addEnvironment(context,
-                "datasource.decorator.exclude-beans:dataSource");
+                "decorator.datasource.exclude-beans:dataSource");
         context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class);
@@ -110,8 +110,8 @@ public class DataSourceDecoratorAutoConfigurationTests {
     @Test
     public void testDecoratedHikariSpecificPropertiesIsSet() throws Exception {
         EnvironmentTestUtils.addEnvironment(context,
-                "datasource.type:" + HikariDataSource.class.getName(),
-                "datasource.hikari.catalog:test_catalog");
+                "spring.datasource.type:" + HikariDataSource.class.getName(),
+                "spring.datasource.hikari.catalog:test_catalog");
         context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class);
@@ -162,7 +162,7 @@ public class DataSourceDecoratorAutoConfigurationTests {
     @Test
     public void testDecoratingCanBeDisabled() throws Exception {
         EnvironmentTestUtils.addEnvironment(context,
-                "datasource.decorator.enabled:false");
+                "decorator.datasource.enabled:false");
         context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class);
@@ -175,7 +175,7 @@ public class DataSourceDecoratorAutoConfigurationTests {
     @Test
     public void testDecoratingCanBeDisabledForSpecificBeans() throws Exception {
         EnvironmentTestUtils.addEnvironment(context,
-                "datasource.decorator.exclude-beans:secondDataSource");
+                "decorator.datasource.exclude-beans:secondDataSource");
         context.register(TestMultiDataSourceConfiguration.class,
                 DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,

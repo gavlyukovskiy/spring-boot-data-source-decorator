@@ -52,8 +52,8 @@ public class SleuthListenerAutoConfigurationTests {
     @Before
     public void init() {
         EnvironmentTestUtils.addEnvironment(context,
-                "datasource.initialize:false",
-                "datasource.url:jdbc:h2:mem:testdb-" + new Random().nextInt());
+                "spring.datasource.initialize:false",
+                "spring.datasource.url:jdbc:h2:mem:testdb-" + new Random().nextInt());
     }
 
     @After

@@ -62,7 +62,7 @@ public class DecoratedDataSourcePoolMetadataProviderTests {
 	@Test
 	public void testReturnDataSourcePoolMetadataProviderForHikari() {
 		EnvironmentTestUtils.addEnvironment(context,
-			"datasource.type:" + HikariDataSource.class.getName());
+			"spring.datasource.type:" + HikariDataSource.class.getName());
         context.register(DataSourceAutoConfiguration.class,
 			DataSourceDecoratorAutoConfiguration.class,
 			PropertyPlaceholderAutoConfiguration.class);
@@ -93,7 +93,7 @@ public class DecoratedDataSourcePoolMetadataProviderTests {
 	@Deprecated
 	public void testReturnDataSourcePoolMetadataProviderForDbcp() {
 		EnvironmentTestUtils.addEnvironment(context,
-			"datasource.type:" + org.apache.commons.dbcp.BasicDataSource.class.getName());
+			"spring.datasource.type:" + org.apache.commons.dbcp.BasicDataSource.class.getName());
         context.register(DataSourceAutoConfiguration.class,
 			DataSourceDecoratorAutoConfiguration.class,
 			PropertyPlaceholderAutoConfiguration.class);
@@ -109,7 +109,7 @@ public class DecoratedDataSourcePoolMetadataProviderTests {
 	@Test
 	public void testReturnDataSourcePoolMetadataProviderForDbcp2() {
 		EnvironmentTestUtils.addEnvironment(context,
-			"datasource.type:" + org.apache.commons.dbcp2.BasicDataSource.class.getName());
+			"spring.datasource.type:" + org.apache.commons.dbcp2.BasicDataSource.class.getName());
         context.register(DataSourceAutoConfiguration.class,
 			DataSourceDecoratorAutoConfiguration.class,
 			PropertyPlaceholderAutoConfiguration.class);
@@ -125,7 +125,7 @@ public class DecoratedDataSourcePoolMetadataProviderTests {
 	@Test
 	public void testReturnNullForNonProxy() {
 		EnvironmentTestUtils.addEnvironment(context,
-			"datasource.decorator.exclude-beans:dataSource");
+			"decorator.datasource.exclude-beans:dataSource");
         context.register(DataSourceAutoConfiguration.class,
 			DataSourceDecoratorAutoConfiguration.class,
 			PropertyPlaceholderAutoConfiguration.class);
