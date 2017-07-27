@@ -20,9 +20,9 @@ Add one of the starters to the classpath of a Spring Boot application and your d
 
 Gradle:
 ```groovy
-compile('com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.2.0')
-compile('com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.2.0')
-compile('com.github.gavlyukovskiy:flexy-pool-spring-boot-starter:1.2.0')
+compile('com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.2.1')
+compile('com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.2.1')
+compile('com.github.gavlyukovskiy:flexy-pool-spring-boot-starter:1.2.1')
 ```
 
 Maven:
@@ -30,17 +30,17 @@ Maven:
 <dependency>
     <groupId>com.github.gavlyukovskiy</groupId>
     <artifactId>p6spy-spring-boot-starter</artifactId>
-    <version>1.2.0</version>
+    <version>1.2.1</version>
 </dependency>
 <dependency>
     <groupId>com.github.gavlyukovskiy</groupId>
     <artifactId>datasource-proxy-spring-boot-starter</artifactId>
-    <version>1.2.0</version>
+    <version>1.2.1</version>
 </dependency>
 <dependency>
     <groupId>com.github.gavlyukovskiy</groupId>
     <artifactId>flexy-pool-spring-boot-starter</artifactId>
-    <version>1.2.0</version>
+    <version>1.2.1</version>
 </dependency>
 ```
 
