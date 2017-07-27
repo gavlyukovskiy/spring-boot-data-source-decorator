@@ -80,7 +80,7 @@ public JdbcEventListener myListener() {
 
 This done by adding `RuntimeListenerSupportFactory` into P6Spy `modulelist`, overriding this property will cause to not registering factory thus listeners will not be applied  
 
-You can configure small set of parameters in your application properties:
+You can configure small set of parameters in your `application.properties`:
 ```properties
 # Register RuntimeListenerSupportFactory if JdbcEventListener beans were found
 decorator.datasource.p6spy.enable-runtime-listeners=true
