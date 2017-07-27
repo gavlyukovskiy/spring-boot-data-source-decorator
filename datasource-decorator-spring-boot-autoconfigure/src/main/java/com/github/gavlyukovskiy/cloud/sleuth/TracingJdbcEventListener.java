@@ -94,7 +94,7 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
     private void onAfterExecuteQueryWithoutClosingSpan(StatementInformation statementInformation, long timeElapsedNanos, SQLException e) {
         // close span after result set is closed to include fetch time
         Span statementSpan = tracer.getCurrentSpan();
-        statementSpan.logEvent("executed");
+        statementSpan.logEvent("execute");
         tracer.addTag(SleuthListenerConfiguration.SPAN_SQL_QUERY_TAG_NAME, getSql(statementInformation));
         if (e != null) {
             tracer.addTag(Span.SPAN_ERROR_TAG_NAME, ExceptionUtils.getExceptionMessage(e));
