@@ -71,12 +71,24 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
 
     @Override
     public void onAfterExecuteQuery(PreparedStatementInformation statementInformation, long timeElapsedNanos, SQLException e) {
-        onAfterExecuteQueryWithoutClosingSpan(statementInformation, timeElapsedNanos, e);
+        if (e != null) {
+            super.onAfterExecuteQuery(statementInformation, timeElapsedNanos, e);
+        }
+        else {
+            // if exception wasn't raised span will be closed after closing ResultSet
+            onAfterExecuteQueryWithoutClosingSpan(statementInformation);
+        }
     }
 
     @Override
     public void onAfterExecuteQuery(StatementInformation statementInformation, long timeElapsedNanos, String sql, SQLException e) {
-        onAfterExecuteQueryWithoutClosingSpan(statementInformation, timeElapsedNanos, e);
+        if (e != null) {
+            super.onAfterExecuteQuery(statementInformation, timeElapsedNanos, sql, e);
+        }
+        else {
+            // if exception wasn't raised span will be closed after closing ResultSet
+            onAfterExecuteQueryWithoutClosingSpan(statementInformation);
+        }
     }
 
     @Override
@@ -91,14 +103,11 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
         super.onAfterExecuteUpdate(statementInformation, timeElapsedNanos, sql, rowCount, e);
     }
 
-    private void onAfterExecuteQueryWithoutClosingSpan(StatementInformation statementInformation, long timeElapsedNanos, SQLException e) {
+    private void onAfterExecuteQueryWithoutClosingSpan(StatementInformation statementInformation) {
         // close span after result set is closed to include fetch time
         Span statementSpan = tracer.getCurrentSpan();
         statementSpan.logEvent("execute");
         tracer.addTag(SleuthListenerConfiguration.SPAN_SQL_QUERY_TAG_NAME, getSql(statementInformation));
-        if (e != null) {
-            tracer.addTag(Span.SPAN_ERROR_TAG_NAME, ExceptionUtils.getExceptionMessage(e));
-        }
     }
 
     private String getSql(StatementInformation statementInformation) {
