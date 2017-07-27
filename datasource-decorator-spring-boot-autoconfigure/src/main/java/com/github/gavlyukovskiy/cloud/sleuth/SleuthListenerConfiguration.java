@@ -40,8 +40,14 @@ class SleuthListenerConfiguration {
     static class P6SpyConfiguration {
 
         @Bean
-        public TracingJdbcEventListener tracingJdbcEventListener(Tracer tracer, DataSourceSpanNameResolver dataSourceSpanNameResolver) {
-            return new TracingJdbcEventListener(tracer, dataSourceSpanNameResolver);
+        public TracingJdbcEventListener tracingJdbcEventListener(Tracer tracer, P6SpySpanNameResolver p6SpySpanNameResolver) {
+            return new TracingJdbcEventListener(tracer, p6SpySpanNameResolver);
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        public P6SpySpanNameResolver dataSourceNameResolver() {
+            return new P6SpySpanNameResolver();
         }
     }
 
@@ -50,8 +56,14 @@ class SleuthListenerConfiguration {
     static class ProxyDataSourceConfiguration {
 
         @Bean
-        public TracingQueryExecutionListener tracingQueryExecutionListener(Tracer tracer, DataSourceSpanNameResolver dataSourceSpanNameResolver) {
-            return new TracingQueryExecutionListener(tracer, dataSourceSpanNameResolver);
+        public TracingQueryExecutionListener tracingQueryExecutionListener(Tracer tracer, DataSourceProxySpanNameResolver dataSourceProxySpanNameResolver) {
+            return new TracingQueryExecutionListener(tracer, dataSourceProxySpanNameResolver);
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        public DataSourceProxySpanNameResolver dataSourceProxySpanNameResolver() {
+            return new DataSourceProxySpanNameResolver();
         }
     }
 }

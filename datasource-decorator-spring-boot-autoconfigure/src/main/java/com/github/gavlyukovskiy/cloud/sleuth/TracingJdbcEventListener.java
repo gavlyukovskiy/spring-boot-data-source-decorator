@@ -26,10 +26,7 @@ import org.springframework.cloud.sleuth.Tracer;
 import org.springframework.cloud.sleuth.util.ExceptionUtils;
 import org.springframework.util.StringUtils;
 
-import javax.sql.CommonDataSource;
 import java.sql.SQLException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Listener to represent each connection and sql query as a span.
@@ -40,28 +37,23 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TracingJdbcEventListener extends SimpleJdbcEventListener {
 
     private final Tracer tracer;
-    private final DataSourceSpanNameResolver dataSourceSpanNameResolver;
-    private Map<CommonDataSource, String> resolvedP6SpyNames = new ConcurrentHashMap<>();
+    private final P6SpySpanNameResolver p6SpySpanNameResolver;
 
-    TracingJdbcEventListener(Tracer tracer, DataSourceSpanNameResolver dataSourceSpanNameResolver) {
+    TracingJdbcEventListener(Tracer tracer, P6SpySpanNameResolver p6SpySpanNameResolver) {
         this.tracer = tracer;
-        this.dataSourceSpanNameResolver = dataSourceSpanNameResolver;
+        this.p6SpySpanNameResolver = p6SpySpanNameResolver;
     }
 
     @Override
     public void onConnectionWrapped(ConnectionInformation connectionInformation) {
-        String dataSourceName = dataSourceSpanName(connectionInformation);
-        Span connectionSpan = tracer.createSpan(dataSourceName + SleuthListenerConfiguration.SPAN_CONNECTION_POSTFIX);
+        Span connectionSpan = tracer.createSpan(p6SpySpanNameResolver.connectionSpanName(connectionInformation));
         connectionSpan.logEvent(Span.CLIENT_SEND);
         tracer.addTag(Span.SPAN_LOCAL_COMPONENT_TAG_NAME, "database");
     }
 
     @Override
     public void onBeforeAnyExecute(StatementInformation statementInformation) {
-        ConnectionInformation connectionInformation = statementInformation.getConnectionInformation();
-        Span connectionSpan = tracer.getCurrentSpan();
-        String dataSourceName = dataSourceSpanName(connectionInformation);
-        Span statementSpan = tracer.createSpan(dataSourceName + SleuthListenerConfiguration.SPAN_QUERY_POSTFIX, connectionSpan);
+        Span statementSpan = tracer.createSpan(p6SpySpanNameResolver.querySpanName(statementInformation));
         statementSpan.logEvent(Span.CLIENT_SEND);
         tracer.addTag(Span.SPAN_LOCAL_COMPONENT_TAG_NAME, "database");
     }
@@ -151,11 +143,5 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
             tracer.addTag(Span.SPAN_ERROR_TAG_NAME, ExceptionUtils.getExceptionMessage(e));
         }
         tracer.close(connectionSpan);
-    }
-
-    private String dataSourceSpanName(ConnectionInformation connectionInformation) {
-        String dataSourceSpanName = resolvedP6SpyNames.computeIfAbsent(connectionInformation.getDataSource(),
-                dataSource -> dataSourceSpanNameResolver.resolveName(connectionInformation.getConnection()));
-        return dataSourceSpanName != null ? dataSourceSpanName : "unknown:";
     }
 }

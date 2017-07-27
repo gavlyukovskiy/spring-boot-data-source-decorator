@@ -23,10 +23,7 @@ import org.springframework.cloud.sleuth.Span;
 import org.springframework.cloud.sleuth.Tracer;
 import org.springframework.cloud.sleuth.util.ExceptionUtils;
 
-import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -38,18 +35,16 @@ import java.util.stream.Collectors;
 public class TracingQueryExecutionListener implements QueryExecutionListener {
 
     private final Tracer tracer;
-    private final DataSourceSpanNameResolver dataSourceSpanNameResolver;
-    private Map<String, String> resolvedDataSourceProxyNames = new ConcurrentHashMap<>();
+    private final DataSourceProxySpanNameResolver dataSourceProxySpanNameResolver;
 
-    TracingQueryExecutionListener(Tracer tracer, DataSourceSpanNameResolver dataSourceSpanNameResolver) {
+    TracingQueryExecutionListener(Tracer tracer, DataSourceProxySpanNameResolver dataSourceProxySpanNameResolver) {
         this.tracer = tracer;
-        this.dataSourceSpanNameResolver = dataSourceSpanNameResolver;
+        this.dataSourceProxySpanNameResolver = dataSourceProxySpanNameResolver;
     }
 
     @Override
     public void beforeQuery(ExecutionInfo execInfo, List<QueryInfo> queryInfoList) {
-        String dataSourceName = dataSourceSpanName(execInfo);
-        Span span = tracer.createSpan(dataSourceName + SleuthListenerConfiguration.SPAN_QUERY_POSTFIX);
+        Span span = tracer.createSpan(dataSourceProxySpanNameResolver.querySpanName(execInfo));
         span.logEvent(Span.CLIENT_SEND);
         tracer.addTag("sql", queryInfoList.stream().map(QueryInfo::getQuery).collect(Collectors.joining("\n")));
         tracer.addTag(Span.SPAN_LOCAL_COMPONENT_TAG_NAME, "database");
@@ -66,18 +61,5 @@ public class TracingQueryExecutionListener implements QueryExecutionListener {
             tracer.addTag(SleuthListenerConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(execInfo.getResult()));
         }
         tracer.close(span);
-    }
-
-    private String dataSourceSpanName(ExecutionInfo executionInfo) {
-        String dataSourceSpanName = resolvedDataSourceProxyNames.computeIfAbsent(executionInfo.getDataSourceName(),
-                dataSourceName -> {
-                    try {
-                        return dataSourceSpanNameResolver.resolveName(executionInfo.getStatement().getConnection());
-                    }
-                    catch (SQLException e) {
-                        return null;
-                    }
-                });
-        return dataSourceSpanName != null ? dataSourceSpanName : "unknown:";
     }
 }
