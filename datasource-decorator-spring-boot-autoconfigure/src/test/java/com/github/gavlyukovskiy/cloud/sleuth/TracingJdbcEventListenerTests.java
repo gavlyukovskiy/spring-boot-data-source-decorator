@@ -144,7 +144,7 @@ public class TracingJdbcEventListenerTests {
         assertThat(connectionSpan.getName()).isEqualTo(dbUrl + "/connection");
         assertThat(statementSpan.getName()).isEqualTo(dbUrl + "/query");
         assertThat(statementSpan.tags()).containsEntry(SleuthListenerConfiguration.SPAN_SQL_QUERY_TAG_NAME, "SELECT NOW()");
-        assertThat(statementSpan.logs()).extracting("event").contains("executed");
+        assertThat(statementSpan.logs()).extracting("event").contains("execute");
         assertThat(statementSpan.getAccumulatedMicros()).isGreaterThan(200L);
     }
 
@@ -164,7 +164,7 @@ public class TracingJdbcEventListenerTests {
         assertThat(connectionSpan.getName()).isEqualTo(dbUrl + "/connection");
         assertThat(statementSpan.getName()).isEqualTo(dbUrl + "/query");
         assertThat(statementSpan.tags()).containsEntry(SleuthListenerConfiguration.SPAN_SQL_QUERY_TAG_NAME, "SELECT NOW()");
-        assertThat(statementSpan.logs()).extracting("event").contains("executed");
+        assertThat(statementSpan.logs()).extracting("event").contains("execute");
         assertThat(statementSpan.getAccumulatedMicros()).isGreaterThan(200L);
     }
 
