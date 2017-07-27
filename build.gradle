@@ -6,7 +6,7 @@ buildscript {
 
 plugins {
     id "com.jfrog.bintray" version "1.7.3"
-    id "pl.allegro.tech.build.axion-release" version "1.6.0"
+    id "pl.allegro.tech.build.axion-release" version "1.7.1"
 }
 
 def pomConfig = {
