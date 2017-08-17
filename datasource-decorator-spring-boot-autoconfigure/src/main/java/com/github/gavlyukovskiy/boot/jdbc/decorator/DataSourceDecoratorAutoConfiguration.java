@@ -18,15 +18,18 @@ package com.github.gavlyukovskiy.boot.jdbc.decorator;
 
 import com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy.DataSourceProxyConfiguration;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool.FlexyPoolConfiguration;
-import com.github.gavlyukovskiy.boot.jdbc.decorator.metadata.DecoratedDataSourcePoolMetadataProvider;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy.P6SpyConfiguration;
+import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.metadata.DataSourcePoolMetadata;
 import org.springframework.boot.autoconfigure.jdbc.metadata.DataSourcePoolMetadataProvider;
+import org.springframework.boot.autoconfigure.jdbc.metadata.HikariDataSourcePoolMetadata;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -70,9 +73,27 @@ public class DataSourceDecoratorAutoConfiguration {
         return new DataSourceDecoratorBeanPostProcessor();
     }
 
-    @Bean
-    public DataSourcePoolMetadataProvider proxyDataSourcePoolMetadataProvider() {
-        return new DecoratedDataSourcePoolMetadataProvider();
+    /**
+     * Uses real data source for hikari metadata due to failing of direct field access on {@link HikariDataSource#pool}
+     * when data source is proxies by CGLIB.
+     */
+    @Configuration
+    @ConditionalOnClass(HikariDataSource.class)
+    static class HikariPoolDataSourceMetadataProviderConfiguration {
+
+        @Bean
+        public DataSourcePoolMetadataProvider hikariPoolDataSourceMetadataProvider() {
+            return dataSource -> {
+                if (dataSource instanceof DecoratedDataSource) {
+                    dataSource = ((DecoratedDataSource) dataSource).getRealDataSource();
+                }
+                if (dataSource instanceof HikariDataSource) {
+                    return new HikariDataSourcePoolMetadata((HikariDataSource) dataSource);
+                }
+                return null;
+            };
+        }
+
     }
 
     @Bean

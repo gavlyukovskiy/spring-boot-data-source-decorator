@@ -16,99 +16,43 @@
 
 package com.github.gavlyukovskiy.boot.jdbc.decorator;
 
-import org.springframework.lang.UsesJava7;
+import org.springframework.aop.RawTargetAccess;
 
 import javax.sql.DataSource;
+import javax.xml.crypto.Data;
 
-import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
-import java.util.logging.Logger;
+import java.util.List;
 
 /**
- * {@link DataSource} that keeps link on both real {@link DataSource} and
- * decorated {@link DataSource} and delegates all calls to the latter.
+ * Interface that implicitly added to the CGLIB proxy of {@link DataSource}.
+ *
+ * Returns link of both real {@link DataSource}, decorated {@link DataSource}
+ * and all decorating chain including decorator bean name, instance and result of decorating.
  *
  * @author Arthur Gavlyukovskiy
+ * @since 1.2.2
  */
-public class DecoratedDataSource implements DataSource {
+public interface DecoratedDataSource extends DataSource, RawTargetAccess {
 
     /**
-     * Initially wrapped {@link DataSource}, used in places where proxy
-     * {@link DataSource} can not be used.
+     * Returns initial data source, before applying any decorator.
+     *
+     * @return initial data source
      */
-    private final DataSource realDataSource;
+    DataSource getRealDataSource();
+
     /**
-     * {@link DataSource} with all decorators set, used to delegate all calls.
+     * Returns data source resulted  {@link DataSourceDecoratorInterceptor}.
+     *
+     * @return decorated data source
      */
-    private final DataSource decoratedDataSource;
+    DataSource getDecoratedDataSource();
+
     /**
-     * Holds chain of decorators bean names
+     * Returns list with all decorators applied on a {@link DataSource} reverse ordered with applying order.
+     * First applied entry holds initial {@link DataSource} bean itself.
+     *
+     * @return decorating information chain
      */
-    private final String decoratingChain;
-
-    DecoratedDataSource(DataSource realDataSource, DataSource decoratedDataSource, String decoratingChain) {
-        this.realDataSource = realDataSource;
-        this.decoratedDataSource = decoratedDataSource;
-        this.decoratingChain = decoratingChain;
-    }
-
-    public DataSource getRealDataSource() {
-        return realDataSource;
-    }
-
-    public DataSource getDecoratedDataSource() {
-        return decoratedDataSource;
-    }
-
-    public String getDecoratingChain() {
-        return decoratingChain;
-    }
-
-    @Override
-    public Connection getConnection() throws SQLException {
-        return decoratedDataSource.getConnection();
-    }
-
-    @Override
-    public Connection getConnection(String username, String password) throws SQLException {
-        return decoratedDataSource.getConnection(username, password);
-    }
-
-    @Override
-    public PrintWriter getLogWriter() throws SQLException {
-        return decoratedDataSource.getLogWriter();
-    }
-
-    @Override
-    public void setLogWriter(PrintWriter out) throws SQLException {
-        decoratedDataSource.setLogWriter(out);
-    }
-
-    @Override
-    public void setLoginTimeout(int seconds) throws SQLException {
-        decoratedDataSource.setLoginTimeout(seconds);
-    }
-
-    @Override
-    public int getLoginTimeout() throws SQLException {
-        return decoratedDataSource.getLoginTimeout();
-    }
-
-    @Override
-    @UsesJava7
-    public Logger getParentLogger() throws SQLFeatureNotSupportedException {
-        return decoratedDataSource.getParentLogger();
-    }
-
-    @Override
-    public <T> T unwrap(Class<T> iface) throws SQLException {
-        return decoratedDataSource.unwrap(iface);
-    }
-
-    @Override
-    public boolean isWrapperFor(Class<?> iface) throws SQLException {
-        return decoratedDataSource.isWrapperFor(iface);
-    }
+    List<DecoratedDataSourceChainEntry> getDecoratingChain();
 }

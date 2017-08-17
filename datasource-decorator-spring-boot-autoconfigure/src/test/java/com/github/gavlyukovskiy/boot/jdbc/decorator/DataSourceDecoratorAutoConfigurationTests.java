@@ -24,12 +24,22 @@ import com.vladmihalcea.flexypool.metric.MetricsFactoryService;
 import com.zaxxer.hikari.HikariDataSource;
 import net.ttddyy.dsproxy.support.ProxyDataSource;
 import org.apache.commons.dbcp2.BasicDataSource;
+import org.assertj.core.api.AbstractListAssert;
+import org.assertj.core.api.Assertions;
+import org.assertj.core.api.ObjectAssert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.boot.autoconfigure.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.metadata.CommonsDbcp2DataSourcePoolMetadata;
+import org.springframework.boot.autoconfigure.jdbc.metadata.CommonsDbcpDataSourcePoolMetadata;
+import org.springframework.boot.autoconfigure.jdbc.metadata.DataSourcePoolMetadata;
+import org.springframework.boot.autoconfigure.jdbc.metadata.DataSourcePoolMetadataProvider;
+import org.springframework.boot.autoconfigure.jdbc.metadata.DataSourcePoolMetadataProviders;
+import org.springframework.boot.autoconfigure.jdbc.metadata.HikariDataSourcePoolMetadata;
+import org.springframework.boot.autoconfigure.jdbc.metadata.TomcatDataSourcePoolMetadata;
 import org.springframework.boot.test.util.EnvironmentTestUtils;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -42,6 +52,7 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
 
@@ -75,8 +86,8 @@ public class DataSourceDecoratorAutoConfigurationTests {
 
         DataSource dataSource = context.getBean(DataSource.class);
 
-        assertThat(((DecoratedDataSource) dataSource).getDecoratingChain())
-                .isEqualTo("p6SpyDataSourceDecorator -> proxyDataSourceDecorator -> flexyPoolDataSourceDecorator -> dataSource");
+        assertThatDataSourceDecoratingChain(dataSource)
+                .containsExactly(P6DataSource.class, ProxyDataSource.class, FlexyPoolDataSource.class, org.apache.tomcat.jdbc.pool.DataSource.class);
     }
 
     @Test
@@ -100,11 +111,11 @@ public class DataSourceDecoratorAutoConfigurationTests {
                 PropertyPlaceholderAutoConfiguration.class);
         context.setClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool"));
         context.refresh();
-        DecoratedDataSource dataSource = context.getBean(DecoratedDataSource.class);
+        DataSource dataSource = context.getBean(DataSource.class);
 
-        assertThat(dataSource.getRealDataSource()).isInstanceOf(org.apache.tomcat.jdbc.pool.DataSource.class);
-        assertThat(dataSource.getDecoratingChain())
-                .isEqualTo("p6SpyDataSourceDecorator -> proxyDataSourceDecorator -> dataSource");
+        assertThat(((DecoratedDataSource) dataSource).getRealDataSource()).isInstanceOf(org.apache.tomcat.jdbc.pool.DataSource.class);
+        assertThatDataSourceDecoratingChain(dataSource)
+                .containsExactly(P6DataSource.class, ProxyDataSource.class, org.apache.tomcat.jdbc.pool.DataSource.class);
     }
 
     @Test
@@ -155,8 +166,8 @@ public class DataSourceDecoratorAutoConfigurationTests {
         DataSource realDataSource = ((DecoratedDataSource) dataSource).getRealDataSource();
         assertThat(realDataSource).isInstanceOf(org.apache.tomcat.jdbc.pool.DataSource.class);
 
-        assertThat(((DecoratedDataSource) dataSource).getDecoratingChain())
-                .isEqualTo("customDataSourceDecorator -> p6SpyDataSourceDecorator -> proxyDataSourceDecorator -> flexyPoolDataSourceDecorator -> dataSource");
+        assertThatDataSourceDecoratingChain(dataSource)
+                .containsExactly(CustomDataSourceProxy.class, P6DataSource.class, ProxyDataSource.class, FlexyPoolDataSource.class, org.apache.tomcat.jdbc.pool.DataSource.class);
     }
 
     @Test
@@ -221,8 +232,81 @@ public class DataSourceDecoratorAutoConfigurationTests {
         assertThat(realDataSource).isNotNull();
         assertThat(realDataSource).isInstanceOf((Class<? extends DataSource>) org.apache.tomcat.jdbc.pool.DataSource.class);
 
-        assertThat(((DecoratedDataSource) dataSource).getDecoratingChain())
-                .isEqualTo("p6SpyDataSourceDecorator -> proxyDataSourceDecorator -> flexyPoolDataSourceDecorator -> dataSource");
+        assertThatDataSourceDecoratingChain(dataSource)
+                .containsExactly(P6DataSource.class, ProxyDataSource.class, FlexyPoolDataSource.class, org.apache.tomcat.jdbc.pool.DataSource.class);
+
+        assertThat(dataSource.toString()).isEqualTo(
+                "p6SpyDataSourceDecorator [com.p6spy.engine.spy.P6DataSource] -> " +
+                        "proxyDataSourceDecorator [net.ttddyy.dsproxy.support.ProxyDataSource] -> " +
+                        "flexyPoolDataSourceDecorator [com.vladmihalcea.flexypool.FlexyPoolDataSource] -> " +
+                        "dataSource [org.apache.tomcat.jdbc.pool.DataSource]");
+    }
+
+    @Test
+    public void testReturnDataSourcePoolMetadataProviderForHikari() {
+        EnvironmentTestUtils.addEnvironment(context,
+                "spring.datasource.type:" + HikariDataSource.class.getName());
+        context.register(DataSourceAutoConfiguration.class,
+                DataSourceDecoratorAutoConfiguration.class,
+                PropertyPlaceholderAutoConfiguration.class);
+        context.refresh();
+
+        DataSource dataSource = context.getBean(DataSource.class);
+        Assertions.assertThat(dataSource).isInstanceOf(DecoratedDataSource.class);
+        DataSourcePoolMetadataProviders poolMetadataProvider = new DataSourcePoolMetadataProviders(context.getBeansOfType(DataSourcePoolMetadataProvider.class).values());
+        DataSourcePoolMetadata dataSourcePoolMetadata = poolMetadataProvider.getDataSourcePoolMetadata(dataSource);
+        Assertions.assertThat(dataSourcePoolMetadata).isInstanceOf(HikariDataSourcePoolMetadata.class);
+    }
+
+    @Test
+    public void testReturnDataSourcePoolMetadataProviderForTomcat() {
+        context.register(DataSourceAutoConfiguration.class,
+                DataSourceDecoratorAutoConfiguration.class,
+                PropertyPlaceholderAutoConfiguration.class);
+        context.refresh();
+
+        DataSource dataSource = context.getBean(DataSource.class);
+        Assertions.assertThat(dataSource).isInstanceOf(DecoratedDataSource.class);
+        DataSourcePoolMetadataProviders poolMetadataProvider = new DataSourcePoolMetadataProviders(context.getBeansOfType(DataSourcePoolMetadataProvider.class).values());
+        DataSourcePoolMetadata dataSourcePoolMetadata = poolMetadataProvider.getDataSourcePoolMetadata(dataSource);
+        Assertions.assertThat(dataSourcePoolMetadata).isInstanceOf(TomcatDataSourcePoolMetadata.class);
+    }
+
+    @Test
+    @Deprecated
+    public void testReturnDataSourcePoolMetadataProviderForDbcp() {
+        EnvironmentTestUtils.addEnvironment(context,
+                "spring.datasource.type:" + org.apache.commons.dbcp.BasicDataSource.class.getName());
+        context.register(DataSourceAutoConfiguration.class,
+                DataSourceDecoratorAutoConfiguration.class,
+                PropertyPlaceholderAutoConfiguration.class);
+        context.refresh();
+
+        DataSource dataSource = context.getBean(DataSource.class);
+        Assertions.assertThat(dataSource).isInstanceOf(DecoratedDataSource.class);
+        DataSourcePoolMetadataProviders poolMetadataProvider = new DataSourcePoolMetadataProviders(context.getBeansOfType(DataSourcePoolMetadataProvider.class).values());
+        DataSourcePoolMetadata dataSourcePoolMetadata = poolMetadataProvider.getDataSourcePoolMetadata(dataSource);
+        Assertions.assertThat(dataSourcePoolMetadata).isInstanceOf(CommonsDbcpDataSourcePoolMetadata.class);
+    }
+
+    @Test
+    public void testReturnDataSourcePoolMetadataProviderForDbcp2() {
+        EnvironmentTestUtils.addEnvironment(context,
+                "spring.datasource.type:" + org.apache.commons.dbcp2.BasicDataSource.class.getName());
+        context.register(DataSourceAutoConfiguration.class,
+                DataSourceDecoratorAutoConfiguration.class,
+                PropertyPlaceholderAutoConfiguration.class);
+        context.refresh();
+
+        DataSource dataSource = context.getBean(DataSource.class);
+        Assertions.assertThat(dataSource).isInstanceOf(DecoratedDataSource.class);
+        DataSourcePoolMetadataProviders poolMetadataProvider = new DataSourcePoolMetadataProviders(context.getBeansOfType(DataSourcePoolMetadataProvider.class).values());
+        DataSourcePoolMetadata dataSourcePoolMetadata = poolMetadataProvider.getDataSourcePoolMetadata(dataSource);
+        Assertions.assertThat(dataSourcePoolMetadata).isInstanceOf(CommonsDbcp2DataSourcePoolMetadata.class);
+    }
+
+    private AbstractListAssert<?, List<?>, Object, ObjectAssert<Object>> assertThatDataSourceDecoratingChain(DataSource dataSource) {
+        return assertThat(((DecoratedDataSource) dataSource).getDecoratingChain()).extracting("dataSource").extracting("class");
     }
 
     @Configuration

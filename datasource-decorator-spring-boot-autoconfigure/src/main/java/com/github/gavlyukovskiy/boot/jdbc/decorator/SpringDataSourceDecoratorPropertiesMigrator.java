@@ -21,13 +21,14 @@ import com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy.P6SpyProperties.P6SpyL
 import org.slf4j.Logger;
 import org.springframework.core.env.Environment;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
- * Deprecated in favor to not use spring-boot reserved namespace.
+ * Migrates deprecated properties from spring-boot's reserved namespace to 'decorator.datasource.*'.
  *
  * @author Arthur Gavlyukovskiy
  */
@@ -41,9 +42,10 @@ class SpringDataSourceDecoratorPropertiesMigrator {
         this.environment = environment;
     }
 
+    @SuppressWarnings("unchecked")
     void replacePropertiesAndWarn(DataSourceDecoratorProperties properties) {
         migrateProperty("enabled", Boolean.class, properties::setEnabled);
-        migrateProperty("exclude-beans", List.class, properties::setExcludeBeans);
+        migrateProperty("exclude-beans", Collection.class, properties::setExcludeBeans);
 
         migrateProperty("p6spy.enable-runtime-listeners", Boolean.class, properties.getP6spy()::setEnableRuntimeListeners);
         migrateProperty("p6spy.multiline", Boolean.class, properties.getP6spy()::setMultiline);

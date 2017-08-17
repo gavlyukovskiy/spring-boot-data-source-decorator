@@ -98,6 +98,7 @@ public class FlexyPoolConfigurationTests {
         context.refresh();
 
         DataSource dataSource = context.getBean(DataSource.class);
+        DataSource realDataSource = ((DecoratedDataSource) dataSource).getRealDataSource();
         assertDataSourceOfType(dataSource, BasicDataSource.class);
     }
 

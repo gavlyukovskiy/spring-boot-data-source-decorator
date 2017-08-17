@@ -16,6 +16,7 @@
 
 package com.github.gavlyukovskiy.boot.jdbc.decorator;
 
+import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationContext;
@@ -25,7 +26,9 @@ import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 
 import javax.sql.DataSource;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -57,7 +60,8 @@ public class DataSourceDecoratorBeanPostProcessor implements BeanPostProcessor, 
                     .stream()
                     .sorted(Entry.comparingByValue(AnnotationAwareOrderComparator.INSTANCE))
                     .forEach(entry -> decorators.put(entry.getKey(), entry.getValue()));
-            StringBuilder decoratingChain = new StringBuilder(beanName);
+            List<DecoratedDataSourceChainEntry> decoratedDataSourceChainEntries = new ArrayList<>();
+            decoratedDataSourceChainEntries.add(new DecoratedDataSourceChainEntry(beanName, null, dataSource));
             for (Entry<String, DataSourceDecorator> decoratorEntry : decorators.entrySet()) {
                 String decoratorBeanName = decoratorEntry.getKey();
                 DataSourceDecorator decorator = decoratorEntry.getValue();
@@ -67,11 +71,15 @@ public class DataSourceDecoratorBeanPostProcessor implements BeanPostProcessor, 
                         "DataSourceDecorator (" + decoratorBeanName + ", " + decorator + ") should not return null");
 
                 if (dataSourceBeforeDecorating != decoratedDataSource) {
-                    decoratingChain.insert(0, decoratorBeanName + " -> ");
+                    decoratedDataSourceChainEntries.add(0, new DecoratedDataSourceChainEntry(decoratorBeanName, decorator, decoratedDataSource));
                 }
             }
             if (dataSource != decoratedDataSource) {
-                return new DecoratedDataSource(dataSource, decoratedDataSource, decoratingChain.toString());
+                ProxyFactory factory = new ProxyFactory(bean);
+                factory.setProxyTargetClass(true);
+                factory.addInterface(DecoratedDataSource.class);
+                factory.addAdvice(new DataSourceDecoratorInterceptor(dataSource, decoratedDataSource, decoratedDataSourceChainEntries));
+                return factory.getProxy();
             }
         }
         return bean;
