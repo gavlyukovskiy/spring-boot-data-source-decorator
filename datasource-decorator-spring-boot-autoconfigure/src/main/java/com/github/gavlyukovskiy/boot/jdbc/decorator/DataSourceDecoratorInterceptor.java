@@ -18,7 +18,6 @@ package com.github.gavlyukovskiy.boot.jdbc.decorator;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.springframework.aop.RawTargetAccess;
 
 import javax.sql.DataSource;
 
@@ -37,9 +36,9 @@ class DataSourceDecoratorInterceptor implements MethodInterceptor {
 
     private final DataSource realDataSource;
     private final DataSource decoratedDataSource;
-    private final List<DecoratedDataSourceChainEntry> decoratingChain;
+    private final List<DataSourceDecorationStage> decoratingChain;
 
-    DataSourceDecoratorInterceptor(DataSource realDataSource, DataSource decoratedDataSource, List<DecoratedDataSourceChainEntry> decoratingChain) {
+    DataSourceDecoratorInterceptor(DataSource realDataSource, DataSource decoratedDataSource, List<DataSourceDecorationStage> decoratingChain) {
         this.realDataSource = realDataSource;
         this.decoratedDataSource = decoratedDataSource;
         this.decoratingChain = decoratingChain;

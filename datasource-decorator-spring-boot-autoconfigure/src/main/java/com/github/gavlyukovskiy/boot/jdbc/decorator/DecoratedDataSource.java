@@ -16,6 +16,8 @@
 
 package com.github.gavlyukovskiy.boot.jdbc.decorator;
 
+import org.springframework.aop.RawTargetAccess;
+
 import javax.sql.DataSource;
 
 import java.util.List;
@@ -29,7 +31,7 @@ import java.util.List;
  * @author Arthur Gavlyukovskiy
  * @since 1.2.2
  */
-public interface DecoratedDataSource {
+public interface DecoratedDataSource extends RawTargetAccess {
 
     /**
      * Returns initial data source, before applying any decorator.
@@ -51,5 +53,5 @@ public interface DecoratedDataSource {
      *
      * @return decorating information chain
      */
-    List<DecoratedDataSourceChainEntry> getDecoratingChain();
+    List<DataSourceDecorationStage> getDecoratingChain();
 }

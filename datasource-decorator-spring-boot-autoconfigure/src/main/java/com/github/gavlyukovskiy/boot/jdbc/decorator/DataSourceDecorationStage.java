@@ -27,18 +27,18 @@ import javax.sql.DataSource;
  * @since 1.2.2
  */
 @Data
-public class DecoratedDataSourceChainEntry {
+public class DataSourceDecorationStage {
     /**
-     * Bean name of a decorator or name of a {@link DataSource} bean itself for the initial entry.
+     * Bean name of a decorator or name of a {@link DataSource} bean itself for the initial stage.
      */
     private final String beanName;
     /**
-     * Decorator bean, returns {@code null} for the initial entry.
+     * Decorator bean, returns {@code null} for the initial stage.
      */
     private final DataSourceDecorator dataSourceDecorator;
     /**
      * Decorated {@link DataSource} after applying {@link DataSourceDecorator#decorate(String, DataSource)},
-     * returns undecorated bean for the initial entry.
+     * returns undecorated bean for the initial stage.
      */
     private final DataSource dataSource;
 }

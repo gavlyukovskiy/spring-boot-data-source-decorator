@@ -60,8 +60,8 @@ public class DataSourceDecoratorBeanPostProcessor implements BeanPostProcessor, 
                     .stream()
                     .sorted(Entry.comparingByValue(AnnotationAwareOrderComparator.INSTANCE))
                     .forEach(entry -> decorators.put(entry.getKey(), entry.getValue()));
-            List<DecoratedDataSourceChainEntry> decoratedDataSourceChainEntries = new ArrayList<>();
-            decoratedDataSourceChainEntries.add(new DecoratedDataSourceChainEntry(beanName, null, dataSource));
+            List<DataSourceDecorationStage> decoratedDataSourceChainEntries = new ArrayList<>();
+            decoratedDataSourceChainEntries.add(new DataSourceDecorationStage(beanName, null, dataSource));
             for (Entry<String, DataSourceDecorator> decoratorEntry : decorators.entrySet()) {
                 String decoratorBeanName = decoratorEntry.getKey();
                 DataSourceDecorator decorator = decoratorEntry.getValue();
@@ -71,7 +71,7 @@ public class DataSourceDecoratorBeanPostProcessor implements BeanPostProcessor, 
                         "DataSourceDecorator (" + decoratorBeanName + ", " + decorator + ") should not return null");
 
                 if (dataSourceBeforeDecorating != decoratedDataSource) {
-                    decoratedDataSourceChainEntries.add(0, new DecoratedDataSourceChainEntry(decoratorBeanName, decorator, decoratedDataSource));
+                    decoratedDataSourceChainEntries.add(0, new DataSourceDecorationStage(decoratorBeanName, decorator, decoratedDataSource));
                 }
             }
             if (dataSource != decoratedDataSource) {
