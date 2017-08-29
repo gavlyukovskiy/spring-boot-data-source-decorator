@@ -75,7 +75,7 @@ public class DataSourceDecoratorAutoConfiguration {
 
     /**
      * Uses real data source for hikari metadata due to failing of direct field access on {@link HikariDataSource#pool}
-     * when data source is proxies by CGLIB.
+     * when data source is proxied by CGLIB.
      */
     @Configuration
     @ConditionalOnClass(HikariDataSource.class)
