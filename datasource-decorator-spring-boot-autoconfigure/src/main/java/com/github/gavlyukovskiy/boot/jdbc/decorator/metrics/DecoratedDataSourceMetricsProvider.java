@@ -14,30 +14,21 @@
  * limitations under the License.
  */
 
-package com.github.gavlyukovskiy.boot.jdbc.decorator;
+package com.github.gavlyukovskiy.boot.jdbc.decorator.metrics;
 
-import lombok.Data;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.DecoratedDataSource;
 
 import javax.sql.DataSource;
 
+import java.util.Map;
+
 /**
- * Holds decorating stage information.
+ * Provides metrics for a {@link DecoratedDataSource}.
  *
  * @author Arthur Gavlyukovskiy
  * @since 1.2.2
  */
-@Data
-public class DataSourceDecorationStage {
-    /**
-     * Bean name of a decorator.
-     */
-    private final String beanName;
-    /**
-     * Decorator bean instance.
-     */
-    private final DataSourceDecorator dataSourceDecorator;
-    /**
-     * Decorated {@link DataSource} after applying {@link DataSourceDecorator#decorate(String, DataSource)}.
-     */
-    private final DataSource dataSource;
+public interface DecoratedDataSourceMetricsProvider {
+
+    Map<String, Number> getMetrics(DataSource dataSource);
 }

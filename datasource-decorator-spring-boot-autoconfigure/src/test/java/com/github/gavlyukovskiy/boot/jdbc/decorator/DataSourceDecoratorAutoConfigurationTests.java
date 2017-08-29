@@ -86,8 +86,7 @@ public class DataSourceDecoratorAutoConfigurationTests {
 
         DataSource dataSource = context.getBean(DataSource.class);
 
-        assertThatDataSourceDecoratingChain(dataSource)
-                .containsExactly(P6DataSource.class, ProxyDataSource.class, FlexyPoolDataSource.class, org.apache.tomcat.jdbc.pool.DataSource.class);
+        assertThatDataSourceDecoratingChain(dataSource).containsExactly(P6DataSource.class, ProxyDataSource.class, FlexyPoolDataSource.class);
     }
 
     @Test
@@ -114,8 +113,7 @@ public class DataSourceDecoratorAutoConfigurationTests {
         DataSource dataSource = context.getBean(DataSource.class);
 
         assertThat(((DecoratedDataSource) dataSource).getRealDataSource()).isInstanceOf(org.apache.tomcat.jdbc.pool.DataSource.class);
-        assertThatDataSourceDecoratingChain(dataSource)
-                .containsExactly(P6DataSource.class, ProxyDataSource.class, org.apache.tomcat.jdbc.pool.DataSource.class);
+        assertThatDataSourceDecoratingChain(dataSource).containsExactly(P6DataSource.class, ProxyDataSource.class);
     }
 
     @Test
@@ -166,8 +164,7 @@ public class DataSourceDecoratorAutoConfigurationTests {
         DataSource realDataSource = ((DecoratedDataSource) dataSource).getRealDataSource();
         assertThat(realDataSource).isInstanceOf(org.apache.tomcat.jdbc.pool.DataSource.class);
 
-        assertThatDataSourceDecoratingChain(dataSource)
-                .containsExactly(CustomDataSourceProxy.class, P6DataSource.class, ProxyDataSource.class, FlexyPoolDataSource.class, org.apache.tomcat.jdbc.pool.DataSource.class);
+        assertThatDataSourceDecoratingChain(dataSource).containsExactly(CustomDataSourceProxy.class, P6DataSource.class, ProxyDataSource.class, FlexyPoolDataSource.class);
     }
 
     @Test
@@ -232,8 +229,7 @@ public class DataSourceDecoratorAutoConfigurationTests {
         assertThat(realDataSource).isNotNull();
         assertThat(realDataSource).isInstanceOf((Class<? extends DataSource>) org.apache.tomcat.jdbc.pool.DataSource.class);
 
-        assertThatDataSourceDecoratingChain(dataSource)
-                .containsExactly(P6DataSource.class, ProxyDataSource.class, FlexyPoolDataSource.class, org.apache.tomcat.jdbc.pool.DataSource.class);
+        assertThatDataSourceDecoratingChain(dataSource).containsExactly(P6DataSource.class, ProxyDataSource.class, FlexyPoolDataSource.class);
 
         assertThat(dataSource.toString()).isEqualTo(
                 "p6SpyDataSourceDecorator [com.p6spy.engine.spy.P6DataSource] -> " +

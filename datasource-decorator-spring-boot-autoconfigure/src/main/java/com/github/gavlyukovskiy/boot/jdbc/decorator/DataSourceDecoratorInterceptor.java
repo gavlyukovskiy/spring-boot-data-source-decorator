@@ -34,11 +34,13 @@ import java.util.stream.Collectors;
  */
 class DataSourceDecoratorInterceptor implements MethodInterceptor {
 
+    private String beanName;
     private final DataSource realDataSource;
     private final DataSource decoratedDataSource;
     private final List<DataSourceDecorationStage> decoratingChain;
 
-    DataSourceDecoratorInterceptor(DataSource realDataSource, DataSource decoratedDataSource, List<DataSourceDecorationStage> decoratingChain) {
+    DataSourceDecoratorInterceptor(String beanName, DataSource realDataSource, DataSource decoratedDataSource, List<DataSourceDecorationStage> decoratingChain) {
+        this.beanName = beanName;
         this.realDataSource = realDataSource;
         this.decoratedDataSource = decoratedDataSource;
         this.decoratingChain = decoratingChain;
@@ -57,7 +59,7 @@ class DataSourceDecoratorInterceptor implements MethodInterceptor {
         if (invocation.getMethod().getName().equals("toString")) {
             return decoratingChain.stream()
                     .map(entry -> entry.getBeanName() + " [" + entry.getDataSource().getClass().getName() + "]")
-                    .collect(Collectors.joining(" -> "));
+                    .collect(Collectors.joining(" -> ")) + " -> " + beanName + " [" + realDataSource.getClass().getName() + "]";
         }
         if (invocation.getMethod().getDeclaringClass() == DecoratedDataSource.class) {
             if (invocation.getMethod().getName().equals("getRealDataSource")) {

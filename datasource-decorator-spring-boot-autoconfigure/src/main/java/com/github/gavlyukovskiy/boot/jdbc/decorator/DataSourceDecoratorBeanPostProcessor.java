@@ -61,7 +61,6 @@ public class DataSourceDecoratorBeanPostProcessor implements BeanPostProcessor, 
                     .sorted(Entry.comparingByValue(AnnotationAwareOrderComparator.INSTANCE))
                     .forEach(entry -> decorators.put(entry.getKey(), entry.getValue()));
             List<DataSourceDecorationStage> decoratedDataSourceChainEntries = new ArrayList<>();
-            decoratedDataSourceChainEntries.add(new DataSourceDecorationStage(beanName, null, dataSource));
             for (Entry<String, DataSourceDecorator> decoratorEntry : decorators.entrySet()) {
                 String decoratorBeanName = decoratorEntry.getKey();
                 DataSourceDecorator decorator = decoratorEntry.getValue();
@@ -78,7 +77,7 @@ public class DataSourceDecoratorBeanPostProcessor implements BeanPostProcessor, 
                 ProxyFactory factory = new ProxyFactory(bean);
                 factory.setProxyTargetClass(true);
                 factory.addInterface(DecoratedDataSource.class);
-                factory.addAdvice(new DataSourceDecoratorInterceptor(dataSource, decoratedDataSource, decoratedDataSourceChainEntries));
+                factory.addAdvice(new DataSourceDecoratorInterceptor(beanName, dataSource, decoratedDataSource, decoratedDataSourceChainEntries));
                 return factory.getProxy();
             }
         }

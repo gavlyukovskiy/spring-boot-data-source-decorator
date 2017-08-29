@@ -34,6 +34,13 @@ import java.util.List;
 public interface DecoratedDataSource extends RawTargetAccess {
 
     /**
+     * Returns data source bean name.
+     *
+     * @return data source bean name
+     */
+    String getBeanName();
+
+    /**
      * Returns initial data source, before applying any decorator.
      *
      * @return initial data source
