@@ -24,7 +24,6 @@ public class DecoratedDataSourceMetadataProvidersConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnBean(DataSourcePublicMetrics.class)
     public DecoratedDataSourcePublicMetrics decoratedDataSourcePublicMetrics() {
         return new DecoratedDataSourcePublicMetrics();
     }
