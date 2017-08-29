@@ -18,6 +18,7 @@ package com.github.gavlyukovskiy.boot.jdbc.decorator;
 
 import com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy.DataSourceProxyConfiguration;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool.FlexyPoolConfiguration;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.metadata.DecoratedDataSourceMetadataProvidersConfiguration;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy.P6SpyConfiguration;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +28,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.metadata.DataSourcePoolMetadata;
 import org.springframework.boot.autoconfigure.jdbc.metadata.DataSourcePoolMetadataProvider;
 import org.springframework.boot.autoconfigure.jdbc.metadata.HikariDataSourcePoolMetadata;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -52,7 +52,8 @@ import javax.sql.DataSource;
 @Import({
         P6SpyConfiguration.class,
         DataSourceProxyConfiguration.class,
-        FlexyPoolConfiguration.Ordered.class
+        FlexyPoolConfiguration.Ordered.class,
+        DecoratedDataSourceMetadataProvidersConfiguration.class
 })
 public class DataSourceDecoratorAutoConfiguration {
 

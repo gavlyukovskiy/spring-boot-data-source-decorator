@@ -17,7 +17,9 @@
 package com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy;
 
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorProperties;
+import net.ttddyy.dsproxy.listener.QueryCountStrategy;
 import net.ttddyy.dsproxy.listener.QueryExecutionListener;
+import net.ttddyy.dsproxy.listener.SingleQueryCountHolder;
 import net.ttddyy.dsproxy.support.ProxyDataSource;
 import net.ttddyy.dsproxy.support.ProxyDataSourceBuilder;
 import net.ttddyy.dsproxy.transform.ParameterTransformer;
@@ -41,6 +43,9 @@ public class DataSourceProxyConfiguration {
     @Autowired
     private DataSourceDecoratorProperties dataSourceDecoratorProperties;
 
+    @Autowired
+    private QueryCountStrategy queryCountStrategy;
+
     @Autowired(required = false)
     private List<QueryExecutionListener> listeners;
 
@@ -54,7 +59,11 @@ public class DataSourceProxyConfiguration {
     @ConditionalOnMissingBean
     public ProxyDataSourceBuilder proxyDataSourceBuilder() {
         ProxyDataSourceBuilder proxyDataSourceBuilder = ProxyDataSourceBuilder.create();
-        dataSourceDecoratorProperties.getDatasourceProxy().configure(proxyDataSourceBuilder);
+        DataSourceProxyProperties datasourceProxy = dataSourceDecoratorProperties.getDatasourceProxy();
+        datasourceProxy.configure(proxyDataSourceBuilder);
+        if (datasourceProxy.isCountQuery()) {
+            proxyDataSourceBuilder.countQuery(queryCountStrategy);
+        }
         if (listeners != null) {
             listeners.forEach(proxyDataSourceBuilder::listener);
         }
@@ -70,5 +79,11 @@ public class DataSourceProxyConfiguration {
     @Bean
     public ProxyDataSourceDecorator proxyDataSourceDecorator(ProxyDataSourceBuilder proxyDataSourceBuilder) {
         return new ProxyDataSourceDecorator(proxyDataSourceBuilder);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public QueryCountStrategy queryCountStrategy() {
+        return new SingleQueryCountHolder();
     }
 }

@@ -120,9 +120,6 @@ public class DataSourceProxyProperties {
         if (multiline) {
             proxyDataSourceBuilder.multiline();
         }
-        if (countQuery) {
-            proxyDataSourceBuilder.countQuery();
-        }
         if (jsonFormat) {
             proxyDataSourceBuilder.asJson();
         }
