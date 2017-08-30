@@ -29,7 +29,7 @@ import org.springframework.context.annotation.Bean;
  * @author Arthur Gavlyukovskiy
  * @since 1.2
  */
-class SleuthListenerConfiguration {
+public class SleuthListenerConfiguration {
 
     public static final String SPAN_SQL_QUERY_TAG_NAME = "sql";
     public static final String SPAN_ROW_COUNT_TAG_NAME = "row-count";
