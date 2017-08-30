@@ -47,15 +47,9 @@ public class ProxyDataSourceMetricsProvider implements DecoratedDataSourceMetric
             QueryCount queryCount = findQueryCountForDataSource(decoratedDataSource);
             if (queryCount != null) {
                 Map<String, Number> metrics = new LinkedHashMap<>();
-                metrics.put("datasource-proxy.query.count.select", queryCount.getSelect());
-                metrics.put("datasource-proxy.query.count.insert", queryCount.getInsert());
-                metrics.put("datasource-proxy.query.count.update", queryCount.getUpdate());
-                metrics.put("datasource-proxy.query.count.delete", queryCount.getDelete());
-                metrics.put("datasource-proxy.query.count.other", queryCount.getOther());
-                metrics.put("datasource-proxy.query.count.success", queryCount.getSuccess());
-                metrics.put("datasource-proxy.query.count.failure", queryCount.getFailure());
-                metrics.put("datasource-proxy.query.count.total", queryCount.getTotal());
-                metrics.put("datasource-proxy.query.time", queryCount.getTime());
+                metrics.put("query.success", queryCount.getSuccess());
+                metrics.put("query.failure", queryCount.getFailure());
+                metrics.put("query.time", queryCount.getTime());
                 return metrics;
             }
         }
