@@ -64,6 +64,7 @@ public class ProxyDataSourceMetricsProvider implements DecoratedDataSourceMetric
                 for (QueryExecutionListener listener : listeners) {
                     if (listener instanceof DataSourceQueryCountListener) {
                         QueryCountStrategy queryCountStrategy = ((DataSourceQueryCountListener) listener).getQueryCountStrategy();
+                        // if this is ThreadQueryCountHolder this counters will always be 0
                         if (queryCountStrategy instanceof SingleQueryCountHolder) {
                             return ((SingleQueryCountHolder) queryCountStrategy).getQueryCountMap().get(proxyDataSource.getDataSourceName());
                         }
