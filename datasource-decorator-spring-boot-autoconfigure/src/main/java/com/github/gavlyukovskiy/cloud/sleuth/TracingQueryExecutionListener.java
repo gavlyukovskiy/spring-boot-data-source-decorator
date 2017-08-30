@@ -46,7 +46,7 @@ public class TracingQueryExecutionListener implements QueryExecutionListener {
     public void beforeQuery(ExecutionInfo execInfo, List<QueryInfo> queryInfoList) {
         Span span = tracer.createSpan(dataSourceProxySpanNameResolver.querySpanName(execInfo));
         span.logEvent(Span.CLIENT_SEND);
-        tracer.addTag("sql", queryInfoList.stream().map(QueryInfo::getQuery).collect(Collectors.joining("\n")));
+        tracer.addTag(SleuthListenerConfiguration.SPAN_SQL_QUERY_TAG_NAME, queryInfoList.stream().map(QueryInfo::getQuery).collect(Collectors.joining("\n")));
         tracer.addTag(Span.SPAN_LOCAL_COMPONENT_TAG_NAME, "database");
     }
 
