@@ -120,6 +120,7 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
     public void onAfterResultSetClose(ResultSetInformation resultSetInformation, SQLException e) {
         Span statementSpan = tracer.getCurrentSpan();
         statementSpan.logEvent(Span.CLIENT_RECV);
+        tracer.addTag(SleuthListenerConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(resultSetInformation.getCurrRow()));
         if (e != null) {
             tracer.addTag(Span.SPAN_ERROR_TAG_NAME, ExceptionUtils.getExceptionMessage(e));
         }
