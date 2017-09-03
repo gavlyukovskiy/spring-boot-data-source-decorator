@@ -69,7 +69,7 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
 
     @Override
     public void onAfterAnyExecute(StatementInformation statementInformation, long timeElapsedNanos, SQLException e) {
-        Span statementSpan = statementSpans.get(statementInformation);
+        Span statementSpan = statementSpans.remove(statementInformation);
         //statementSpan.logEvent(Span.CLIENT_RECV);
         statementSpan.tag(SleuthListenerConfiguration.SPAN_SQL_QUERY_TAG_NAME, getSql(statementInformation));
         if (e != null) {
@@ -129,7 +129,7 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
 
     @Override
     public void onAfterResultSetClose(ResultSetInformation resultSetInformation, SQLException e) {
-        Span statementSpan = statementSpans.get(resultSetInformation.getStatementInformation());
+        Span statementSpan = statementSpans.remove(resultSetInformation.getStatementInformation());
         //statementSpan.logEvent(Span.CLIENT_RECV);
         statementSpan.tag(SleuthListenerConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(resultSetInformation.getCurrRow()));
         if (e != null) {
@@ -161,7 +161,7 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
 
     @Override
     public void onAfterConnectionClose(ConnectionInformation connectionInformation, SQLException e) {
-        Span connectionSpan = connectionSpans.get(connectionInformation);
+        Span connectionSpan = connectionSpans.remove(connectionInformation);
         //connectionSpan.logEvent(Span.CLIENT_RECV);
         if (e != null) {
             connectionSpan.tag(Span.SPAN_ERROR_TAG_NAME, ExceptionUtils.getExceptionMessage(e));
