@@ -1,4 +1,4 @@
 dependencies {
     compile(project(":datasource-decorator-spring-boot-autoconfigure"))
-    compile("p6spy:p6spy:3.0.0")
+    compile("p6spy:p6spy:${p6SpyVersion}")
 }

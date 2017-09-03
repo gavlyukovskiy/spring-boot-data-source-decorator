@@ -1,37 +1,37 @@
 dependencies {
     compile("org.springframework:spring-jdbc:4.3.6.RELEASE")
-    compile("org.springframework.boot:spring-boot:1.4.2.RELEASE")
-    compile("org.springframework.boot:spring-boot-autoconfigure:1.4.2.RELEASE")
+    compile("org.springframework.boot:spring-boot:${springBootVersion}")
+    compile("org.springframework.boot:spring-boot-autoconfigure:${springBootVersion}")
 
-    compileOnly("org.springframework.boot:spring-boot-configuration-processor:1.4.2.RELEASE")
+    compileOnly("org.springframework.boot:spring-boot-configuration-processor:${springBootVersion}")
     compileOnly("org.projectlombok:lombok:1.16.10")
 
-    compileOnly("org.springframework.boot:spring-boot-actuator:1.4.2.RELEASE")
+    compileOnly("org.springframework.boot:spring-boot-actuator:${springBootVersion}")
 
     compileOnly("org.apache.commons:commons-dbcp2:2.1.1")
     compileOnly("org.apache.tomcat:tomcat-jdbc:8.5.13")
     compileOnly("com.zaxxer:HikariCP:2.5.1")
 
-    compileOnly("p6spy:p6spy:3.0.0")
-    compileOnly("net.ttddyy:datasource-proxy:1.4.2")
-    compileOnly("com.vladmihalcea.flexy-pool:flexy-pool-core:1.2.9")
-    compileOnly("com.vladmihalcea.flexy-pool:flexy-dbcp2:1.2.9")
-    compileOnly("com.vladmihalcea.flexy-pool:flexy-hikaricp:1.2.9")
-    compileOnly("com.vladmihalcea.flexy-pool:flexy-tomcatcp:1.2.9")
+    compileOnly("p6spy:p6spy:${p6SpyVersion}")
+    compileOnly("net.ttddyy:datasource-proxy:${datasourceProxyVersion}")
+    compileOnly("com.vladmihalcea.flexy-pool:flexy-pool-core:${flexyPoolVersion}")
+    compileOnly("com.vladmihalcea.flexy-pool:flexy-dbcp2:${flexyPoolVersion}")
+    compileOnly("com.vladmihalcea.flexy-pool:flexy-hikaricp:${flexyPoolVersion}")
+    compileOnly("com.vladmihalcea.flexy-pool:flexy-tomcatcp:${flexyPoolVersion}")
 
     compileOnly("org.springframework.cloud:spring-cloud-sleuth-core:1.2.1.RELEASE")
 
     testCompile("junit:junit:4.12")
     testCompile("com.h2database:h2:1.4.193")
     testCompile("org.assertj:assertj-core:3.6.2")
-    testCompile("org.springframework.boot:spring-boot-starter-test:1.4.2.RELEASE")
+    testCompile("org.springframework.boot:spring-boot-starter-test:${springBootVersion}")
 
-    testCompile("p6spy:p6spy:3.0.0")
-    testCompile("net.ttddyy:datasource-proxy:1.4.2")
-    testCompile("com.vladmihalcea.flexy-pool:flexy-pool-core:1.2.9")
-    testCompile("com.vladmihalcea.flexy-pool:flexy-dbcp2:1.2.9")
-    testCompile("com.vladmihalcea.flexy-pool:flexy-hikaricp:1.2.9")
-    testCompile("com.vladmihalcea.flexy-pool:flexy-tomcatcp:1.2.9")
+    testCompile("p6spy:p6spy:${p6SpyVersion}")
+    testCompile("net.ttddyy:datasource-proxy:${datasourceProxyVersion}")
+    testCompile("com.vladmihalcea.flexy-pool:flexy-pool-core:${flexyPoolVersion}")
+    testCompile("com.vladmihalcea.flexy-pool:flexy-dbcp2:${flexyPoolVersion}")
+    testCompile("com.vladmihalcea.flexy-pool:flexy-hikaricp:${flexyPoolVersion}")
+    testCompile("com.vladmihalcea.flexy-pool:flexy-tomcatcp:${flexyPoolVersion}")
 
     testCompile("org.springframework.cloud:spring-cloud-sleuth-core:1.2.1.RELEASE")
 
