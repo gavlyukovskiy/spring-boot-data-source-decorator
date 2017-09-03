@@ -1,0 +1,34 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: datasource-proxy-sample
+  sleuth:
+    sampler:
+      percentage: 1
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    initialize: false
+
+    hikari:
+      jdbc-url: jdbc:h2:mem:test-${random.int};DB_CLOSE_DELAY=-1
+      username: sa
+      password:
+      maximum-pool-size: 10
+  zipkin:
+    enabled: false
+
+decorator:
+  datasource:
+    datasource-proxy:
+      logging: slf4j
+      query:
+        enable-logging: true
+        logger-name:
+        log-level: DEBUG
+      slow-query:
+        enable-logging: true
+        logger-name:
+        log-level: WARN
+        threshold: 300

@@ -19,7 +19,7 @@ dependencies {
     compileOnly("com.vladmihalcea.flexy-pool:flexy-hikaricp:${flexyPoolVersion}")
     compileOnly("com.vladmihalcea.flexy-pool:flexy-tomcatcp:${flexyPoolVersion}")
 
-    compileOnly("org.springframework.cloud:spring-cloud-sleuth-core:1.2.1.RELEASE")
+    compileOnly("org.springframework.cloud:spring-cloud-sleuth-core:1.2.4.RELEASE")
 
     testCompile("junit:junit:4.12")
     testCompile("com.h2database:h2:1.4.193")

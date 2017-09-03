@@ -1,0 +1,41 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: flexy-pool-sample
+  sleuth:
+    sampler:
+      percentage: 1
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    initialize: false
+
+    hikari:
+      jdbc-url: jdbc:h2:mem:test-${random.int};DB_CLOSE_DELAY=-1
+      username: sa
+      password:
+      maximum-pool-size: 10
+  zipkin:
+    enabled: false
+
+decorator:
+  datasource:
+    flexy-pool:
+      acquiring-strategy:
+        retry:
+          attempts: 2
+        increment-pool:
+          max-overflow-pool-size: 15
+          timeout-millis: 500
+      metrics:
+        reporter:
+          jmx:
+            enabled: true
+            auto-start: false
+          log:
+            millis: 300000
+      threshold:
+        connection:
+          acquire: 50
+          lease: 1000

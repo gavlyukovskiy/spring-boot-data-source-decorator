@@ -31,20 +31,19 @@ def pomConfig = {
 }
 
 subprojects {
-    apply plugin: 'java'
-    apply plugin: 'maven'
-    apply plugin: 'maven-publish'
-    apply plugin: 'com.jfrog.bintray'
-
     ext {
         springBootVersion = '1.4.2.RELEASE'
         p6SpyVersion = '3.2.0'
         datasourceProxyVersion = '1.4.2'
         flexyPoolVersion = '1.2.9'
+
+        release = !project.name.contains("sample")
     }
 
+    apply plugin: 'java'
+
     scmVersion {
-        versionIncrementer 'incrementMinor'
+        versionIncrementer 'incrementPatch'
         tag {
             prefix = ''
             versionSeparator = ''
@@ -64,56 +63,61 @@ subprojects {
         mavenCentral()
     }
 
-    publishing {
-        publications {
-            mavenJava(MavenPublication) {
-                from components.java
-                artifact sourceJar
-                artifact javadocJar
-                groupId project.group
-                artifactId project.name
-                version project.version
-                pom.withXml {
-                    def root = asNode()
-                    root.appendNode('description', 'Spring Boot integration with p6spy, datasource-proxy and flexy-pool')
-                    root.appendNode('name', 'spring-boot-data-source-decorator')
-                    root.appendNode('url', 'https://github.com/gavlyukovskiy/spring-boot-data-source-decorator')
-                    root.children().last() + pomConfig
+    if (ext.release) {
+        apply plugin: 'maven-publish'
+        apply plugin: 'com.jfrog.bintray'
+
+        publishing {
+            publications {
+                mavenJava(MavenPublication) {
+                    from components.java
+                    artifact sourceJar
+                    artifact javadocJar
+                    groupId project.group
+                    artifactId project.name
+                    version project.version
+                    pom.withXml {
+                        def root = asNode()
+                        root.appendNode('description', 'Spring Boot integration with p6spy, datasource-proxy and flexy-pool')
+                        root.appendNode('name', 'spring-boot-data-source-decorator')
+                        root.appendNode('url', 'https://github.com/gavlyukovskiy/spring-boot-data-source-decorator')
+                        root.children().last() + pomConfig
+                    }
                 }
             }
         }
-    }
 
-    bintray {
-        user = System.getenv('BINTRAY_USER')
-        key = System.getenv('BINTRAY_KEY')
-        publications = ['mavenJava']
-        pkg {
-            repo = project.group
-            name = project.name
-            licenses = ['Apache-2.0']
-            version {
-                name = project.version
-                released  = new Date()
-                vcsTag = scmVersion.tag.prefix + scmVersion.tag.versionSeparator + scmVersion.version
+        bintray {
+            user = System.getenv('BINTRAY_USER')
+            key = System.getenv('BINTRAY_KEY')
+            publications = ['mavenJava']
+            pkg {
+                repo = project.group
+                name = project.name
+                licenses = ['Apache-2.0']
+                version {
+                    name = project.version
+                    released = new Date()
+                    vcsTag = scmVersion.tag.prefix + scmVersion.tag.versionSeparator + scmVersion.version
+                }
             }
         }
-    }
 
-    task sourceJar(type: Jar, dependsOn: classes) {
-        classifier 'sources'
-        from sourceSets.main.allSource
-    }
+        task sourceJar(type: Jar, dependsOn: classes) {
+            classifier 'sources'
+            from sourceSets.main.allSource
+        }
 
-    task javadocJar(type: Jar, dependsOn: javadoc) {
-        classifier = 'javadoc'
-        from javadoc.destinationDir
-    }
+        task javadocJar(type: Jar, dependsOn: javadoc) {
+            classifier = 'javadoc'
+            from javadoc.destinationDir
+        }
 
-    tasks.withType(Jar) {
-        from(rootProject.projectDir) {
-            include 'LICENSE.txt'
-            into 'META-INF'
+        tasks.withType(Jar) {
+            from(rootProject.projectDir) {
+                include 'LICENSE.txt'
+                into 'META-INF'
+            }
         }
     }
 }
