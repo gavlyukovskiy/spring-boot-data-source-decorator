@@ -45,7 +45,7 @@ public class TracingQueryExecutionListener implements QueryExecutionListener {
     @Override
     public void beforeQuery(ExecutionInfo execInfo, List<QueryInfo> queryInfoList) {
         Span span = tracer.createSpan(dataSourceProxySpanNameResolver.querySpanName(execInfo));
-        span.logEvent(Span.CLIENT_SEND);
+        //span.logEvent(Span.CLIENT_SEND);
         tracer.addTag(SleuthListenerConfiguration.SPAN_SQL_QUERY_TAG_NAME, queryInfoList.stream().map(QueryInfo::getQuery).collect(Collectors.joining("\n")));
         tracer.addTag(Span.SPAN_LOCAL_COMPONENT_TAG_NAME, "database");
     }
@@ -53,7 +53,7 @@ public class TracingQueryExecutionListener implements QueryExecutionListener {
     @Override
     public void afterQuery(ExecutionInfo execInfo, List<QueryInfo> queryInfoList) {
         Span span = tracer.getCurrentSpan();
-        span.logEvent(Span.CLIENT_RECV);
+        //span.logEvent(Span.CLIENT_RECV);
         if (execInfo.getThrowable() != null) {
             tracer.addTag(Span.SPAN_ERROR_TAG_NAME, ExceptionUtils.getExceptionMessage(execInfo.getThrowable()));
         }
