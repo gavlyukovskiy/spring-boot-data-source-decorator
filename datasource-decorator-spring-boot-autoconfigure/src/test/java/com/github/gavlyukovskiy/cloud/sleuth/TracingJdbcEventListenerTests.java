@@ -73,7 +73,7 @@ public class TracingJdbcEventListenerTests {
 
         assertThat(spanReporter.getSpans()).hasSize(1);
         Span connectionSpan = spanReporter.getSpans().get(0);
-        assertThat(connectionSpan.getName()).isEqualTo(dbUrl + "/connection");
+        assertThat(connectionSpan.getName()).isEqualTo("jdbc:/dataSource/connection");
         assertThat(connectionSpan.logs()).extracting("event").contains("commit");
         assertThat(connectionSpan.logs()).extracting("event").contains("rollback");
     }
@@ -89,8 +89,8 @@ public class TracingJdbcEventListenerTests {
         assertThat(spanReporter.getSpans()).hasSize(2);
         Span connectionSpan = spanReporter.getSpans().get(0);
         Span statementSpan = spanReporter.getSpans().get(1);
-        assertThat(connectionSpan.getName()).isEqualTo(dbUrl + "/connection");
-        assertThat(statementSpan.getName()).isEqualTo(dbUrl + "/query");
+        assertThat(connectionSpan.getName()).isEqualTo("jdbc:/dataSource/connection");
+        assertThat(statementSpan.getName()).isEqualTo("jdbc:/dataSource/query");
         assertThat(statementSpan.tags()).containsEntry(SleuthListenerConfiguration.SPAN_SQL_QUERY_TAG_NAME, "SELECT NOW()");
     }
 
@@ -105,8 +105,8 @@ public class TracingJdbcEventListenerTests {
         assertThat(spanReporter.getSpans()).hasSize(2);
         Span connectionSpan = spanReporter.getSpans().get(0);
         Span statementSpan = spanReporter.getSpans().get(1);
-        assertThat(connectionSpan.getName()).isEqualTo(dbUrl + "/connection");
-        assertThat(statementSpan.getName()).isEqualTo(dbUrl + "/query");
+        assertThat(connectionSpan.getName()).isEqualTo("jdbc:/dataSource/connection");
+        assertThat(statementSpan.getName()).isEqualTo("jdbc:/dataSource/query");
         assertThat(statementSpan.tags()).containsEntry(SleuthListenerConfiguration.SPAN_SQL_QUERY_TAG_NAME, "UPDATE INFORMATION_SCHEMA.TABLES SET table_Name = '' WHERE 0 = 1");
         assertThat(statementSpan.tags()).containsEntry(SleuthListenerConfiguration.SPAN_ROW_COUNT_TAG_NAME, "0");
     }
@@ -122,8 +122,8 @@ public class TracingJdbcEventListenerTests {
         assertThat(spanReporter.getSpans()).hasSize(2);
         Span connectionSpan = spanReporter.getSpans().get(0);
         Span statementSpan = spanReporter.getSpans().get(1);
-        assertThat(connectionSpan.getName()).isEqualTo(dbUrl + "/connection");
-        assertThat(statementSpan.getName()).isEqualTo(dbUrl + "/query");
+        assertThat(connectionSpan.getName()).isEqualTo("jdbc:/dataSource/connection");
+        assertThat(statementSpan.getName()).isEqualTo("jdbc:/dataSource/query");
         assertThat(statementSpan.tags()).containsEntry(SleuthListenerConfiguration.SPAN_SQL_QUERY_TAG_NAME, "UPDATE INFORMATION_SCHEMA.TABLES SET table_Name = '' WHERE 0 = 1");
         assertThat(statementSpan.tags()).containsEntry(SleuthListenerConfiguration.SPAN_ROW_COUNT_TAG_NAME, "0");
     }
@@ -141,8 +141,8 @@ public class TracingJdbcEventListenerTests {
         assertThat(spanReporter.getSpans()).hasSize(2);
         Span connectionSpan = spanReporter.getSpans().get(0);
         Span statementSpan = spanReporter.getSpans().get(1);
-        assertThat(connectionSpan.getName()).isEqualTo(dbUrl + "/connection");
-        assertThat(statementSpan.getName()).isEqualTo(dbUrl + "/query");
+        assertThat(connectionSpan.getName()).isEqualTo("jdbc:/dataSource/connection");
+        assertThat(statementSpan.getName()).isEqualTo("jdbc:/dataSource/query");
         assertThat(statementSpan.tags()).containsEntry(SleuthListenerConfiguration.SPAN_SQL_QUERY_TAG_NAME, "SELECT NOW()");
         assertThat(statementSpan.logs()).extracting("event").contains("execute");
         assertThat(statementSpan.getAccumulatedMicros()).isGreaterThan(200L);
@@ -161,8 +161,8 @@ public class TracingJdbcEventListenerTests {
         assertThat(spanReporter.getSpans()).hasSize(2);
         Span connectionSpan = spanReporter.getSpans().get(0);
         Span statementSpan = spanReporter.getSpans().get(1);
-        assertThat(connectionSpan.getName()).isEqualTo(dbUrl + "/connection");
-        assertThat(statementSpan.getName()).isEqualTo(dbUrl + "/query");
+        assertThat(connectionSpan.getName()).isEqualTo("jdbc:/dataSource/connection");
+        assertThat(statementSpan.getName()).isEqualTo("jdbc:/dataSource/query");
         assertThat(statementSpan.tags()).containsEntry(SleuthListenerConfiguration.SPAN_SQL_QUERY_TAG_NAME, "SELECT NOW()");
         assertThat(statementSpan.logs()).extracting("event").contains("execute");
         assertThat(statementSpan.getAccumulatedMicros()).isGreaterThan(200L);
