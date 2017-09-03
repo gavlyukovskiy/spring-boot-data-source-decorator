@@ -18,12 +18,16 @@ package com.github.gavlyukovskiy.cloud.sleuth;
 
 import com.p6spy.engine.common.ConnectionInformation;
 import com.p6spy.engine.common.StatementInformation;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
+import javax.annotation.PostConstruct;
 import javax.sql.CommonDataSource;
+import javax.sql.DataSource;
 
-import java.sql.SQLException;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map.Entry;
 
 /**
  * Span name resolver for a {@link ConnectionInformation} and a {@link StatementInformation}
@@ -31,27 +35,37 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Arthur Gavlyukovskiy
  * @since 1.2.1
  */
-public class P6SpySpanNameResolver {
+public class P6SpySpanNameResolver implements ApplicationContextAware {
 
-    private final Map<CommonDataSource, String> resolvedP6SpyNames = new ConcurrentHashMap<>();
+    private ApplicationContext applicationContext;
+    private Map<String, DataSource> dataSources;
+
+    @PostConstruct
+    public void initialize() {
+        this.dataSources = applicationContext.getBeansOfType(DataSource.class);
+    }
 
     public String connectionSpanName(ConnectionInformation connectionInformation) {
-        return spanPrefix(connectionInformation) + SleuthListenerConfiguration.SPAN_CONNECTION_POSTFIX;
+        String dataSourceName = resolveDataSourceName(connectionInformation.getDataSource());
+        return "jdbc:/" + dataSourceName + SleuthListenerConfiguration.SPAN_CONNECTION_POSTFIX;
     }
 
     public String querySpanName(StatementInformation statementInformation) {
-        return spanPrefix(statementInformation.getConnectionInformation()) + SleuthListenerConfiguration.SPAN_QUERY_POSTFIX;
+        String dataSourceName = resolveDataSourceName(statementInformation.getConnectionInformation().getDataSource());
+        return "jdbc:/" + dataSourceName + SleuthListenerConfiguration.SPAN_QUERY_POSTFIX;
     }
 
-    private String spanPrefix(ConnectionInformation connectionInformation) {
-        String resolvedDataSourceName = resolvedP6SpyNames.computeIfAbsent(connectionInformation.getDataSource(), dataSource -> {
-            try {
-                String dataSourceUrl = connectionInformation.getConnection().getMetaData().getURL();
-                return DataSourceUrlCutter.shorten(dataSourceUrl);
-            } catch (SQLException e) {
-                return null;
-            }
-        });
-        return resolvedDataSourceName != null ? resolvedDataSourceName : "jdbc:";
+    private String resolveDataSourceName(CommonDataSource dataSource) {
+        return dataSources.entrySet()
+                .stream()
+                .filter(entry -> entry.getValue() == dataSource)
+                .findFirst()
+                .map(Entry::getKey)
+                .orElse("dataSource");
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 }

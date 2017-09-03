@@ -25,58 +25,78 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.context.ApplicationContext;
 
 import javax.sql.CommonDataSource;
+import javax.sql.DataSource;
+
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 @RunWith(MockitoJUnitRunner.class)
 public class P6SpySpanNameResolverTest {
 
     private P6SpySpanNameResolver resolver = new P6SpySpanNameResolver();
     @Mock
-    private CommonDataSource dataSource;
+    private DataSource dataSource;
     @Mock
     private ConnectionInformation connectionInformation;
     @Mock
-    private Connection connection;
-    @Mock
     private StatementInformation statementInformation;
     @Mock
-    private DatabaseMetaData databaseMetaData;
+    private ApplicationContext applicationContext;
 
     @Before
     public void setup() throws Exception {
-        Mockito.when(connectionInformation.getConnection()).thenReturn(connection);
         Mockito.when(statementInformation.getConnectionInformation()).thenReturn(connectionInformation);
         Mockito.when(connectionInformation.getDataSource()).thenReturn(dataSource);
-        Mockito.when(connection.getMetaData()).thenReturn(databaseMetaData);
+        resolver.setApplicationContext(applicationContext);
     }
 
     @Test
-    public void testShouldReturnConnectionSpanName() throws Exception {
-        Mockito.when(databaseMetaData.getURL()).thenReturn("jdbc:h2:mem:testdb/test");
+    public void testShouldReturnConnectionSpanNameFromBeanName() throws Exception {
+        Map<String, DataSource> dataSources = new HashMap<>();
+        dataSources.put("myDs", dataSource);
+        Mockito.when(applicationContext.getBeansOfType(DataSource.class)).thenReturn(dataSources);
+        resolver.initialize();
+
         String querySpanName = resolver.connectionSpanName(connectionInformation);
 
-        Assertions.assertThat(querySpanName).isEqualTo("h2:mem:testdb/test/connection");
+        Assertions.assertThat(querySpanName).isEqualTo("jdbc:/myDs/connection");
     }
 
     @Test
-    public void testShouldReturnQuerySpanName() throws Exception {
-        Mockito.when(databaseMetaData.getURL()).thenReturn("jdbc:h2:mem:testdb/test");
+    public void testShouldReturnQuerySpanNameFromBeanName() throws Exception {
+        Map<String, DataSource> dataSources = new HashMap<>();
+        dataSources.put("myDs", dataSource);
+        Mockito.when(applicationContext.getBeansOfType(DataSource.class)).thenReturn(dataSources);
+        resolver.initialize();
+
         String querySpanName = resolver.querySpanName(statementInformation);
 
-        Assertions.assertThat(querySpanName).isEqualTo("h2:mem:testdb/test/query");
+        Assertions.assertThat(querySpanName).isEqualTo("jdbc:/myDs/query");
     }
 
     @Test
-    public void testShouldCacheReturnValue() throws Exception {
-        Mockito.when(databaseMetaData.getURL()).thenReturn("jdbc:h2:mem:testdb/test");
-        resolver.connectionSpanName(connectionInformation);
-        resolver.querySpanName(statementInformation);
+    public void testShouldReturnConnectionSpanNameUsingDefault() throws Exception {
+        Mockito.when(applicationContext.getBeansOfType(DataSource.class)).thenReturn(Collections.emptyMap());
+        resolver.initialize();
 
-        Mockito.verify(connection).getMetaData();
-        Mockito.verifyNoMoreInteractions(connection);
+        String querySpanName = resolver.connectionSpanName(connectionInformation);
+
+        Assertions.assertThat(querySpanName).isEqualTo("jdbc:/dataSource/connection");
     }
 
+    @Test
+    public void testShouldReturnQuerySpanNameUsingDefault() throws Exception {
+        Mockito.when(applicationContext.getBeansOfType(DataSource.class)).thenReturn(Collections.emptyMap());
+        resolver.initialize();
+
+        String querySpanName = resolver.querySpanName(statementInformation);
+
+        Assertions.assertThat(querySpanName).isEqualTo("jdbc:/dataSource/query");
+    }
 }

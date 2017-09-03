@@ -35,36 +35,19 @@ public class DataSourceProxySpanNameResolverTest {
     private DataSourceProxySpanNameResolver resolver = new DataSourceProxySpanNameResolver();
     @Mock
     private ExecutionInfo executionInfo;
-    @Mock
-    private Connection connection;
-    @Mock
-    private Statement statement;
-    @Mock
-    private DatabaseMetaData databaseMetaData;
-
-    @Before
-    public void setup() throws Exception {
-        Mockito.when(executionInfo.getStatement()).thenReturn(statement);
-        Mockito.when(executionInfo.getDataSourceName()).thenReturn("dataSource");
-        Mockito.when(statement.getConnection()).thenReturn(connection);
-        Mockito.when(connection.getMetaData()).thenReturn(databaseMetaData);
-    }
 
     @Test
-    public void testShouldReturnQuerySpanName() throws Exception {
-        Mockito.when(databaseMetaData.getURL()).thenReturn("jdbc:h2:mem:testdb/test");
+    public void testShouldReturnQuerySpanNameFromDataSourceName() throws Exception {
+        Mockito.when(executionInfo.getDataSourceName()).thenReturn("myDs");
         String querySpanName = resolver.querySpanName(executionInfo);
 
-        Assertions.assertThat(querySpanName).isEqualTo("h2:mem:testdb/test/query");
+        Assertions.assertThat(querySpanName).isEqualTo("jdbc:/myDs/query");
     }
 
     @Test
-    public void testShouldCacheReturnValue() throws Exception {
-        Mockito.when(databaseMetaData.getURL()).thenReturn("jdbc:h2:mem:testdb/test");
-        resolver.querySpanName(executionInfo);
-        resolver.querySpanName(executionInfo);
+    public void testShouldReturnQuerySpanNameUsingDefault() throws Exception {
+        String querySpanName = resolver.querySpanName(executionInfo);
 
-        Mockito.verify(connection).getMetaData();
-        Mockito.verifyNoMoreInteractions(connection);
+        Assertions.assertThat(querySpanName).isEqualTo("jdbc:/dataSource/query");
     }
 }

@@ -17,6 +17,7 @@
 package com.github.gavlyukovskiy.cloud.sleuth;
 
 import net.ttddyy.dsproxy.ExecutionInfo;
+import org.springframework.util.StringUtils;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -30,22 +31,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DataSourceProxySpanNameResolver {
 
-    private Map<String, String> resolvedDataSourceProxyNames = new ConcurrentHashMap<>();
-
     public String querySpanName(ExecutionInfo executionInfo) {
-        return spanPrefix(executionInfo) + SleuthListenerConfiguration.SPAN_QUERY_POSTFIX;
-    }
-
-    private String spanPrefix(ExecutionInfo executionInfo) {
-        String resolvedDataSourceName = resolvedDataSourceProxyNames.computeIfAbsent(executionInfo.getDataSourceName(), dataSource -> {
-            try {
-                String dataSourceUrl = executionInfo.getStatement().getConnection().getMetaData().getURL();
-                return DataSourceUrlCutter.shorten(dataSourceUrl);
-            }
-            catch (SQLException e) {
-                return null;
-            }
-        });
-        return resolvedDataSourceName != null ? resolvedDataSourceName : "jdbc:";
+        String dataSourceName = StringUtils.hasText(executionInfo.getDataSourceName()) ? executionInfo.getDataSourceName() : "dataSource";
+        return "jdbc:/" + dataSourceName + SleuthListenerConfiguration.SPAN_QUERY_POSTFIX;
     }
 }
