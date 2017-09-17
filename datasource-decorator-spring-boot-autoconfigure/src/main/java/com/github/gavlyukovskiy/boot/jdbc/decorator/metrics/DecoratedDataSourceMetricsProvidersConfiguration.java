@@ -18,6 +18,7 @@ package com.github.gavlyukovskiy.boot.jdbc.decorator.metrics;
 
 import net.ttddyy.dsproxy.support.ProxyDataSource;
 import org.springframework.boot.actuate.endpoint.PublicMetrics;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -35,6 +36,7 @@ public class DecoratedDataSourceMetricsProvidersConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
+    @ConditionalOnBean(DecoratedDataSourceMetricsProvider.class)
     public DecoratedDataSourcePublicMetrics decoratedDataSourcePublicMetrics() {
         return new DecoratedDataSourcePublicMetrics();
     }

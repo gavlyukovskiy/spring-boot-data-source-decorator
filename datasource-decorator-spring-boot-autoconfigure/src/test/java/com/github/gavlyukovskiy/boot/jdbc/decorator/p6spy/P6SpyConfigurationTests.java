@@ -74,23 +74,23 @@ public class P6SpyConfigurationTests {
 
         DataSource dataSource = context.getBean(DataSource.class);
 
-        assertThat(findP6Listeners()).extracting("class").contains(WrappingCountingListener.class);
+        assertThat(findP6Listeners()).extracting("class").contains(GetCountingListener.class);
         assertThat(findP6Listeners()).extracting("class").contains(ClosingCountingListener.class);
 
-        WrappingCountingListener wrappingCountingListener = context.getBean(WrappingCountingListener.class);
+        GetCountingListener getCountingListener = context.getBean(GetCountingListener.class);
         ClosingCountingListener closingCountingListener = context.getBean(ClosingCountingListener.class);
         P6DataSource p6DataSource = (P6DataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
 
-        assertThat(wrappingCountingListener.wrappedCount).isEqualTo(0);
+        assertThat(getCountingListener.connectionCount).isEqualTo(0);
 
         Connection connection = p6DataSource.getConnection();
 
-        assertThat(wrappingCountingListener.wrappedCount).isEqualTo(1);
-        assertThat(closingCountingListener.wrappedCount).isEqualTo(0);
+        assertThat(getCountingListener.connectionCount).isEqualTo(1);
+        assertThat(closingCountingListener.connectionCount).isEqualTo(0);
 
         connection.close();
 
-        assertThat(closingCountingListener.wrappedCount).isEqualTo(1);
+        assertThat(closingCountingListener.connectionCount).isEqualTo(1);
     }
 
     private List<JdbcEventListener> findP6Listeners() {
@@ -112,8 +112,8 @@ public class P6SpyConfigurationTests {
     static class CustomListenerConfiguration {
 
         @Bean
-        public WrappingCountingListener wrappingCountingListener() {
-            return new WrappingCountingListener();
+        public GetCountingListener wrappingCountingListener() {
+            return new GetCountingListener();
         }
 
         @Bean
@@ -122,23 +122,23 @@ public class P6SpyConfigurationTests {
         }
     }
 
-    static class WrappingCountingListener extends JdbcEventListener {
+    static class GetCountingListener extends JdbcEventListener {
 
-        int wrappedCount = 0;
+        int connectionCount = 0;
 
         @Override
-        public void onConnectionWrapped(ConnectionInformation connectionInformation) {
-            wrappedCount++;
+        public void onAfterGetConnection(ConnectionInformation connectionInformation, SQLException e) {
+            connectionCount++;
         }
     }
 
     static class ClosingCountingListener extends JdbcEventListener {
 
-        int wrappedCount = 0;
+        int connectionCount = 0;
 
         @Override
         public void onAfterConnectionClose(ConnectionInformation connectionInformation, SQLException e) {
-            wrappedCount++;
+            connectionCount++;
         }
     }
 }

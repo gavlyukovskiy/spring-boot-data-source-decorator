@@ -18,7 +18,7 @@ dependencies {
     compile("org.springframework.cloud:spring-cloud-sleuth-core:1.2.4.RELEASE")
     compile("org.springframework.cloud:spring-cloud-sleuth-zipkin:1.2.4.RELEASE")
 
-    compile("com.zaxxer:HikariCP:2.5.1")
+    compile("com.zaxxer:HikariCP:2.7.0")
     compile("com.h2database:h2:1.4.193")
     compile("org.apache.commons:commons-io:1.3.2")
 

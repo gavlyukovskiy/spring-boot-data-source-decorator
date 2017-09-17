@@ -10,7 +10,7 @@ dependencies {
 
     compileOnly("org.apache.commons:commons-dbcp2:2.1.1")
     compileOnly("org.apache.tomcat:tomcat-jdbc:8.5.13")
-    compileOnly("com.zaxxer:HikariCP:2.5.1")
+    compileOnly("com.zaxxer:HikariCP:2.7.0")
 
     compileOnly("p6spy:p6spy:${p6SpyVersion}")
     compileOnly("net.ttddyy:datasource-proxy:${datasourceProxyVersion}")
@@ -20,6 +20,7 @@ dependencies {
     compileOnly("com.vladmihalcea.flexy-pool:flexy-tomcatcp:${flexyPoolVersion}")
 
     compileOnly("org.springframework.cloud:spring-cloud-sleuth-core:1.2.4.RELEASE")
+    compileOnly("io.micrometer:micrometer-core:1.0.0-rc.1")
 
     testCompile("junit:junit:4.12")
     testCompile("com.h2database:h2:1.4.193")
@@ -33,12 +34,13 @@ dependencies {
     testCompile("com.vladmihalcea.flexy-pool:flexy-hikaricp:${flexyPoolVersion}")
     testCompile("com.vladmihalcea.flexy-pool:flexy-tomcatcp:${flexyPoolVersion}")
 
-    testCompile("org.springframework.cloud:spring-cloud-sleuth-core:1.2.1.RELEASE")
+    testCompile("org.springframework.cloud:spring-cloud-sleuth-core:1.2.4.RELEASE")
+    testCompile("io.micrometer:micrometer-core:1.0.0-rc.1")
 
     testCompile("commons-dbcp:commons-dbcp:1.4")
     testCompile("org.apache.commons:commons-dbcp2:2.1.1")
     testCompile("org.apache.tomcat:tomcat-jdbc:8.5.13")
-    testCompile("com.zaxxer:HikariCP:2.5.1")
+    testCompile("com.zaxxer:HikariCP:2.7.0")
 }
 
 gradle.projectsEvaluated {

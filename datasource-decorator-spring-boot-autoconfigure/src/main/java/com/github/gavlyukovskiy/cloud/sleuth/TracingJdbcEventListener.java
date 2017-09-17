@@ -52,11 +52,17 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
     }
 
     @Override
-    public void onConnectionWrapped(ConnectionInformation connectionInformation) {
+    public void onAfterGetConnection(ConnectionInformation connectionInformation, SQLException e) {
         Span connectionSpan = tracer.createSpan(p6SpySpanNameResolver.connectionSpanName(connectionInformation));
         //connectionSpan.logEvent(Span.CLIENT_SEND);
         connectionSpan.tag(Span.SPAN_LOCAL_COMPONENT_TAG_NAME, "database");
-        connectionSpans.put(connectionInformation, connectionSpan);
+        if (e != null) {
+            connectionSpan.tag(Span.SPAN_ERROR_TAG_NAME, ExceptionUtils.getExceptionMessage(e));
+            tracer.close(connectionSpan);
+        }
+        else {
+            connectionSpans.put(connectionInformation, connectionSpan);
+        }
     }
 
     @Override
