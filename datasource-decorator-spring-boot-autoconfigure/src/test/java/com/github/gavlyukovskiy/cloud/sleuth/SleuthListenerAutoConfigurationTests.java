@@ -104,7 +104,7 @@ public class SleuthListenerAutoConfigurationTests {
 
         DataSource dataSource = context.getBean(DataSource.class);
         ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
-        ChainListener chainListener = (ChainListener) proxyDataSource.getInterceptorHolder().getListener();
+        ChainListener chainListener = proxyDataSource.getProxyConfig().getQueryListener();
         assertThat(chainListener.getListeners()).extracting("class").contains(TracingQueryExecutionListener.class);
     }
 
@@ -119,7 +119,7 @@ public class SleuthListenerAutoConfigurationTests {
 
         DataSource dataSource = context.getBean(DataSource.class);
         ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
-        ChainListener chainListener = (ChainListener) proxyDataSource.getInterceptorHolder().getListener();
+        ChainListener chainListener = proxyDataSource.getProxyConfig().getQueryListener();
         assertThat(chainListener.getListeners()).extracting("class").doesNotContain(TracingQueryExecutionListener.class);
     }
 

@@ -75,7 +75,7 @@ public class ProxyDataSourceConfigurationTests {
 
         DataSource dataSource = context.getBean(DataSource.class);
         ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
-        ChainListener chainListener = (ChainListener) proxyDataSource.getInterceptorHolder().getListener();
+        ChainListener chainListener = proxyDataSource.getProxyConfig().getQueryListener();
         assertThat(chainListener.getListeners()).extracting("class").contains(SLF4JSlowQueryListener.class);
         assertThat(chainListener.getListeners()).extracting("class").contains(SLF4JQueryLoggingListener.class);
     }
@@ -91,7 +91,7 @@ public class ProxyDataSourceConfigurationTests {
 
         DataSource dataSource = context.getBean(DataSource.class);
         ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
-        ChainListener chainListener = (ChainListener) proxyDataSource.getInterceptorHolder().getListener();
+        ChainListener chainListener = proxyDataSource.getProxyConfig().getQueryListener();
         assertThat(chainListener.getListeners()).extracting("class").contains(SLF4JSlowQueryListener.class);
         assertThat(chainListener.getListeners()).extracting("class").contains(SLF4JQueryLoggingListener.class);
     }
@@ -107,7 +107,7 @@ public class ProxyDataSourceConfigurationTests {
 
         DataSource dataSource = context.getBean(DataSource.class);
         ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
-        ChainListener chainListener = (ChainListener) proxyDataSource.getInterceptorHolder().getListener();
+        ChainListener chainListener = proxyDataSource.getProxyConfig().getQueryListener();
         assertThat(chainListener.getListeners()).extracting("class").contains(JULSlowQueryListener.class);
         assertThat(chainListener.getListeners()).extracting("class").contains(JULQueryLoggingListener.class);
     }
@@ -123,7 +123,7 @@ public class ProxyDataSourceConfigurationTests {
 
         DataSource dataSource = context.getBean(DataSource.class);
         ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
-        ChainListener chainListener = (ChainListener) proxyDataSource.getInterceptorHolder().getListener();
+        ChainListener chainListener = proxyDataSource.getProxyConfig().getQueryListener();
         assertThat(chainListener.getListeners()).extracting("class").contains(CommonsSlowQueryListener.class);
         assertThat(chainListener.getListeners()).extracting("class").contains(CommonsQueryLoggingListener.class);
     }
@@ -140,8 +140,8 @@ public class ProxyDataSourceConfigurationTests {
         ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
         ParameterTransformer parameterTransformer = context.getBean(ParameterTransformer.class);
         QueryTransformer queryTransformer = context.getBean(QueryTransformer.class);
-        assertThat(proxyDataSource.getInterceptorHolder().getParameterTransformer()).isSameAs(parameterTransformer);
-        assertThat(proxyDataSource.getInterceptorHolder().getQueryTransformer()).isSameAs(queryTransformer);
+        assertThat(proxyDataSource.getProxyConfig().getParameterTransformer()).isSameAs(parameterTransformer);
+        assertThat(proxyDataSource.getProxyConfig().getQueryTransformer()).isSameAs(queryTransformer);
     }
 
     @Test
@@ -156,7 +156,7 @@ public class ProxyDataSourceConfigurationTests {
         ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
         QueryExecutionListener queryExecutionListener = context.getBean(QueryExecutionListener.class);
 
-        ChainListener chainListener = (ChainListener) proxyDataSource.getInterceptorHolder().getListener();
+        ChainListener chainListener = proxyDataSource.getProxyConfig().getQueryListener();
         assertThat(chainListener.getListeners()).contains(queryExecutionListener);
     }
 

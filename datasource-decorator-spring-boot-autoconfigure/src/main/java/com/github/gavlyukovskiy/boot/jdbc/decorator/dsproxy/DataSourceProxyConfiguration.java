@@ -17,6 +17,7 @@
 package com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy;
 
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorProperties;
+import net.ttddyy.dsproxy.listener.MethodExecutionListener;
 import net.ttddyy.dsproxy.listener.QueryCountStrategy;
 import net.ttddyy.dsproxy.listener.QueryExecutionListener;
 import net.ttddyy.dsproxy.listener.SingleQueryCountHolder;
@@ -27,6 +28,7 @@ import net.ttddyy.dsproxy.transform.QueryTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 
 import java.util.List;
@@ -43,11 +45,14 @@ public class DataSourceProxyConfiguration {
     @Autowired
     private DataSourceDecoratorProperties dataSourceDecoratorProperties;
 
-    @Autowired
+    @Autowired(required = false)
     private QueryCountStrategy queryCountStrategy;
 
     @Autowired(required = false)
     private List<QueryExecutionListener> listeners;
+
+    @Autowired(required = false)
+    private List<MethodExecutionListener> methodExecutionListeners;
 
     @Autowired(required = false)
     private ParameterTransformer parameterTransformer;
@@ -67,6 +72,9 @@ public class DataSourceProxyConfiguration {
         if (listeners != null) {
             listeners.forEach(proxyDataSourceBuilder::listener);
         }
+        if (methodExecutionListeners != null) {
+            methodExecutionListeners.forEach(proxyDataSourceBuilder::methodListener);
+        }
         if (parameterTransformer != null) {
             proxyDataSourceBuilder.parameterTransformer(parameterTransformer);
         }
@@ -83,6 +91,7 @@ public class DataSourceProxyConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
+    @ConditionalOnProperty(value = "decorator.datasource.datasource-proxy.count-query", havingValue = "true")
     public QueryCountStrategy queryCountStrategy() {
         return new SingleQueryCountHolder();
     }
