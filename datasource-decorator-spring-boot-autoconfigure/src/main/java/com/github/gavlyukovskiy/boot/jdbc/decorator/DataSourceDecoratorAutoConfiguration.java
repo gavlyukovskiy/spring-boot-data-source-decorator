@@ -18,7 +18,6 @@ package com.github.gavlyukovskiy.boot.jdbc.decorator;
 
 import com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy.DataSourceProxyConfiguration;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool.FlexyPoolConfiguration;
-import com.github.gavlyukovskiy.boot.jdbc.decorator.metrics.DecoratedDataSourceMetricsProvidersConfiguration;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy.P6SpyConfiguration;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +52,6 @@ import javax.sql.DataSource;
         P6SpyConfiguration.class,
         DataSourceProxyConfiguration.class,
         FlexyPoolConfiguration.Ordered.class,
-        DecoratedDataSourceMetricsProvidersConfiguration.class
 })
 public class DataSourceDecoratorAutoConfiguration {
 
