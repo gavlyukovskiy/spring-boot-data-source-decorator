@@ -47,12 +47,12 @@ public class P6SpySpanNameResolver implements ApplicationContextAware {
 
     public String connectionSpanName(ConnectionInformation connectionInformation) {
         String dataSourceName = resolveDataSourceName(connectionInformation.getDataSource());
-        return "jdbc:/" + dataSourceName + SleuthListenerConfiguration.SPAN_CONNECTION_POSTFIX;
+        return "jdbc:/" + dataSourceName + SleuthListenerAutoConfiguration.SPAN_CONNECTION_POSTFIX;
     }
 
     public String querySpanName(StatementInformation statementInformation) {
         String dataSourceName = resolveDataSourceName(statementInformation.getConnectionInformation().getDataSource());
-        return "jdbc:/" + dataSourceName + SleuthListenerConfiguration.SPAN_QUERY_POSTFIX;
+        return "jdbc:/" + dataSourceName + SleuthListenerAutoConfiguration.SPAN_QUERY_POSTFIX;
     }
 
     private String resolveDataSourceName(CommonDataSource dataSource) {

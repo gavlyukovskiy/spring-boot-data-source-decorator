@@ -77,7 +77,7 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
     public void onAfterAnyExecute(StatementInformation statementInformation, long timeElapsedNanos, SQLException e) {
         Span statementSpan = statementSpans.remove(statementInformation);
         //statementSpan.logEvent(Span.CLIENT_RECV);
-        statementSpan.tag(SleuthListenerConfiguration.SPAN_SQL_QUERY_TAG_NAME, getSql(statementInformation));
+        statementSpan.tag(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, getSql(statementInformation));
         if (e != null) {
             statementSpan.tag(Span.SPAN_ERROR_TAG_NAME, ExceptionUtils.getExceptionMessage(e));
         }
@@ -109,14 +109,14 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
     @Override
     public void onAfterExecuteUpdate(PreparedStatementInformation statementInformation, long timeElapsedNanos, int rowCount, SQLException e) {
         Span statementSpan = statementSpans.get(statementInformation);
-        statementSpan.tag(SleuthListenerConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(rowCount));
+        statementSpan.tag(SleuthListenerAutoConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(rowCount));
         super.onAfterExecuteUpdate(statementInformation, timeElapsedNanos, rowCount, e);
     }
 
     @Override
     public void onAfterExecuteUpdate(StatementInformation statementInformation, long timeElapsedNanos, String sql, int rowCount, SQLException e) {
         Span statementSpan = statementSpans.get(statementInformation);
-        statementSpan.tag(SleuthListenerConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(rowCount));
+        statementSpan.tag(SleuthListenerAutoConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(rowCount));
         super.onAfterExecuteUpdate(statementInformation, timeElapsedNanos, sql, rowCount, e);
     }
 
@@ -124,7 +124,7 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
         // close span after result set is closed to include fetch time
         Span statementSpan = statementSpans.get(statementInformation);
         statementSpan.logEvent("execute");
-        statementSpan.tag(SleuthListenerConfiguration.SPAN_SQL_QUERY_TAG_NAME, getSql(statementInformation));
+        statementSpan.tag(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, getSql(statementInformation));
     }
 
     private String getSql(StatementInformation statementInformation) {
@@ -137,7 +137,7 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
     public void onAfterResultSetClose(ResultSetInformation resultSetInformation, SQLException e) {
         Span statementSpan = statementSpans.remove(resultSetInformation.getStatementInformation());
         //statementSpan.logEvent(Span.CLIENT_RECV);
-        statementSpan.tag(SleuthListenerConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(resultSetInformation.getCurrRow()));
+        statementSpan.tag(SleuthListenerAutoConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(resultSetInformation.getCurrRow()));
         if (e != null) {
             statementSpan.tag(Span.SPAN_ERROR_TAG_NAME, ExceptionUtils.getExceptionMessage(e));
         }

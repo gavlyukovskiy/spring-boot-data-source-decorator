@@ -19,10 +19,6 @@ package com.github.gavlyukovskiy.cloud.sleuth;
 import net.ttddyy.dsproxy.ExecutionInfo;
 import org.springframework.util.StringUtils;
 
-import java.sql.SQLException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
  * Span name resolver for a {@link ExecutionInfo}.
  *
@@ -33,6 +29,6 @@ public class DataSourceProxySpanNameResolver {
 
     public String querySpanName(ExecutionInfo executionInfo) {
         String dataSourceName = StringUtils.hasText(executionInfo.getDataSourceName()) ? executionInfo.getDataSourceName() : "dataSource";
-        return "jdbc:/" + dataSourceName + SleuthListenerConfiguration.SPAN_QUERY_POSTFIX;
+        return "jdbc:/" + dataSourceName + SleuthListenerAutoConfiguration.SPAN_QUERY_POSTFIX;
     }
 }

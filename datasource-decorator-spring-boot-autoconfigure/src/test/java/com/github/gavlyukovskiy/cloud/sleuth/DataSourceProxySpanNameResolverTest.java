@@ -18,16 +18,11 @@ package com.github.gavlyukovskiy.cloud.sleuth;
 
 import net.ttddyy.dsproxy.ExecutionInfo;
 import org.assertj.core.api.Assertions;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.Statement;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DataSourceProxySpanNameResolverTest {

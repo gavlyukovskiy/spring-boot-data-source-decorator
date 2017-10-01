@@ -27,11 +27,8 @@ import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.context.ApplicationContext;
 
-import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
