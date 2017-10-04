@@ -86,11 +86,11 @@ public class DataSourceMetricsHolder implements MeterBinder {
         pendingConnections.incrementAndGet();
     }
 
-    void afterAcquireConnection(Connection connection, long timeToAcquireConnection, Throwable e) {
-        connectionObtainTimer.record(timeToAcquireConnection, TimeUnit.MILLISECONDS);
+    void afterAcquireConnection(Connection connection, long timeToAcquireConnection, TimeUnit timeUnit, Throwable e) {
+        connectionObtainTimer.record(timeToAcquireConnection, timeUnit);
         pendingConnections.decrementAndGet();
         if (e == null && connection != null) {
-            connectionAcquireTimestamp.put(connection, System.currentTimeMillis());
+            connectionAcquireTimestamp.put(connection, System.nanoTime());
             connectionCreatedSummary.count();
             activeConnections.incrementAndGet();
         }
@@ -101,7 +101,7 @@ public class DataSourceMetricsHolder implements MeterBinder {
 
     void closeConnection(Connection connection) {
         Long acquisitionTime = connectionAcquireTimestamp.remove(connection);
-        connectionUsageTimer.record(System.currentTimeMillis() - acquisitionTime, TimeUnit.MILLISECONDS);
+        connectionUsageTimer.record(System.nanoTime() - acquisitionTime, TimeUnit.NANOSECONDS);
         activeConnections.decrementAndGet();
     }
 }

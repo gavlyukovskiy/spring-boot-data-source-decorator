@@ -24,8 +24,7 @@ public class DataSourceMetricsJdbcEventListener extends JdbcEventListener {
     public void onAfterGetConnection(ConnectionInformation connectionInformation, SQLException e) {
         DataSourceMetricsHolder metrics = dataSourceMetricsBinder.getMetrics(connectionInformation.getDataSource());
         metrics.beforeAcquireConnection(); // TODO move to onBeforeConnectionGet after implementation in p6spy
-        metrics.afterAcquireConnection(connectionInformation.getConnection(),
-                TimeUnit.NANOSECONDS.toMillis(connectionInformation.getTimeToGetConnectionNs()), e);
+        metrics.afterAcquireConnection(connectionInformation.getConnection(), connectionInformation.getTimeToGetConnectionNs(), TimeUnit.NANOSECONDS, e);
     }
 
     @Override

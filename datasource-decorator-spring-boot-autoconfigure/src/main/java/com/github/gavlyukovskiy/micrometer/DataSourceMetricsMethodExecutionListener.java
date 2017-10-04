@@ -8,6 +8,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Datasource Proxy listener to collect connection pool metrics.
@@ -48,7 +49,7 @@ public class DataSourceMetricsMethodExecutionListener implements MethodExecution
                 connectionToDataSource.put(connection, dataSource);
 
                 DataSourceMetricsHolder metrics = dataSourceMetricsBinder.getMetrics(dataSource);
-                metrics.afterAcquireConnection(connection, executionContext.getElapsedTime(), executionContext.getThrown());
+                metrics.afterAcquireConnection(connection, executionContext.getElapsedTime(), TimeUnit.MILLISECONDS, executionContext.getThrown());
             }
         }
         else if (target instanceof Connection) {
