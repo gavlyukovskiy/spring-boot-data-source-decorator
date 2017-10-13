@@ -16,6 +16,7 @@
 
 package com.github.gavlyukovskiy.cloud.sleuth;
 
+import com.github.gavlyukovskiy.boot.jdbc.decorator.DecoratedDataSource;
 import com.p6spy.engine.common.ConnectionInformation;
 import com.p6spy.engine.common.StatementInformation;
 import org.springframework.beans.BeansException;
@@ -40,11 +41,6 @@ public class P6SpySpanNameResolver implements ApplicationContextAware {
     private ApplicationContext applicationContext;
     private Map<String, DataSource> dataSources;
 
-    @PostConstruct
-    public void initialize() {
-        this.dataSources = applicationContext.getBeansOfType(DataSource.class);
-    }
-
     public String connectionSpanName(ConnectionInformation connectionInformation) {
         String dataSourceName = resolveDataSourceName(connectionInformation.getDataSource());
         return "jdbc:/" + dataSourceName + SleuthListenerAutoConfiguration.SPAN_CONNECTION_POSTFIX;
@@ -56,9 +52,21 @@ public class P6SpySpanNameResolver implements ApplicationContextAware {
     }
 
     private String resolveDataSourceName(CommonDataSource dataSource) {
+        if (dataSources == null) {
+            this.dataSources = applicationContext.getBeansOfType(DataSource.class);
+        }
         return dataSources.entrySet()
                 .stream()
-                .filter(entry -> entry.getValue() == dataSource)
+                .filter(entry -> {
+                    DataSource candidate = entry.getValue();
+                    if (candidate instanceof DecoratedDataSource) {
+                        DecoratedDataSource decoratedDataSource = (DecoratedDataSource) candidate;
+                        return decoratedDataSource.getDecoratedDataSource() == dataSource
+                                || decoratedDataSource.getRealDataSource() == dataSource
+                                || candidate == dataSource;
+                    }
+                    return candidate == dataSource;
+                })
                 .findFirst()
                 .map(Entry::getKey)
                 .orElse("dataSource");
