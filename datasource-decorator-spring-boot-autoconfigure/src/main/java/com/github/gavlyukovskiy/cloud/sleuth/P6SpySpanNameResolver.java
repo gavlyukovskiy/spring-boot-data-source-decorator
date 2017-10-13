@@ -16,6 +16,7 @@
 
 package com.github.gavlyukovskiy.cloud.sleuth;
 
+import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecorationStage;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DecoratedDataSource;
 import com.p6spy.engine.common.ConnectionInformation;
 import com.p6spy.engine.common.StatementInformation;
@@ -60,10 +61,7 @@ public class P6SpySpanNameResolver implements ApplicationContextAware {
                 .filter(entry -> {
                     DataSource candidate = entry.getValue();
                     if (candidate instanceof DecoratedDataSource) {
-                        DecoratedDataSource decoratedDataSource = (DecoratedDataSource) candidate;
-                        return decoratedDataSource.getDecoratedDataSource() == dataSource
-                                || decoratedDataSource.getRealDataSource() == dataSource
-                                || candidate == dataSource;
+                        return matchesDataSource((DecoratedDataSource) candidate, dataSource);
                     }
                     return candidate == dataSource;
                 })
@@ -75,5 +73,11 @@ public class P6SpySpanNameResolver implements ApplicationContextAware {
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
+    }
+
+    private boolean matchesDataSource(DecoratedDataSource decoratedCandidate, CommonDataSource dataSource) {
+        return decoratedCandidate.getDecoratingChain().stream()
+                .map(DataSourceDecorationStage::getDataSource)
+                .anyMatch(candidate -> candidate == dataSource);
     }
 }

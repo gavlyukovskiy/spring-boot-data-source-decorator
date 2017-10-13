@@ -17,9 +17,11 @@
 package com.github.gavlyukovskiy.cloud.sleuth;
 
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorAutoConfiguration;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.DecoratedDataSource;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.HidePackagesClassLoader;
 import com.p6spy.engine.common.ConnectionInformation;
 import com.p6spy.engine.common.StatementInformation;
+import com.p6spy.engine.spy.P6DataSource;
 import com.zaxxer.hikari.HikariDataSource;
 import org.assertj.core.api.Assertions;
 import org.junit.After;
@@ -34,16 +36,12 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.test.util.EnvironmentTestUtils;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.cloud.sleuth.log.SleuthLogAutoConfiguration;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -74,8 +72,10 @@ public class P6SpySpanNameResolverTest {
 
         resolver = context.getBean(P6SpySpanNameResolver.class);
         DataSource dataSource = context.getBean(DataSource.class);
+        DataSource decoratedDataSource = ((DecoratedDataSource) dataSource).getDecoratedDataSource();
+        Assertions.assertThat(decoratedDataSource).isInstanceOf(P6DataSource.class);
         Mockito.when(statementInformation.getConnectionInformation()).thenReturn(connectionInformation);
-        Mockito.when(connectionInformation.getDataSource()).thenReturn(dataSource);
+        Mockito.when(connectionInformation.getDataSource()).thenReturn(decoratedDataSource);
     }
 
     @After
