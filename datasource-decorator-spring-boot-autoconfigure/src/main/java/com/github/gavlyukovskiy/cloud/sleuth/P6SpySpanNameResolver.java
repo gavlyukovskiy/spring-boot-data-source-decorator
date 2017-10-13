@@ -16,6 +16,8 @@
 
 package com.github.gavlyukovskiy.cloud.sleuth;
 
+import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecorationStage;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.DecoratedDataSource;
 import com.p6spy.engine.common.ConnectionInformation;
 import com.p6spy.engine.common.StatementInformation;
 import org.springframework.beans.BeansException;
@@ -40,25 +42,29 @@ public class P6SpySpanNameResolver implements ApplicationContextAware {
     private ApplicationContext applicationContext;
     private Map<String, DataSource> dataSources;
 
-    @PostConstruct
-    public void initialize() {
-        this.dataSources = applicationContext.getBeansOfType(DataSource.class);
-    }
-
     public String connectionSpanName(ConnectionInformation connectionInformation) {
         String dataSourceName = resolveDataSourceName(connectionInformation.getDataSource());
-        return "jdbc:/" + dataSourceName + SleuthListenerConfiguration.SPAN_CONNECTION_POSTFIX;
+        return "jdbc:/" + dataSourceName + SleuthListenerAutoConfiguration.SPAN_CONNECTION_POSTFIX;
     }
 
     public String querySpanName(StatementInformation statementInformation) {
         String dataSourceName = resolveDataSourceName(statementInformation.getConnectionInformation().getDataSource());
-        return "jdbc:/" + dataSourceName + SleuthListenerConfiguration.SPAN_QUERY_POSTFIX;
+        return "jdbc:/" + dataSourceName + SleuthListenerAutoConfiguration.SPAN_QUERY_POSTFIX;
     }
 
     private String resolveDataSourceName(CommonDataSource dataSource) {
+        if (dataSources == null) {
+            this.dataSources = applicationContext.getBeansOfType(DataSource.class);
+        }
         return dataSources.entrySet()
                 .stream()
-                .filter(entry -> entry.getValue() == dataSource)
+                .filter(entry -> {
+                    DataSource candidate = entry.getValue();
+                    if (candidate instanceof DecoratedDataSource) {
+                        return matchesDataSource((DecoratedDataSource) candidate, dataSource);
+                    }
+                    return candidate == dataSource;
+                })
                 .findFirst()
                 .map(Entry::getKey)
                 .orElse("dataSource");
@@ -67,5 +73,11 @@ public class P6SpySpanNameResolver implements ApplicationContextAware {
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
+    }
+
+    private boolean matchesDataSource(DecoratedDataSource decoratedCandidate, CommonDataSource dataSource) {
+        return decoratedCandidate.getDecoratingChain().stream()
+                .map(DataSourceDecorationStage::getDataSource)
+                .anyMatch(candidate -> candidate == dataSource);
     }
 }

@@ -46,8 +46,8 @@ public class TracingQueryExecutionListener implements QueryExecutionListener {
     public void beforeQuery(ExecutionInfo execInfo, List<QueryInfo> queryInfoList) {
         Span span = tracer.createSpan(dataSourceProxySpanNameResolver.querySpanName(execInfo));
         //span.logEvent(Span.CLIENT_SEND);
-        tracer.addTag(SleuthListenerConfiguration.SPAN_SQL_QUERY_TAG_NAME, queryInfoList.stream().map(QueryInfo::getQuery).collect(Collectors.joining("\n")));
-        tracer.addTag(Span.SPAN_LOCAL_COMPONENT_TAG_NAME, "database");
+        span.tag(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, queryInfoList.stream().map(QueryInfo::getQuery).collect(Collectors.joining("\n")));
+        span.tag(Span.SPAN_LOCAL_COMPONENT_TAG_NAME, "database");
     }
 
     @Override
@@ -55,10 +55,10 @@ public class TracingQueryExecutionListener implements QueryExecutionListener {
         Span span = tracer.getCurrentSpan();
         //span.logEvent(Span.CLIENT_RECV);
         if (execInfo.getThrowable() != null) {
-            tracer.addTag(Span.SPAN_ERROR_TAG_NAME, ExceptionUtils.getExceptionMessage(execInfo.getThrowable()));
+            span.tag(Span.SPAN_ERROR_TAG_NAME, ExceptionUtils.getExceptionMessage(execInfo.getThrowable()));
         }
         if (execInfo.getMethod().getName().equals("executeUpdate")) {
-            tracer.addTag(SleuthListenerConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(execInfo.getResult()));
+            span.tag(SleuthListenerAutoConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(execInfo.getResult()));
         }
         tracer.close(span);
     }

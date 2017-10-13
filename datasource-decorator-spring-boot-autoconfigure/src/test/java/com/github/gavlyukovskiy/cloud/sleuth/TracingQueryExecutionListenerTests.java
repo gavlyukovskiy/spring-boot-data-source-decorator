@@ -73,7 +73,7 @@ public class TracingQueryExecutionListenerTests {
         assertThat(spanReporter.getSpans()).hasSize(1);
         Span statementSpan = spanReporter.getSpans().get(0);
         assertThat(statementSpan.getName()).isEqualTo("jdbc:/dataSource/query");
-        assertThat(statementSpan.tags()).containsEntry(SleuthListenerConfiguration.SPAN_SQL_QUERY_TAG_NAME, "SELECT NOW()");
+        assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, "SELECT NOW()");
     }
 
     @Test
@@ -87,8 +87,8 @@ public class TracingQueryExecutionListenerTests {
         assertThat(spanReporter.getSpans()).hasSize(1);
         Span statementSpan = spanReporter.getSpans().get(0);
         assertThat(statementSpan.getName()).isEqualTo("jdbc:/dataSource/query");
-        assertThat(statementSpan.tags()).containsEntry(SleuthListenerConfiguration.SPAN_SQL_QUERY_TAG_NAME, "UPDATE INFORMATION_SCHEMA.TABLES SET table_Name = '' WHERE 0 = 1");
-        assertThat(statementSpan.tags()).containsEntry(SleuthListenerConfiguration.SPAN_ROW_COUNT_TAG_NAME, "0");
+        assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, "UPDATE INFORMATION_SCHEMA.TABLES SET table_Name = '' WHERE 0 = 1");
+        assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_ROW_COUNT_TAG_NAME, "0");
     }
 
     @Test
@@ -104,7 +104,7 @@ public class TracingQueryExecutionListenerTests {
         assertThat(spanReporter.getSpans()).hasSize(1);
         Span statementSpan = spanReporter.getSpans().get(0);
         assertThat(statementSpan.getName()).isEqualTo("jdbc:/dataSource/query");
-        assertThat(statementSpan.tags()).containsEntry(SleuthListenerConfiguration.SPAN_SQL_QUERY_TAG_NAME, "SELECT NOW()");
+        assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, "SELECT NOW()");
     }
 
     @Configuration

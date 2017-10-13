@@ -22,7 +22,6 @@ import org.slf4j.Logger;
 import org.springframework.core.env.Environment;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.function.Consumer;
 
 import static org.slf4j.LoggerFactory.getLogger;

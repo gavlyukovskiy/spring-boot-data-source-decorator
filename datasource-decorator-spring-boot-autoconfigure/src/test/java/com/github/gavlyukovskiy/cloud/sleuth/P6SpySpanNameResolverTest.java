@@ -16,53 +16,75 @@
 
 package com.github.gavlyukovskiy.cloud.sleuth;
 
+import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorAutoConfiguration;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.DecoratedDataSource;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.HidePackagesClassLoader;
 import com.p6spy.engine.common.ConnectionInformation;
 import com.p6spy.engine.common.StatementInformation;
+import com.p6spy.engine.spy.P6DataSource;
+import com.zaxxer.hikari.HikariDataSource;
 import org.assertj.core.api.Assertions;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.context.ApplicationContext;
+import org.springframework.boot.autoconfigure.PropertyPlaceholderAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.test.util.EnvironmentTestUtils;
+import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
+import org.springframework.cloud.sleuth.log.SleuthLogAutoConfiguration;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Random;
 
 @RunWith(MockitoJUnitRunner.class)
 public class P6SpySpanNameResolverTest {
 
-    private P6SpySpanNameResolver resolver = new P6SpySpanNameResolver();
-    @Mock
-    private DataSource dataSource;
+    private final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+
+    private P6SpySpanNameResolver resolver;
     @Mock
     private ConnectionInformation connectionInformation;
     @Mock
     private StatementInformation statementInformation;
-    @Mock
-    private ApplicationContext applicationContext;
 
     @Before
-    public void setup() throws Exception {
+    public void init() {
+        EnvironmentTestUtils.addEnvironment(context,
+                "spring.datasource.initialize:false",
+                "spring.datasource.url:jdbc:h2:mem:testdb-" + new Random().nextInt());
+        context.setClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "net.ttddyy.dsproxy"));
+        context.register(MyDataSourceConfiguration.class,
+                DataSourceAutoConfiguration.class,
+                DataSourceDecoratorAutoConfiguration.class,
+                TraceAutoConfiguration.class,
+                SleuthLogAutoConfiguration.class,
+                SleuthListenerAutoConfiguration.class,
+                PropertyPlaceholderAutoConfiguration.class);
+        context.refresh();
+
+        resolver = context.getBean(P6SpySpanNameResolver.class);
+        DataSource dataSource = context.getBean(DataSource.class);
+        DataSource decoratedDataSource = ((DecoratedDataSource) dataSource).getDecoratedDataSource();
+        Assertions.assertThat(decoratedDataSource).isInstanceOf(P6DataSource.class);
         Mockito.when(statementInformation.getConnectionInformation()).thenReturn(connectionInformation);
-        Mockito.when(connectionInformation.getDataSource()).thenReturn(dataSource);
-        resolver.setApplicationContext(applicationContext);
+        Mockito.when(connectionInformation.getDataSource()).thenReturn(decoratedDataSource);
+    }
+
+    @After
+    public void restore() {
+        context.close();
     }
 
     @Test
     public void testShouldReturnConnectionSpanNameFromBeanName() throws Exception {
-        Map<String, DataSource> dataSources = new HashMap<>();
-        dataSources.put("myDs", dataSource);
-        Mockito.when(applicationContext.getBeansOfType(DataSource.class)).thenReturn(dataSources);
-        resolver.initialize();
-
         String querySpanName = resolver.connectionSpanName(connectionInformation);
 
         Assertions.assertThat(querySpanName).isEqualTo("jdbc:/myDs/connection");
@@ -70,33 +92,17 @@ public class P6SpySpanNameResolverTest {
 
     @Test
     public void testShouldReturnQuerySpanNameFromBeanName() throws Exception {
-        Map<String, DataSource> dataSources = new HashMap<>();
-        dataSources.put("myDs", dataSource);
-        Mockito.when(applicationContext.getBeansOfType(DataSource.class)).thenReturn(dataSources);
-        resolver.initialize();
-
         String querySpanName = resolver.querySpanName(statementInformation);
 
         Assertions.assertThat(querySpanName).isEqualTo("jdbc:/myDs/query");
     }
 
-    @Test
-    public void testShouldReturnConnectionSpanNameUsingDefault() throws Exception {
-        Mockito.when(applicationContext.getBeansOfType(DataSource.class)).thenReturn(Collections.emptyMap());
-        resolver.initialize();
+    @Configuration
+    static class MyDataSourceConfiguration {
 
-        String querySpanName = resolver.connectionSpanName(connectionInformation);
-
-        Assertions.assertThat(querySpanName).isEqualTo("jdbc:/dataSource/connection");
-    }
-
-    @Test
-    public void testShouldReturnQuerySpanNameUsingDefault() throws Exception {
-        Mockito.when(applicationContext.getBeansOfType(DataSource.class)).thenReturn(Collections.emptyMap());
-        resolver.initialize();
-
-        String querySpanName = resolver.querySpanName(statementInformation);
-
-        Assertions.assertThat(querySpanName).isEqualTo("jdbc:/dataSource/query");
+        @Bean
+        public DataSource myDs() {
+            return new HikariDataSource();
+        }
     }
 }

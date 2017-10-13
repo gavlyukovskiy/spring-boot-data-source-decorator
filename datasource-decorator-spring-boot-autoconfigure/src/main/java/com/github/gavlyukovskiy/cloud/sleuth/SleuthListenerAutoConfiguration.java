@@ -17,13 +17,17 @@
 package com.github.gavlyukovskiy.cloud.sleuth;
 
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorAutoConfiguration;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy.ProxyDataSourceDecorator;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy.P6SpyDataSourceDecorator;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.sleuth.Tracer;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
-import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 /**
  * {@link EnableAutoConfiguration Auto-configuration} for integration with spring-cloud-sleuth.
@@ -31,12 +35,47 @@ import org.springframework.context.annotation.Import;
  * @author Arthur Gavlyukovskiy
  * @since 1.2
  */
+@Configuration
 @ConditionalOnClass(Tracer.class)
 @ConditionalOnBean(Tracer.class)
 @AutoConfigureAfter({ TraceAutoConfiguration.class, DataSourceDecoratorAutoConfiguration.class })
-@Import({
-    SleuthListenerConfiguration.P6SpyConfiguration.class,
-    SleuthListenerConfiguration.ProxyDataSourceConfiguration.class
-})
 public class SleuthListenerAutoConfiguration {
+
+    public static final String SPAN_SQL_QUERY_TAG_NAME = "sql";
+    public static final String SPAN_ROW_COUNT_TAG_NAME = "row-count";
+    public static final String SPAN_CONNECTION_POSTFIX = "/connection";
+    public static final String SPAN_QUERY_POSTFIX = "/query";
+
+    @Configuration
+    @ConditionalOnBean(P6SpyDataSourceDecorator.class)
+    static class P6SpyConfiguration {
+
+        @Bean
+        public TracingJdbcEventListener tracingJdbcEventListener(Tracer tracer, P6SpySpanNameResolver p6SpySpanNameResolver) {
+            return new TracingJdbcEventListener(tracer, p6SpySpanNameResolver);
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        public P6SpySpanNameResolver dataSourceNameResolver() {
+            return new P6SpySpanNameResolver();
+        }
+    }
+
+    @Configuration
+    @ConditionalOnBean(ProxyDataSourceDecorator.class)
+    @ConditionalOnMissingBean(P6SpyConfiguration.class)
+    static class ProxyDataSourceConfiguration {
+
+        @Bean
+        public TracingQueryExecutionListener tracingQueryExecutionListener(Tracer tracer, DataSourceProxySpanNameResolver dataSourceProxySpanNameResolver) {
+            return new TracingQueryExecutionListener(tracer, dataSourceProxySpanNameResolver);
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        public DataSourceProxySpanNameResolver dataSourceProxySpanNameResolver() {
+            return new DataSourceProxySpanNameResolver();
+        }
+    }
 }
