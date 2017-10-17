@@ -2,9 +2,14 @@ package com.github.gavlyukovskiy.micrometer;
 
 import net.ttddyy.dsproxy.listener.MethodExecutionContext;
 import net.ttddyy.dsproxy.listener.MethodExecutionListener;
+import net.ttddyy.dsproxy.proxy.ConnectionProxyLogic;
+import net.ttddyy.dsproxy.proxy.jdk.ConnectionInvocationHandler;
+import org.springframework.beans.DirectFieldAccessor;
 
 import javax.sql.DataSource;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,7 +24,6 @@ import java.util.concurrent.TimeUnit;
 public class DataSourceMetricsMethodExecutionListener implements MethodExecutionListener {
 
     private final DataSourceMetricsBinder dataSourceMetricsBinder;
-    private Map<Connection, DataSource> connectionToDataSource = new ConcurrentHashMap<>();
 
     public DataSourceMetricsMethodExecutionListener(DataSourceMetricsBinder dataSourceMetricsBinder) {
         this.dataSourceMetricsBinder = dataSourceMetricsBinder;
@@ -30,9 +34,8 @@ public class DataSourceMetricsMethodExecutionListener implements MethodExecution
         Object target = executionContext.getTarget();
         String methodName = executionContext.getMethod().getName();
         if (target instanceof DataSource) {
-            DataSource dataSource = (DataSource) target;
-            DataSourceMetricsHolder metrics = dataSourceMetricsBinder.getMetrics(dataSource);
             if (methodName.equals("getConnection")) {
+                DataSourceMetricsHolder metrics = dataSourceMetricsBinder.getMetrics(executionContext.getProxyConfig().getDataSourceName());
                 metrics.beforeAcquireConnection();
             }
         }
@@ -43,20 +46,22 @@ public class DataSourceMetricsMethodExecutionListener implements MethodExecution
         Object target = executionContext.getTarget();
         String methodName = executionContext.getMethod().getName();
         if (target instanceof DataSource) {
-            DataSource dataSource = (DataSource) target;
             if (methodName.equals("getConnection")) {
                 Connection connection = (Connection) executionContext.getResult();
-                connectionToDataSource.put(connection, dataSource);
+                if (Proxy.isProxyClass(connection.getClass())) {
+                    ConnectionInvocationHandler connectionInvocationHandler = (ConnectionInvocationHandler) Proxy.getInvocationHandler(connection);
+                    ConnectionProxyLogic connectionProxyLogic = (ConnectionProxyLogic) new DirectFieldAccessor(connectionInvocationHandler).getPropertyValue("delegate");
+                    connection = (Connection) new DirectFieldAccessor(connectionProxyLogic).getPropertyValue("connection");
+                }
 
-                DataSourceMetricsHolder metrics = dataSourceMetricsBinder.getMetrics(dataSource);
+                DataSourceMetricsHolder metrics = dataSourceMetricsBinder.getMetrics(executionContext.getProxyConfig().getDataSourceName());
                 metrics.afterAcquireConnection(connection, executionContext.getElapsedTime(), TimeUnit.MILLISECONDS, executionContext.getThrown());
             }
         }
         else if (target instanceof Connection) {
             Connection connection = (Connection) target;
             if (methodName.equals("close")) {
-                DataSource dataSource = connectionToDataSource.remove(connection);
-                DataSourceMetricsHolder metrics = dataSourceMetricsBinder.getMetrics(dataSource);
+                DataSourceMetricsHolder metrics = dataSourceMetricsBinder.getMetrics(executionContext.getProxyConfig().getDataSourceName());
                 metrics.closeConnection(connection);
             }
         }

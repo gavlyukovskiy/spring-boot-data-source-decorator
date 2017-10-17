@@ -33,7 +33,7 @@ def pomConfig = {
 subprojects {
     ext {
         springBootVersion = '1.4.2.RELEASE'
-        p6SpyVersion = '3.3.0'
+        p6SpyVersion = '3.4.0'
         datasourceProxyVersion = '1.4.3'
         flexyPoolVersion = '1.2.9'
 

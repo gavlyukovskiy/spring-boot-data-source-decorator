@@ -29,6 +29,8 @@ import com.p6spy.engine.spy.option.SystemProperties;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 
 import javax.annotation.PostConstruct;
@@ -161,5 +163,11 @@ public class P6SpyConfiguration {
     @Bean
     public P6SpyDataSourceDecorator p6SpyDataSourceDecorator() {
         return new P6SpyDataSourceDecorator();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public P6SpyDataSourceNameResolver p6SpyDataSourceNameResolver(ApplicationContext applicationContext) {
+        return new P6SpyDataSourceNameResolver(applicationContext);
     }
 }

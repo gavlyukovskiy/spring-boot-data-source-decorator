@@ -35,16 +35,14 @@ import java.util.stream.Collectors;
 public class TracingQueryExecutionListener implements QueryExecutionListener {
 
     private final Tracer tracer;
-    private final DataSourceProxySpanNameResolver dataSourceProxySpanNameResolver;
 
-    TracingQueryExecutionListener(Tracer tracer, DataSourceProxySpanNameResolver dataSourceProxySpanNameResolver) {
+    TracingQueryExecutionListener(Tracer tracer) {
         this.tracer = tracer;
-        this.dataSourceProxySpanNameResolver = dataSourceProxySpanNameResolver;
     }
 
     @Override
     public void beforeQuery(ExecutionInfo execInfo, List<QueryInfo> queryInfoList) {
-        Span span = tracer.createSpan(dataSourceProxySpanNameResolver.querySpanName(execInfo));
+        Span span = tracer.createSpan("jdbc:/" + execInfo.getDataSourceName() + SleuthListenerAutoConfiguration.SPAN_QUERY_POSTFIX);
         //span.logEvent(Span.CLIENT_SEND);
         span.tag(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, queryInfoList.stream().map(QueryInfo::getQuery).collect(Collectors.joining("\n")));
         span.tag(Span.SPAN_LOCAL_COMPONENT_TAG_NAME, "database");

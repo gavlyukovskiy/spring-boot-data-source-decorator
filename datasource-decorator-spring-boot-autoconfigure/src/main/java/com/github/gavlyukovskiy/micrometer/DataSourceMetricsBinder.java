@@ -1,5 +1,6 @@
 package com.github.gavlyukovskiy.micrometer;
 
+import com.github.gavlyukovskiy.boot.jdbc.decorator.DecoratedDataSource;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.MeterBinder;
 import org.springframework.boot.autoconfigure.jdbc.metadata.DataSourcePoolMetadataProvider;
@@ -18,7 +19,7 @@ public class DataSourceMetricsBinder implements MeterBinder {
     private final ApplicationContext applicationContext;
     private final DataSourcePoolMetadataProviders providers;
 
-    private Map<CommonDataSource, DataSourceMetricsHolder> dataSourceMetrics = new ConcurrentHashMap<>();
+    private Map<String, DataSourceMetricsHolder> dataSourceMetrics = new ConcurrentHashMap<>();
 
     public DataSourceMetricsBinder(ApplicationContext applicationContext, Collection<DataSourcePoolMetadataProvider> metadataProviders) {
         this.applicationContext = applicationContext;
@@ -30,13 +31,15 @@ public class DataSourceMetricsBinder implements MeterBinder {
         Map<String, DataSource> dataSources = applicationContext.getBeansOfType(DataSource.class);
 
         dataSources.forEach((dataSourceName, dataSource) -> {
-            DataSourceMetricsHolder dataSourceMetricsHolder = new DataSourceMetricsHolder(dataSourceName, providers.getDataSourcePoolMetadata(dataSource));
-            dataSourceMetricsHolder.bindTo(registry);
-            dataSourceMetrics.put(dataSource, dataSourceMetricsHolder);
+            if (dataSource instanceof DecoratedDataSource) {
+                DataSourceMetricsHolder dataSourceMetricsHolder = new DataSourceMetricsHolder(dataSourceName, providers.getDataSourcePoolMetadata(dataSource));
+                dataSourceMetricsHolder.bindTo(registry);
+                dataSourceMetrics.put(dataSourceName, dataSourceMetricsHolder);
+            }
         });
     }
 
-    public DataSourceMetricsHolder getMetrics(CommonDataSource dataSource) {
-        return dataSourceMetrics.get(dataSource);
+    public DataSourceMetricsHolder getMetrics(String dataSourceName) {
+        return dataSourceMetrics.get(dataSourceName);
     }
 }
