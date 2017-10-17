@@ -27,7 +27,7 @@ public class DataSourceMetricsHolder implements MeterBinder {
 
     private final AtomicInteger activeConnections = new AtomicInteger();
     private final AtomicInteger pendingConnections = new AtomicInteger();
-    private final Map<Connection, Long> connectionAcquireTimestamp = new ConcurrentHashMap<>();
+    private final Map<Object, Long> connectionAcquireTimestamp = new ConcurrentHashMap<>();
     private final String dataSourceName;
     private final DataSourcePoolMetadata poolMetadata;
 
@@ -86,11 +86,11 @@ public class DataSourceMetricsHolder implements MeterBinder {
         pendingConnections.incrementAndGet();
     }
 
-    void afterAcquireConnection(Connection connection, long timeToAcquireConnection, TimeUnit timeUnit, Throwable e) {
+    void afterAcquireConnection(Object connectionKey, long timeToAcquireConnection, TimeUnit timeUnit, Throwable e) {
         connectionObtainTimer.record(timeToAcquireConnection, timeUnit);
         pendingConnections.decrementAndGet();
-        if (e == null && connection != null) {
-            connectionAcquireTimestamp.put(connection, System.nanoTime());
+        if (e == null && connectionKey != null) {
+            connectionAcquireTimestamp.put(connectionKey, System.nanoTime());
             connectionCreatedSummary.count();
             activeConnections.incrementAndGet();
         }
@@ -99,8 +99,8 @@ public class DataSourceMetricsHolder implements MeterBinder {
         }
     }
 
-    void closeConnection(Connection connection) {
-        Long acquisitionTime = connectionAcquireTimestamp.remove(connection);
+    void closeConnection(Object connectionKey) {
+        Long acquisitionTime = connectionAcquireTimestamp.remove(connectionKey);
         connectionUsageTimer.record(System.nanoTime() - acquisitionTime, TimeUnit.NANOSECONDS);
         activeConnections.decrementAndGet();
     }
