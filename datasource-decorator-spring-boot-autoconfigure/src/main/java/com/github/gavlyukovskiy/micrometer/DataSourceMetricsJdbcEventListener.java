@@ -34,13 +34,13 @@ public class DataSourceMetricsJdbcEventListener extends JdbcEventListener {
     public void onAfterGetConnection(ConnectionInformation connectionInformation, SQLException e) {
         String dataSourceName = p6SpyDataSourceNameResolver.resolveDataSourceName(connectionInformation.getDataSource());
         DataSourceMetricsHolder metrics = dataSourceMetricsBinder.getMetrics(dataSourceName);
-        metrics.afterAcquireConnection(connectionInformation.getConnectionId(), connectionInformation.getTimeToGetConnectionNs(), TimeUnit.NANOSECONDS, e);
+        metrics.afterAcquireConnection(connectionInformation, connectionInformation.getTimeToGetConnectionNs(), TimeUnit.NANOSECONDS, e);
     }
 
     @Override
     public void onAfterConnectionClose(ConnectionInformation connectionInformation, SQLException e) {
         String dataSourceName = p6SpyDataSourceNameResolver.resolveDataSourceName(connectionInformation.getDataSource());
         DataSourceMetricsHolder metrics = dataSourceMetricsBinder.getMetrics(dataSourceName);
-        metrics.closeConnection(connectionInformation.getConnectionId());
+        metrics.closeConnection(connectionInformation);
     }
 }

@@ -47,17 +47,14 @@ public class DataSourceMetricsMethodExecutionListener implements MethodExecution
         String methodName = executionContext.getMethod().getName();
         if (target instanceof DataSource) {
             if (methodName.equals("getConnection")) {
-                long connectionId = executionContext.getConnectionInfo().getConnectionId();
-
                 DataSourceMetricsHolder metrics = dataSourceMetricsBinder.getMetrics(executionContext.getProxyConfig().getDataSourceName());
-                metrics.afterAcquireConnection(connectionId, executionContext.getElapsedTime(), TimeUnit.MILLISECONDS, executionContext.getThrown());
+                metrics.afterAcquireConnection(executionContext.getConnectionInfo(), executionContext.getElapsedTime(), TimeUnit.MILLISECONDS, executionContext.getThrown());
             }
         }
         else if (target instanceof Connection) {
             if (methodName.equals("close")) {
-                long connectionId = executionContext.getConnectionInfo().getConnectionId();
                 DataSourceMetricsHolder metrics = dataSourceMetricsBinder.getMetrics(executionContext.getProxyConfig().getDataSourceName());
-                metrics.closeConnection(connectionId);
+                metrics.closeConnection(executionContext.getConnectionInfo());
             }
         }
     }
