@@ -16,7 +16,6 @@
 
 package com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy;
 
-import com.p6spy.engine.event.JdbcEventListener;
 import com.p6spy.engine.logging.P6LogFactory;
 import lombok.Getter;
 import lombok.Setter;
@@ -30,12 +29,6 @@ import lombok.Setter;
 @Setter
 public class P6SpyProperties {
 
-    /**
-     * Enables runtime listeners, uses all {@link JdbcEventListener} beans.
-     *
-     * @see RuntimeListenerSupportFactory
-     */
-    private boolean enableRuntimeListeners = true;
     /**
      * Enables logging JDBC events.
      *

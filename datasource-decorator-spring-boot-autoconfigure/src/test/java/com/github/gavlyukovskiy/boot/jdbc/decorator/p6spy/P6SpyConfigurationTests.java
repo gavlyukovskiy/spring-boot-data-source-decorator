@@ -20,11 +20,8 @@ import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorAutoConfi
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DecoratedDataSource;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.HidePackagesClassLoader;
 import com.p6spy.engine.common.ConnectionInformation;
-import com.p6spy.engine.event.CompoundJdbcEventListener;
 import com.p6spy.engine.event.JdbcEventListener;
 import com.p6spy.engine.spy.P6DataSource;
-import com.p6spy.engine.spy.P6Factory;
-import com.p6spy.engine.spy.P6ModuleManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,11 +36,7 @@ import javax.sql.DataSource;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Objects;
 import java.util.Random;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
@@ -74,9 +67,6 @@ public class P6SpyConfigurationTests {
 
         DataSource dataSource = context.getBean(DataSource.class);
 
-        assertThat(findP6Listeners()).extracting("class").contains(GetCountingListener.class);
-        assertThat(findP6Listeners()).extracting("class").contains(ClosingCountingListener.class);
-
         GetCountingListener getCountingListener = context.getBean(GetCountingListener.class);
         ClosingCountingListener closingCountingListener = context.getBean(ClosingCountingListener.class);
         P6DataSource p6DataSource = (P6DataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
@@ -91,21 +81,6 @@ public class P6SpyConfigurationTests {
         connection.close();
 
         assertThat(closingCountingListener.connectionCount).isEqualTo(1);
-    }
-
-    private List<JdbcEventListener> findP6Listeners() {
-        return P6ModuleManager.getInstance()
-                .getFactories()
-                .stream()
-                .map(P6Factory::getJdbcEventListener)
-                .filter(Objects::nonNull)
-                .flatMap(listener -> {
-                    if (listener instanceof CompoundJdbcEventListener) {
-                        return ((CompoundJdbcEventListener) listener).getEventListeners().stream();
-                    }
-                    return Stream.of(listener);
-                })
-                .collect(Collectors.toList());
     }
 
     @Configuration

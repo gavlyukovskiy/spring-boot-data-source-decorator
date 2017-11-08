@@ -17,6 +17,7 @@
 package com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy;
 
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecorator;
+import com.p6spy.engine.spy.JdbcEventListenerFactory;
 import com.p6spy.engine.spy.P6DataSource;
 import org.springframework.core.Ordered;
 
@@ -29,12 +30,17 @@ import javax.sql.DataSource;
  */
 public class P6SpyDataSourceDecorator implements DataSourceDecorator, Ordered {
 
-    P6SpyDataSourceDecorator() {
+    private final JdbcEventListenerFactory jdbcEventListenerFactory;
+
+    P6SpyDataSourceDecorator(JdbcEventListenerFactory jdbcEventListenerFactory) {
+        this.jdbcEventListenerFactory = jdbcEventListenerFactory;
     }
 
     @Override
     public DataSource decorate(String beanName, DataSource dataSource) {
-        return new P6DataSource(dataSource);
+        P6DataSource p6DataSource = new P6DataSource(dataSource);
+        p6DataSource.setJdbcEventListenerFactory(jdbcEventListenerFactory);
+        return p6DataSource;
     }
 
     @Override
