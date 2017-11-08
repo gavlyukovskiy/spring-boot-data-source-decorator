@@ -63,7 +63,6 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
     @Override
     public void onAfterGetConnection(ConnectionInformation connectionInformation, SQLException e) {
         Span connectionSpan = connectionSpans.get(connectionInformation);
-        //connectionSpan.logEvent(Span.CLIENT_SEND);
         if (e != null) {
             connectionSpans.remove(connectionInformation);
             connectionSpan.tag(Span.SPAN_ERROR_TAG_NAME, ExceptionUtils.getExceptionMessage(e));
@@ -75,7 +74,6 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
     public void onBeforeAnyExecute(StatementInformation statementInformation) {
         String dataSourceName = p6SpyDataSourceNameResolver.resolveDataSourceName(statementInformation.getConnectionInformation().getDataSource());
         Span statementSpan = tracer.createSpan("jdbc:/" + dataSourceName + SleuthListenerAutoConfiguration.SPAN_QUERY_POSTFIX);
-        //statementSpan.logEvent(Span.CLIENT_SEND);
         statementSpan.tag(Span.SPAN_LOCAL_COMPONENT_TAG_NAME, "database");
         statementSpans.put(statementInformation, statementSpan);
     }
@@ -83,7 +81,6 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
     @Override
     public void onAfterAnyExecute(StatementInformation statementInformation, long timeElapsedNanos, SQLException e) {
         Span statementSpan = statementSpans.remove(statementInformation);
-        //statementSpan.logEvent(Span.CLIENT_RECV);
         statementSpan.tag(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, getSql(statementInformation));
         if (e != null) {
             statementSpan.tag(Span.SPAN_ERROR_TAG_NAME, ExceptionUtils.getExceptionMessage(e));
@@ -143,7 +140,6 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
     @Override
     public void onAfterResultSetClose(ResultSetInformation resultSetInformation, SQLException e) {
         Span statementSpan = statementSpans.remove(resultSetInformation.getStatementInformation());
-        //statementSpan.logEvent(Span.CLIENT_RECV);
         statementSpan.tag(SleuthListenerAutoConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(resultSetInformation.getCurrRow()));
         if (e != null) {
             statementSpan.tag(Span.SPAN_ERROR_TAG_NAME, ExceptionUtils.getExceptionMessage(e));
@@ -175,7 +171,6 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
     @Override
     public void onAfterConnectionClose(ConnectionInformation connectionInformation, SQLException e) {
         Span connectionSpan = connectionSpans.remove(connectionInformation);
-        //connectionSpan.logEvent(Span.CLIENT_RECV);
         if (e != null) {
             connectionSpan.tag(Span.SPAN_ERROR_TAG_NAME, ExceptionUtils.getExceptionMessage(e));
         }
