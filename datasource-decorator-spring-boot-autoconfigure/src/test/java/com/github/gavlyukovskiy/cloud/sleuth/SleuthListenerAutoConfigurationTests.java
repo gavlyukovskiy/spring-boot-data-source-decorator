@@ -20,9 +20,7 @@ import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorAutoConfi
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DecoratedDataSource;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.HidePackagesClassLoader;
 import com.p6spy.engine.event.CompoundJdbcEventListener;
-import com.p6spy.engine.event.JdbcEventListener;
-import com.p6spy.engine.spy.P6Factory;
-import com.p6spy.engine.spy.P6ModuleManager;
+import com.p6spy.engine.spy.JdbcEventListenerFactory;
 import net.ttddyy.dsproxy.listener.ChainListener;
 import net.ttddyy.dsproxy.support.ProxyDataSource;
 import org.junit.After;
@@ -37,11 +35,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 
 import javax.sql.DataSource;
 
-import java.util.List;
-import java.util.Objects;
 import java.util.Random;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -72,13 +66,13 @@ public class SleuthListenerAutoConfigurationTests {
                 PropertyPlaceholderAutoConfiguration.class);
         context.refresh();
 
-        DataSource dataSource = context.getBean(DataSource.class);
-        assertThat(dataSource).isInstanceOf(DecoratedDataSource.class);
-        assertThat(findP6Listeners()).extracting("class").contains(TracingJdbcEventListener.class);
+        JdbcEventListenerFactory jdbcEventListenerFactory = context.getBean(JdbcEventListenerFactory.class);
+        CompoundJdbcEventListener jdbcEventListener = (CompoundJdbcEventListener) jdbcEventListenerFactory.createJdbcEventListener();
+        assertThat(jdbcEventListener.getEventListeners()).extracting("class").contains(TracingJdbcEventListener.class);
     }
 
     @Test
-    public void testDoesntAddP6SpyListenerIfNoTracer() {
+    public void testDoesNotAddP6SpyListenerIfNoTracer() {
         context.setClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "net.ttddyy.dsproxy"));
         context.register(DataSourceAutoConfiguration.class,
                 DataSourceDecoratorAutoConfiguration.class,
@@ -86,9 +80,9 @@ public class SleuthListenerAutoConfigurationTests {
                 PropertyPlaceholderAutoConfiguration.class);
         context.refresh();
 
-        DataSource dataSource = context.getBean(DataSource.class);
-        assertThat(dataSource).isInstanceOf(DecoratedDataSource.class);
-        assertThat(findP6Listeners()).extracting("class").doesNotContain(TracingJdbcEventListener.class);
+        JdbcEventListenerFactory jdbcEventListenerFactory = context.getBean(JdbcEventListenerFactory.class);
+        CompoundJdbcEventListener jdbcEventListener = (CompoundJdbcEventListener) jdbcEventListenerFactory.createJdbcEventListener();
+        assertThat(jdbcEventListener.getEventListeners()).extracting("class").doesNotContain(TracingJdbcEventListener.class);
     }
 
     @Test
@@ -121,20 +115,5 @@ public class SleuthListenerAutoConfigurationTests {
         ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
         ChainListener chainListener = proxyDataSource.getProxyConfig().getQueryListener();
         assertThat(chainListener.getListeners()).extracting("class").doesNotContain(TracingQueryExecutionListener.class);
-    }
-
-    private List<JdbcEventListener> findP6Listeners() {
-        return P6ModuleManager.getInstance()
-                .getFactories()
-                .stream()
-                .map(P6Factory::getJdbcEventListener)
-                .filter(Objects::nonNull)
-                .flatMap(listener -> {
-                    if (listener instanceof CompoundJdbcEventListener) {
-                        return ((CompoundJdbcEventListener) listener).getEventListeners().stream();
-                    }
-                    return Stream.of(listener);
-                })
-                .collect(Collectors.toList());
     }
 }

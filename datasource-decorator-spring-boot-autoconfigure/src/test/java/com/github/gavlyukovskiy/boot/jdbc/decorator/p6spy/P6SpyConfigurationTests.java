@@ -20,7 +20,9 @@ import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorAutoConfi
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DecoratedDataSource;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.HidePackagesClassLoader;
 import com.p6spy.engine.common.ConnectionInformation;
+import com.p6spy.engine.event.CompoundJdbcEventListener;
 import com.p6spy.engine.event.JdbcEventListener;
+import com.p6spy.engine.spy.JdbcEventListenerFactory;
 import com.p6spy.engine.spy.P6DataSource;
 import org.junit.After;
 import org.junit.Before;
@@ -66,21 +68,33 @@ public class P6SpyConfigurationTests {
         context.refresh();
 
         DataSource dataSource = context.getBean(DataSource.class);
-
+        JdbcEventListenerFactory jdbcEventListenerFactory = context.getBean(JdbcEventListenerFactory.class);
         GetCountingListener getCountingListener = context.getBean(GetCountingListener.class);
         ClosingCountingListener closingCountingListener = context.getBean(ClosingCountingListener.class);
         P6DataSource p6DataSource = (P6DataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
+        assertThat(p6DataSource).extracting("jdbcEventListenerFactory").containsOnly(jdbcEventListenerFactory);
 
+        CompoundJdbcEventListener jdbcEventListener = (CompoundJdbcEventListener) jdbcEventListenerFactory.createJdbcEventListener();
+
+        assertThat(jdbcEventListener.getEventListeners()).contains(getCountingListener, closingCountingListener);
         assertThat(getCountingListener.connectionCount).isEqualTo(0);
 
-        Connection connection = p6DataSource.getConnection();
+        Connection connection1 = p6DataSource.getConnection();
 
         assertThat(getCountingListener.connectionCount).isEqualTo(1);
         assertThat(closingCountingListener.connectionCount).isEqualTo(0);
 
-        connection.close();
+        Connection connection2 = p6DataSource.getConnection();
+
+        assertThat(getCountingListener.connectionCount).isEqualTo(2);
+
+        connection1.close();
 
         assertThat(closingCountingListener.connectionCount).isEqualTo(1);
+
+        connection2.close();
+
+        assertThat(closingCountingListener.connectionCount).isEqualTo(2);
     }
 
     @Configuration

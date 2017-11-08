@@ -86,8 +86,10 @@ public class TracingQueryExecutionListenerTests {
 
         assertThat(ExceptionUtils.getLastException()).isNull();
 
-        assertThat(spanReporter.getSpans()).hasSize(1);
-        Span statementSpan = spanReporter.getSpans().get(0);
+        assertThat(spanReporter.getSpans()).hasSize(2);
+        Span connectionSpan = spanReporter.getSpans().get(0);
+        Span statementSpan = spanReporter.getSpans().get(1);
+        assertThat(connectionSpan.getName()).isEqualTo("jdbc:/dataSource/connection");
         assertThat(statementSpan.getName()).isEqualTo("jdbc:/dataSource/query");
         assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, "SELECT NOW()");
     }
@@ -100,8 +102,10 @@ public class TracingQueryExecutionListenerTests {
 
         assertThat(ExceptionUtils.getLastException()).isNull();
 
-        assertThat(spanReporter.getSpans()).hasSize(1);
-        Span statementSpan = spanReporter.getSpans().get(0);
+        assertThat(spanReporter.getSpans()).hasSize(2);
+        Span connectionSpan = spanReporter.getSpans().get(0);
+        Span statementSpan = spanReporter.getSpans().get(1);
+        assertThat(connectionSpan.getName()).isEqualTo("jdbc:/dataSource/connection");
         assertThat(statementSpan.getName()).isEqualTo("jdbc:/dataSource/query");
         assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, "UPDATE INFORMATION_SCHEMA.TABLES SET table_Name = '' WHERE 0 = 1");
         assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_ROW_COUNT_TAG_NAME, "0");
@@ -117,8 +121,10 @@ public class TracingQueryExecutionListenerTests {
 
         assertThat(ExceptionUtils.getLastException()).isNull();
 
-        assertThat(spanReporter.getSpans()).hasSize(1);
-        Span statementSpan = spanReporter.getSpans().get(0);
+        assertThat(spanReporter.getSpans()).hasSize(2);
+        Span connectionSpan = spanReporter.getSpans().get(0);
+        Span statementSpan = spanReporter.getSpans().get(1);
+        assertThat(connectionSpan.getName()).isEqualTo("jdbc:/dataSource/connection");
         assertThat(statementSpan.getName()).isEqualTo("jdbc:/dataSource/query");
         assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, "SELECT NOW()");
     }

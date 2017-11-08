@@ -51,7 +51,9 @@ public class ContextJdbcEventListenerFactory implements JdbcEventListenerFactory
             compoundJdbcEventListener = new CompoundJdbcEventListener();
             compoundJdbcEventListener.addListender(jdbcEventListener);
         }
-        listeners.forEach(compoundJdbcEventListener::addListender);
+        if (!compoundJdbcEventListener.getEventListeners().containsAll(listeners)) {
+            listeners.forEach(compoundJdbcEventListener::addListender);
+        }
         return compoundJdbcEventListener;
     }
 }
