@@ -19,6 +19,7 @@ package com.github.gavlyukovskiy.cloud.sleuth;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorAutoConfiguration;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy.ProxyDataSourceDecorator;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy.P6SpyDataSourceDecorator;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy.P6SpyDataSourceNameResolver;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -51,14 +52,8 @@ public class SleuthListenerAutoConfiguration {
     static class P6SpyConfiguration {
 
         @Bean
-        public TracingJdbcEventListener tracingJdbcEventListener(Tracer tracer, P6SpySpanNameResolver p6SpySpanNameResolver) {
-            return new TracingJdbcEventListener(tracer, p6SpySpanNameResolver);
-        }
-
-        @Bean
-        @ConditionalOnMissingBean
-        public P6SpySpanNameResolver dataSourceNameResolver() {
-            return new P6SpySpanNameResolver();
+        public TracingJdbcEventListener tracingJdbcEventListener(Tracer tracer, P6SpyDataSourceNameResolver p6SpyDataSourceNameResolver) {
+            return new TracingJdbcEventListener(tracer, p6SpyDataSourceNameResolver);
         }
     }
 
@@ -68,14 +63,8 @@ public class SleuthListenerAutoConfiguration {
     static class ProxyDataSourceConfiguration {
 
         @Bean
-        public TracingQueryExecutionListener tracingQueryExecutionListener(Tracer tracer, DataSourceProxySpanNameResolver dataSourceProxySpanNameResolver) {
-            return new TracingQueryExecutionListener(tracer, dataSourceProxySpanNameResolver);
-        }
-
-        @Bean
-        @ConditionalOnMissingBean
-        public DataSourceProxySpanNameResolver dataSourceProxySpanNameResolver() {
-            return new DataSourceProxySpanNameResolver();
+        public TracingQueryExecutionListener tracingQueryExecutionListener(Tracer tracer) {
+            return new TracingQueryExecutionListener(tracer);
         }
     }
 }

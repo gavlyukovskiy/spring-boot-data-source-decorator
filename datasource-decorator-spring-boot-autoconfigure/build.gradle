@@ -19,8 +19,9 @@ dependencies {
     compileOnly("com.vladmihalcea.flexy-pool:flexy-hikaricp:${flexyPoolVersion}")
     compileOnly("com.vladmihalcea.flexy-pool:flexy-tomcatcp:${flexyPoolVersion}")
 
-    compileOnly("org.springframework.cloud:spring-cloud-sleuth-core:1.2.4.RELEASE")
-    compileOnly("io.micrometer:micrometer-core:1.0.0-rc.1")
+    compileOnly("org.springframework.cloud:spring-cloud-sleuth-core:1.2.5.RELEASE")
+    compileOnly("io.micrometer:micrometer-core:1.0.0-rc.3")
+    compileOnly("io.micrometer:micrometer-spring-legacy:1.0.0-rc.3")
 
     testCompile("junit:junit:4.12")
     testCompile("com.h2database:h2:1.4.193")
@@ -35,7 +36,7 @@ dependencies {
     testCompile("com.vladmihalcea.flexy-pool:flexy-tomcatcp:${flexyPoolVersion}")
 
     testCompile("org.springframework.cloud:spring-cloud-sleuth-core:1.2.4.RELEASE")
-    testCompile("io.micrometer:micrometer-core:1.0.0-rc.1")
+    testCompile("io.micrometer:micrometer-core:1.0.0-rc.3")
 
     testCompile("commons-dbcp:commons-dbcp:1.4")
     testCompile("org.apache.commons:commons-dbcp2:2.1.1")
