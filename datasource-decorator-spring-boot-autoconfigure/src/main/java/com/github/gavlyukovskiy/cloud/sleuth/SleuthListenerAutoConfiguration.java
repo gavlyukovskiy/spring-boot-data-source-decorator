@@ -19,7 +19,7 @@ package com.github.gavlyukovskiy.cloud.sleuth;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorAutoConfiguration;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy.ProxyDataSourceDecorator;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy.P6SpyDataSourceDecorator;
-import com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy.P6SpyDataSourceNameResolver;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceNameResolver;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -52,8 +52,8 @@ public class SleuthListenerAutoConfiguration {
     static class P6SpyConfiguration {
 
         @Bean
-        public TracingJdbcEventListener tracingJdbcEventListener(Tracer tracer, P6SpyDataSourceNameResolver p6SpyDataSourceNameResolver) {
-            return new TracingJdbcEventListener(tracer, p6SpyDataSourceNameResolver);
+        public TracingJdbcEventListener tracingJdbcEventListener(Tracer tracer, DataSourceNameResolver dataSourceNameResolver) {
+            return new TracingJdbcEventListener(tracer, dataSourceNameResolver);
         }
     }
 

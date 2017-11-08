@@ -56,7 +56,6 @@ public interface DecoratedDataSource extends RawTargetAccess {
 
     /**
      * Returns list with all decorators applied on a {@link DataSource} reverse ordered with applying order.
-     * First applied entry holds initial {@link DataSource} bean itself.
      *
      * @return decorating information chain
      */

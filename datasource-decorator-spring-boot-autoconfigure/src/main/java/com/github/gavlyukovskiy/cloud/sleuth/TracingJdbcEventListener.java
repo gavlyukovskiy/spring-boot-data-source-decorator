@@ -16,7 +16,7 @@
 
 package com.github.gavlyukovskiy.cloud.sleuth;
 
-import com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy.P6SpyDataSourceNameResolver;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceNameResolver;
 import com.p6spy.engine.common.ConnectionInformation;
 import com.p6spy.engine.common.PreparedStatementInformation;
 import com.p6spy.engine.common.ResultSetInformation;
@@ -40,21 +40,21 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TracingJdbcEventListener extends SimpleJdbcEventListener {
 
     private final Tracer tracer;
-    private final P6SpyDataSourceNameResolver p6SpyDataSourceNameResolver;
+    private final DataSourceNameResolver dataSourceNameResolver;
 
     // using Tracer#currentSpan is not safe due to possibility to commit/rollback connection without closing Statement/ResultSet
     // in this case events and tags will be logged in wrong Span
     private final Map<ConnectionInformation, Span> connectionSpans = new ConcurrentHashMap<>();
     private final Map<StatementInformation, Span> statementSpans = new ConcurrentHashMap<>();
 
-    TracingJdbcEventListener(Tracer tracer, P6SpyDataSourceNameResolver p6SpyDataSourceNameResolver) {
+    TracingJdbcEventListener(Tracer tracer, DataSourceNameResolver dataSourceNameResolver) {
         this.tracer = tracer;
-        this.p6SpyDataSourceNameResolver = p6SpyDataSourceNameResolver;
+        this.dataSourceNameResolver = dataSourceNameResolver;
     }
 
     @Override
     public void onBeforeGetConnection(ConnectionInformation connectionInformation) {
-        String dataSourceName = p6SpyDataSourceNameResolver.resolveDataSourceName(connectionInformation.getDataSource());
+        String dataSourceName = dataSourceNameResolver.resolveDataSourceName(connectionInformation.getDataSource());
         Span connectionSpan = tracer.createSpan("jdbc:/" + dataSourceName + SleuthListenerAutoConfiguration.SPAN_CONNECTION_POSTFIX);
         connectionSpan.tag(Span.SPAN_LOCAL_COMPONENT_TAG_NAME, "database");
         connectionSpans.put(connectionInformation, connectionSpan);
@@ -72,7 +72,7 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
 
     @Override
     public void onBeforeAnyExecute(StatementInformation statementInformation) {
-        String dataSourceName = p6SpyDataSourceNameResolver.resolveDataSourceName(statementInformation.getConnectionInformation().getDataSource());
+        String dataSourceName = dataSourceNameResolver.resolveDataSourceName(statementInformation.getConnectionInformation().getDataSource());
         Span statementSpan = tracer.createSpan("jdbc:/" + dataSourceName + SleuthListenerAutoConfiguration.SPAN_QUERY_POSTFIX);
         statementSpan.tag(Span.SPAN_LOCAL_COMPONENT_TAG_NAME, "database");
         statementSpans.put(statementInformation, statementSpan);

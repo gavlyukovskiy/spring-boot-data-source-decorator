@@ -20,22 +20,21 @@ import com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy.DataSourceProxyConfi
 import com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool.FlexyPoolConfiguration;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy.P6SpyConfiguration;
 import com.zaxxer.hikari.HikariDataSource;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.metadata.DataSourcePoolMetadataProvider;
 import org.springframework.boot.autoconfigure.jdbc.metadata.HikariDataSourcePoolMetadata;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.env.Environment;
 
-import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 
 /**
@@ -59,6 +58,12 @@ public class DataSourceDecoratorAutoConfiguration {
     @ConditionalOnBean(DataSourceDecorator.class)
     public static DataSourceDecoratorBeanPostProcessor dataSourceDecoratorBeanPostProcessor() {
         return new DataSourceDecoratorBeanPostProcessor();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public DataSourceNameResolver dataSourceNameResolver(ApplicationContext applicationContext) {
+        return new DataSourceNameResolver(applicationContext);
     }
 
     /**

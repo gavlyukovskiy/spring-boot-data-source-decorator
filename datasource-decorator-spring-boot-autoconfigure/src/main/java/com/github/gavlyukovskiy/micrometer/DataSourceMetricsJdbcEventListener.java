@@ -16,7 +16,7 @@
 
 package com.github.gavlyukovskiy.micrometer;
 
-import com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy.P6SpyDataSourceNameResolver;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceNameResolver;
 import com.p6spy.engine.common.ConnectionInformation;
 import com.p6spy.engine.event.JdbcEventListener;
 
@@ -32,30 +32,30 @@ import java.util.concurrent.TimeUnit;
 public class DataSourceMetricsJdbcEventListener extends JdbcEventListener {
 
     private final DataSourceMetricsBinder dataSourceMetricsBinder;
-    private final P6SpyDataSourceNameResolver p6SpyDataSourceNameResolver;
+    private final DataSourceNameResolver dataSourceNameResolver;
 
-    public DataSourceMetricsJdbcEventListener(DataSourceMetricsBinder dataSourceMetricsBinder, P6SpyDataSourceNameResolver p6SpyDataSourceNameResolver) {
+    public DataSourceMetricsJdbcEventListener(DataSourceMetricsBinder dataSourceMetricsBinder, DataSourceNameResolver dataSourceNameResolver) {
         this.dataSourceMetricsBinder = dataSourceMetricsBinder;
-        this.p6SpyDataSourceNameResolver = p6SpyDataSourceNameResolver;
+        this.dataSourceNameResolver = dataSourceNameResolver;
     }
 
     @Override
     public void onBeforeGetConnection(ConnectionInformation connectionInformation) {
-        String dataSourceName = p6SpyDataSourceNameResolver.resolveDataSourceName(connectionInformation.getDataSource());
+        String dataSourceName = dataSourceNameResolver.resolveDataSourceName(connectionInformation.getDataSource());
         DataSourceMetricsHolder metrics = dataSourceMetricsBinder.getMetrics(dataSourceName);
         metrics.beforeAcquireConnection();
     }
 
     @Override
     public void onAfterGetConnection(ConnectionInformation connectionInformation, SQLException e) {
-        String dataSourceName = p6SpyDataSourceNameResolver.resolveDataSourceName(connectionInformation.getDataSource());
+        String dataSourceName = dataSourceNameResolver.resolveDataSourceName(connectionInformation.getDataSource());
         DataSourceMetricsHolder metrics = dataSourceMetricsBinder.getMetrics(dataSourceName);
         metrics.afterAcquireConnection(connectionInformation, connectionInformation.getTimeToGetConnectionNs(), TimeUnit.NANOSECONDS, e);
     }
 
     @Override
     public void onAfterConnectionClose(ConnectionInformation connectionInformation, SQLException e) {
-        String dataSourceName = p6SpyDataSourceNameResolver.resolveDataSourceName(connectionInformation.getDataSource());
+        String dataSourceName = dataSourceNameResolver.resolveDataSourceName(connectionInformation.getDataSource());
         DataSourceMetricsHolder metrics = dataSourceMetricsBinder.getMetrics(dataSourceName);
         metrics.closeConnection(connectionInformation);
     }

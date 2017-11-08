@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-package com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy;
+package com.github.gavlyukovskiy.boot.jdbc.decorator;
 
-import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecorationStage;
-import com.github.gavlyukovskiy.boot.jdbc.decorator.DecoratedDataSource;
 import org.springframework.context.ApplicationContext;
 
 import javax.sql.CommonDataSource;
@@ -32,12 +30,12 @@ import java.util.Map.Entry;
  * @author Arthur Gavlyukovskiy
  * @since 1.3.0
  */
-public class P6SpyDataSourceNameResolver {
+public class DataSourceNameResolver {
 
     private final ApplicationContext applicationContext;
     private Map<String, DataSource> dataSources;
 
-    public P6SpyDataSourceNameResolver(ApplicationContext applicationContext) {
+    public DataSourceNameResolver(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
 
@@ -60,7 +58,8 @@ public class P6SpyDataSourceNameResolver {
     }
 
     private boolean matchesDataSource(DecoratedDataSource decoratedCandidate, CommonDataSource dataSource) {
-        return decoratedCandidate.getDecoratingChain().stream()
+        return decoratedCandidate.getRealDataSource() == dataSource
+                || decoratedCandidate.getDecoratingChain().stream()
                 .map(DataSourceDecorationStage::getDataSource)
                 .anyMatch(candidate -> candidate == dataSource);
     }
