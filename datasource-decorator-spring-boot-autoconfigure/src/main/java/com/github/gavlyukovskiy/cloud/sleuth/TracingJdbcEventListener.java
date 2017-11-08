@@ -53,17 +53,21 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
     }
 
     @Override
-    public void onAfterGetConnection(ConnectionInformation connectionInformation, SQLException e) {
+    public void onBeforeGetConnection(ConnectionInformation connectionInformation) {
         String dataSourceName = p6SpyDataSourceNameResolver.resolveDataSourceName(connectionInformation.getDataSource());
         Span connectionSpan = tracer.createSpan("jdbc:/" + dataSourceName + SleuthListenerAutoConfiguration.SPAN_CONNECTION_POSTFIX);
-        //connectionSpan.logEvent(Span.CLIENT_SEND);
         connectionSpan.tag(Span.SPAN_LOCAL_COMPONENT_TAG_NAME, "database");
+        connectionSpans.put(connectionInformation, connectionSpan);
+    }
+
+    @Override
+    public void onAfterGetConnection(ConnectionInformation connectionInformation, SQLException e) {
+        Span connectionSpan = connectionSpans.get(connectionInformation);
+        //connectionSpan.logEvent(Span.CLIENT_SEND);
         if (e != null) {
+            connectionSpans.remove(connectionInformation);
             connectionSpan.tag(Span.SPAN_ERROR_TAG_NAME, ExceptionUtils.getExceptionMessage(e));
             tracer.close(connectionSpan);
-        }
-        else {
-            connectionSpans.put(connectionInformation, connectionSpan);
         }
     }
 
