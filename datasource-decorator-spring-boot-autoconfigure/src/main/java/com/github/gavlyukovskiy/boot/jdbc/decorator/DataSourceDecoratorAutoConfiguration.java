@@ -55,17 +55,6 @@ import javax.sql.DataSource;
 })
 public class DataSourceDecoratorAutoConfiguration {
 
-    @Autowired
-    private SpringDataSourceDecoratorPropertiesMigrator springDataSourceDecoratorPropertiesMigrator;
-
-    @Autowired
-    private DataSourceDecoratorProperties dataSourceDecoratorProperties;
-
-    @PostConstruct
-    public void initializeDeprecatedProperties() {
-        springDataSourceDecoratorPropertiesMigrator.replacePropertiesAndWarn(dataSourceDecoratorProperties);
-    }
-
     @Bean
     @ConditionalOnBean(DataSourceDecorator.class)
     public static DataSourceDecoratorBeanPostProcessor dataSourceDecoratorBeanPostProcessor() {
@@ -93,10 +82,5 @@ public class DataSourceDecoratorAutoConfiguration {
             };
         }
 
-    }
-
-    @Bean
-    public SpringDataSourceDecoratorPropertiesMigrator springDataSourceDecoratorPropertiesMigrator(Environment environment) {
-        return new SpringDataSourceDecoratorPropertiesMigrator(environment);
     }
 }
