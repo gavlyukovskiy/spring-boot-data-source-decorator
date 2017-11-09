@@ -16,16 +16,15 @@
 
 package com.github.gavlyukovskiy.micrometer;
 
+import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceNameResolver;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy.ProxyDataSourceDecorator;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy.P6SpyDataSourceDecorator;
-import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceNameResolver;
 import com.github.gavlyukovskiy.micrometer.DataSourceMetricsAutoConfiguration.OnAnyListenableProxyProviderCondition;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.AnyNestedCondition;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.jdbc.metadata.DataSourcePoolMetadataProvider;
 import org.springframework.context.ApplicationContext;
@@ -42,7 +41,7 @@ import java.util.Collection;
  * @since 1.3.0
  */
 @Configuration
-@ConditionalOnClass(MeterRegistry.class)
+@ConditionalOnBean(MeterRegistry.class)
 @Conditional(OnAnyListenableProxyProviderCondition.class)
 @AutoConfigureAfter(name = {
     "io.micrometer.spring.autoconfigure.MetricsAutoConfiguration",

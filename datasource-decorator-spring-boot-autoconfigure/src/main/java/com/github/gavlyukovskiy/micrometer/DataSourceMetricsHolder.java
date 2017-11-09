@@ -22,6 +22,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.binder.MeterBinder;
 import org.springframework.boot.autoconfigure.jdbc.metadata.DataSourcePoolMetadata;
+import org.springframework.util.Assert;
 
 import javax.sql.DataSource;
 
@@ -57,7 +58,6 @@ public class DataSourceMetricsHolder implements MeterBinder {
     @Override
     public void bindTo(MeterRegistry registry) {
         connectionObtainTimer = Timer.builder("data.source.connections.wait")
-                .publishPercentileHistogram()
                 .tags("pool", dataSourceName)
                 .register(registry);
 
@@ -97,9 +97,10 @@ public class DataSourceMetricsHolder implements MeterBinder {
     }
 
     void afterAcquireConnection(Object connectionKey, long timeToAcquireConnection, TimeUnit timeUnit, Throwable e) {
+        Assert.notNull(connectionKey, "connectionKey must not be null");
         connectionObtainTimer.record(timeToAcquireConnection, timeUnit);
         pendingConnections.decrementAndGet();
-        if (e == null && connectionKey != null) {
+        if (e == null) {
             connectionAcquireTimestamp.put(connectionKey, System.nanoTime());
             connectionCreatedCounter.increment();
             activeConnections.incrementAndGet();
