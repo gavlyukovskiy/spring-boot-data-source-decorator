@@ -5,8 +5,8 @@ buildscript {
 }
 
 plugins {
-    id "com.jfrog.bintray" version "1.7.3"
-    id "pl.allegro.tech.build.axion-release" version "1.7.1"
+    id "com.jfrog.bintray" version "1.8.0"
+    id "pl.allegro.tech.build.axion-release" version "1.8.1"
 }
 
 def pomConfig = {
@@ -32,8 +32,8 @@ def pomConfig = {
 
 subprojects {
     ext {
-        springBootVersion = '1.4.2.RELEASE'
-        p6SpyVersion = '3.4.0'
+        springBootVersion = '1.5.8.RELEASE'
+        p6SpyVersion = '3.5.1'
         datasourceProxyVersion = '1.4.4'
         flexyPoolVersion = '1.2.9'
 

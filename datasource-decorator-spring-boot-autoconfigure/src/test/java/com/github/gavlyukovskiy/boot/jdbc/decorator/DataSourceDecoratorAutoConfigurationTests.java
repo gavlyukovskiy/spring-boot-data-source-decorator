@@ -31,10 +31,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.DirectFieldAccessor;
-import org.springframework.boot.autoconfigure.PropertyPlaceholderAutoConfiguration;
+import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.metadata.CommonsDbcp2DataSourcePoolMetadata;
-import org.springframework.boot.autoconfigure.jdbc.metadata.CommonsDbcpDataSourcePoolMetadata;
 import org.springframework.boot.autoconfigure.jdbc.metadata.DataSourcePoolMetadata;
 import org.springframework.boot.autoconfigure.jdbc.metadata.DataSourcePoolMetadataProvider;
 import org.springframework.boot.autoconfigure.jdbc.metadata.DataSourcePoolMetadataProviders;
@@ -266,23 +265,6 @@ public class DataSourceDecoratorAutoConfigurationTests {
         DataSourcePoolMetadataProviders poolMetadataProvider = new DataSourcePoolMetadataProviders(context.getBeansOfType(DataSourcePoolMetadataProvider.class).values());
         DataSourcePoolMetadata dataSourcePoolMetadata = poolMetadataProvider.getDataSourcePoolMetadata(dataSource);
         Assertions.assertThat(dataSourcePoolMetadata).isInstanceOf(TomcatDataSourcePoolMetadata.class);
-    }
-
-    @Test
-    @Deprecated
-    public void testReturnDataSourcePoolMetadataProviderForDbcp() {
-        EnvironmentTestUtils.addEnvironment(context,
-                "spring.datasource.type:" + org.apache.commons.dbcp.BasicDataSource.class.getName());
-        context.register(DataSourceAutoConfiguration.class,
-                DataSourceDecoratorAutoConfiguration.class,
-                PropertyPlaceholderAutoConfiguration.class);
-        context.refresh();
-
-        DataSource dataSource = context.getBean(DataSource.class);
-        Assertions.assertThat(dataSource).isInstanceOf(DecoratedDataSource.class);
-        DataSourcePoolMetadataProviders poolMetadataProvider = new DataSourcePoolMetadataProviders(context.getBeansOfType(DataSourcePoolMetadataProvider.class).values());
-        DataSourcePoolMetadata dataSourcePoolMetadata = poolMetadataProvider.getDataSourcePoolMetadata(dataSource);
-        Assertions.assertThat(dataSourcePoolMetadata).isInstanceOf(CommonsDbcpDataSourcePoolMetadata.class);
     }
 
     @Test
