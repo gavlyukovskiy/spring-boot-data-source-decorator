@@ -140,7 +140,8 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
     @Override
     public void onAfterResultSetClose(ResultSetInformation resultSetInformation, SQLException e) {
         Span statementSpan = statementSpans.remove(resultSetInformation.getStatementInformation());
-        statementSpan.tag(SleuthListenerAutoConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(resultSetInformation.getCurrRow()));
+        int rowCount = resultSetInformation.getCurrRow() + 1;
+        statementSpan.tag(SleuthListenerAutoConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(rowCount));
         if (e != null) {
             statementSpan.tag(Span.SPAN_ERROR_TAG_NAME, ExceptionUtils.getExceptionMessage(e));
         }
