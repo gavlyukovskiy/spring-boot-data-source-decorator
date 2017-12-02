@@ -32,7 +32,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 
+import javax.sql.DataSource;
+
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * {@link EnableAutoConfiguration Auto-configuration} for integration with micrometer.
@@ -50,9 +53,10 @@ import java.util.Collection;
 public class DataSourceMetricsAutoConfiguration {
 
     @Bean
-    public DataSourceMetricsBinder dataSourceMetricsBinder(ApplicationContext applicationContext,
-            Collection<DataSourcePoolMetadataProvider> metadataProviders) {
-        return new DataSourceMetricsBinder(applicationContext, metadataProviders);
+    public DataSourceMetricsBinder dataSourceMetricsBinder(Map<String, DataSource> dataSources,
+            Collection<DataSourcePoolMetadataProvider> metadataProviders,
+            MeterRegistry registry) {
+        return new DataSourceMetricsBinder(dataSources, metadataProviders, registry);
     }
 
     @Configuration
