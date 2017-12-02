@@ -45,7 +45,9 @@ public class DataSourceMetricsMethodExecutionListener implements MethodExecution
         if (target instanceof DataSource) {
             if (methodName.equals("getConnection")) {
                 DataSourceMetricsHolder metrics = dataSourceMetricsBinder.getMetrics(executionContext.getProxyConfig().getDataSourceName());
-                metrics.beforeAcquireConnection();
+                if (metrics != null) {
+                    metrics.beforeAcquireConnection();
+                }
             }
         }
     }
@@ -57,13 +59,17 @@ public class DataSourceMetricsMethodExecutionListener implements MethodExecution
         if (target instanceof DataSource) {
             if (methodName.equals("getConnection")) {
                 DataSourceMetricsHolder metrics = dataSourceMetricsBinder.getMetrics(executionContext.getProxyConfig().getDataSourceName());
-                metrics.afterAcquireConnection(executionContext.getConnectionInfo(), executionContext.getElapsedTime(), TimeUnit.MILLISECONDS, executionContext.getThrown());
+                if (metrics != null) {
+                    metrics.afterAcquireConnection(executionContext.getConnectionInfo(), executionContext.getElapsedTime(), TimeUnit.MILLISECONDS, executionContext.getThrown());
+                }
             }
         }
         else if (target instanceof Connection) {
             if (methodName.equals("close")) {
                 DataSourceMetricsHolder metrics = dataSourceMetricsBinder.getMetrics(executionContext.getProxyConfig().getDataSourceName());
-                metrics.closeConnection(executionContext.getConnectionInfo());
+                if (metrics != null) {
+                    metrics.closeConnection(executionContext.getConnectionInfo());
+                }
             }
         }
     }

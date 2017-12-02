@@ -20,7 +20,6 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
-import io.micrometer.core.instrument.binder.MeterBinder;
 import org.springframework.boot.autoconfigure.jdbc.metadata.DataSourcePoolMetadata;
 import org.springframework.util.Assert;
 
@@ -37,26 +36,18 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author Arthur Gavlyukovskiy
  * @since 1.3.0
  */
-public class DataSourceMetricsHolder implements MeterBinder {
+public class DataSourceMetricsHolder {
 
     private final AtomicInteger activeConnections = new AtomicInteger();
     private final AtomicInteger pendingConnections = new AtomicInteger();
     private final Map<Object, Long> connectionAcquireTimestamp = new ConcurrentHashMap<>();
-    private final String dataSourceName;
-    private final DataSourcePoolMetadata poolMetadata;
 
     private Timer connectionObtainTimer;
     private Timer connectionUsageTimer;
     private Counter connectionCreatedCounter;
     private Counter connectionFailedCounter;
 
-    DataSourceMetricsHolder(String dataSourceName, DataSourcePoolMetadata poolMetadata) {
-        this.dataSourceName = dataSourceName;
-        this.poolMetadata = poolMetadata;
-    }
-
-    @Override
-    public void bindTo(MeterRegistry registry) {
+    DataSourceMetricsHolder(String dataSourceName, DataSourcePoolMetadata poolMetadata, MeterRegistry registry) {
         connectionObtainTimer = Timer.builder("data.source.connections.wait")
                 .tags("pool", dataSourceName)
                 .register(registry);
