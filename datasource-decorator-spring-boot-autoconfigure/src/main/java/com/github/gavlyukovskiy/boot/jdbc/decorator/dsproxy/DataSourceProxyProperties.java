@@ -18,6 +18,10 @@ package com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.ttddyy.dsproxy.QueryCountHolder;
+import net.ttddyy.dsproxy.listener.logging.CommonsLogLevel;
+import net.ttddyy.dsproxy.listener.logging.SLF4JLogLevel;
+import net.ttddyy.dsproxy.support.ProxyDataSourceBuilder;
 import org.slf4j.Logger;
 
 import java.util.concurrent.TimeUnit;
