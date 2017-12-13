@@ -46,6 +46,7 @@ public class SleuthListenerAutoConfiguration {
     public static final String SPAN_ROW_COUNT_TAG_NAME = "row-count";
     public static final String SPAN_CONNECTION_POSTFIX = "/connection";
     public static final String SPAN_QUERY_POSTFIX = "/query";
+    public static final String SPAN_FETCH_POSTFIX = "/fetch";
 
     @Configuration
     @ConditionalOnBean(P6SpyDataSourceDecorator.class)

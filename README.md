@@ -224,11 +224,12 @@ decorator.datasource.flexy-pool.threshold.connection.lease=1000
 
 With P6Spy span will be created for:
  * `jdbc:/<dataSource>/connection` - opening connection including events for commits and rollbacks
- * `jdbc:/<dataSource>/query` - executing query including sql text in the tags, if the query returns `ResultSet` time between execution and closing is included in the span
+ * `jdbc:/<dataSource>/query` - executing query including sql text and number of affected rows in the tags
+ * `jdbc:/<dataSource>/fetch` - fetching result set data including number of rows text in the tags
 
 With Datasource Proxy span will be created for:
  * `jdbc:/<dataSource>/connection` - opening connection including events for commits and rollbacks
- * `jdbc:/<dataSource>/query` - executing query including sql text (without parameters) in the tags.
+ * `jdbc:/<dataSource>/query` - executing query including sql text (without parameters) and number of affected rows in the tags
 
 
 Example request:
