@@ -66,8 +66,8 @@ All beans of type `JdbcEventListener` are registered in P6Spy:
 public JdbcEventListener myListener() {
     return new JdbcEventListener() {
         @Override
-        public void onConnectionWrapped(ConnectionInformation connectionInformation) {
-            System.out.println("connection wrapped");
+        public void onAfterGetConnection(ConnectionInformation connectionInformation, SQLException e) {
+            System.out.println("got connection");
         }
 
         @Override
@@ -92,6 +92,8 @@ decorator.datasource.p6spy.multiline=true
 decorator.datasource.p6spy.logging=slf4j
 # Log file to use (only with logging=file)
 decorator.datasource.p6spy.log-file=spy.log
+# Custom log format, if specified com.p6spy.engine.spy.appender.CustomLineFormat will be used with this log format
+decorator.datasource.p6spy.log-format=
 ```
 
 Also you can configure P6Spy manually using one of available configuration methods. For more information please refer to the [P6Spy Configuration Guide](http://p6spy.readthedocs.io/en/latest/configandusage.html)   

@@ -82,8 +82,14 @@ public class P6SpyConfiguration {
             }
             System.setProperty("p6spy.config.modulelist", moduleList.stream().collect(Collectors.joining(",")));
         }
-        if (p6spy.isMultiline() && !initialP6SpyOptions.containsKey("logMessageFormat")) {
-            System.setProperty("p6spy.config.logMessageFormat", "com.p6spy.engine.spy.appender.MultiLineFormat");
+        if (!initialP6SpyOptions.containsKey("logMessageFormat")) {
+            if (p6spy.getLogFormat() != null) {
+                System.setProperty("p6spy.config.logMessageFormat", "com.p6spy.engine.spy.appender.CustomLineFormat");
+                System.setProperty("p6spy.config.customLogMessageFormat", p6spy.getLogFormat());
+            }
+            else if (p6spy.isMultiline()) {
+                System.setProperty("p6spy.config.logMessageFormat", "com.p6spy.engine.spy.appender.MultiLineFormat");
+            }
         }
         if (p6spy.isEnableLogging() && !initialP6SpyOptions.containsKey("appender")) {
             switch (p6spy.getLogging()) {
@@ -112,8 +118,14 @@ public class P6SpyConfiguration {
         if (!initialP6SpyOptions.containsKey("modulelist")) {
             System.clearProperty("p6spy.config.modulelist");
         }
-        if (p6spy.isMultiline() && !initialP6SpyOptions.containsKey("logMessageFormat")) {
-            System.clearProperty("p6spy.config.logMessageFormat");
+        if (!initialP6SpyOptions.containsKey("logMessageFormat")) {
+            if (p6spy.getLogFormat() != null) {
+                System.clearProperty("p6spy.config.logMessageFormat");
+                System.clearProperty("p6spy.config.customLogMessageFormat");
+            }
+            else if (p6spy.isMultiline()) {
+                System.clearProperty("p6spy.config.logMessageFormat");
+            }
         }
         if (!initialP6SpyOptions.containsKey("appender")) {
             System.clearProperty("p6spy.config.appender");

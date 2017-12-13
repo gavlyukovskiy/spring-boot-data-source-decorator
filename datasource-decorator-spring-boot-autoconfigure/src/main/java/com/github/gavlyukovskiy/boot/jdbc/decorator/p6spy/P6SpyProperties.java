@@ -47,6 +47,10 @@ public class P6SpyProperties {
      * Name of log file to use (only for logging=file).
      */
     private String logFile = "spy.log";
+    /**
+     * Custom log format.
+     */
+    private String logFormat;
 
     public enum P6SpyLogging {
         SYSOUT,
