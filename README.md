@@ -18,33 +18,46 @@ Of course you can just create `DataSource` bean wrapped in any proxy you want, b
 
 Add one of the starters to the classpath of a Spring Boot application and your datasources (autoconfigured or custom) will be wrapped into one of a datasource proxy providers above.
 
-Gradle:
+If you want to use P6Spy
 ```groovy
-compile('com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.3.0')
-compile('com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.3.0')
-compile('com.github.gavlyukovskiy:flexy-pool-spring-boot-starter:1.3.0')
+compile('com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.3.1')
 ```
-
-Maven:
 ```xml
 <dependency>
     <groupId>com.github.gavlyukovskiy</groupId>
     <artifactId>p6spy-spring-boot-starter</artifactId>
-    <version>1.3.0</version>
+    <version>1.3.1</version>
 </dependency>
+```
+
+or Datasource Proxy:
+```xml
 <dependency>
     <groupId>com.github.gavlyukovskiy</groupId>
     <artifactId>datasource-proxy-spring-boot-starter</artifactId>
-    <version>1.3.0</version>
+    <version>1.3.1</version>
 </dependency>
+```
+```groovy
+compile('com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.3.1')
+```
+
+or FlexyPool
+```groovy
+compile('com.github.gavlyukovskiy:flexy-pool-spring-boot-starter:1.3.1')
+```
+```xml
 <dependency>
     <groupId>com.github.gavlyukovskiy</groupId>
     <artifactId>flexy-pool-spring-boot-starter</artifactId>
-    <version>1.3.0</version>
+    <version>1.3.1</version>
 </dependency>
 ```
 
 NOTE: To use FlexyPool you must add `PoolAdapter` for your particular connection pool.
+
+NOTE 2: You can use all of them if you want, if so decorating order is next:
+`DataSource -> FlexyPoolDataSource -> ProxyDataSource -> P6DataSource`
 
 **P6Spy**
 
