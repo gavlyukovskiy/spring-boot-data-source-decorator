@@ -58,7 +58,7 @@ NOTE: To use FlexyPool you must add `PoolAdapter` for your particular connection
 
 NOTE 2: You can use all of them if you want, if so decorating order is next:
 ```
-DataSource -> FlexyPoolDataSource -> ProxyDataSource -> P6DataSource
+P6DataSource -> ProxyDataSource -> FlexyPoolDataSource -> DataSource  
 ```
 
 **P6Spy**
