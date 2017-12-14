@@ -57,7 +57,9 @@ compile('com.github.gavlyukovskiy:flexy-pool-spring-boot-starter:1.3.1')
 NOTE: To use FlexyPool you must add `PoolAdapter` for your particular connection pool.
 
 NOTE 2: You can use all of them if you want, if so decorating order is next:
-`DataSource -> FlexyPoolDataSource -> ProxyDataSource -> P6DataSource`
+```
+DataSource -> FlexyPoolDataSource -> ProxyDataSource -> P6DataSource
+```
 
 **P6Spy**
 
