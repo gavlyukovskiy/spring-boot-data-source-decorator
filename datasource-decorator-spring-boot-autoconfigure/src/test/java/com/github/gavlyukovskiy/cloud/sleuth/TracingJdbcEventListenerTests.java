@@ -230,6 +230,27 @@ public class TracingJdbcEventListenerTests {
         assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, "SELECT NOW()");
     }
 
+    @Test
+    public void testShouldNotFailWhenResultSetNextWasNotCalled() throws Exception {
+        Connection connection = dataSource.getConnection();
+        Statement statement = connection.createStatement();
+        ResultSet resultSet = statement.executeQuery("SELECT NOW()");
+        resultSet.close();
+        statement.close();
+        connection.close();
+
+        assertThat(ExceptionUtils.getLastException()).isNull();
+
+        assertThat(spanReporter.getSpans()).hasSize(3);
+        Span connectionSpan = spanReporter.getSpans().get(0);
+        Span resultSetSpan = spanReporter.getSpans().get(1);
+        Span statementSpan = spanReporter.getSpans().get(2);
+        assertThat(connectionSpan.getName()).isEqualTo("jdbc:/dataSource/connection");
+        assertThat(statementSpan.getName()).isEqualTo("jdbc:/dataSource/query");
+        assertThat(resultSetSpan.getName()).isEqualTo("jdbc:/dataSource/fetch");
+        assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, "SELECT NOW()");
+    }
+
     @Configuration
     static class SavingSpanReporterConfiguration {
 

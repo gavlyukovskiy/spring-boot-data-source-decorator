@@ -90,20 +90,16 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
     @Override
     public void onAfterExecuteQuery(PreparedStatementInformation statementInformation, long timeElapsedNanos, SQLException e) {
         super.onAfterExecuteQuery(statementInformation, timeElapsedNanos, e);
+        createResultSetSpan(statementInformation);
     }
 
     @Override
     public void onAfterExecuteQuery(StatementInformation statementInformation, long timeElapsedNanos, String sql, SQLException e) {
         super.onAfterExecuteQuery(statementInformation, timeElapsedNanos, sql, e);
+        createResultSetSpan(statementInformation);
     }
 
-    @Override
-    public void onBeforeResultSetNext(ResultSetInformation resultSetInformation) {
-        // creating span only for the first ResultSet#next() call
-        if (resultSetInformation.getCurrRow() != -1) {
-            return;
-        }
-        StatementInformation statementInformation = resultSetInformation.getStatementInformation();
+    private void createResultSetSpan(StatementInformation statementInformation) {
         String dataSourceName = dataSourceNameResolver.resolveDataSourceName(statementInformation.getConnectionInformation().getDataSource());
         Span resultSetSpan = tracer.createSpan("jdbc:/" + dataSourceName + SleuthListenerAutoConfiguration.SPAN_FETCH_POSTFIX);
         resultSetSpan.tag(Span.SPAN_LOCAL_COMPONENT_TAG_NAME, "database");
