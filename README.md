@@ -31,15 +31,15 @@ compile('com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.3.1')
 ```
 
 or Datasource Proxy:
+```groovy
+compile('com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.3.1')
+```
 ```xml
 <dependency>
     <groupId>com.github.gavlyukovskiy</groupId>
     <artifactId>datasource-proxy-spring-boot-starter</artifactId>
     <version>1.3.1</version>
 </dependency>
-```
-```groovy
-compile('com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.3.1')
 ```
 
 or FlexyPool
