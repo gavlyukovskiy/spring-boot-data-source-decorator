@@ -30,6 +30,23 @@ def pomConfig = {
     }
 }
 
+task prereleaseCheck() {
+    doLast {
+        if (!project.hasProperty('release.version'))
+            throw new IllegalStateException("'-Prelease.version' must be set")
+        if (!System.getenv('BINTRAY_USER') && !project.hasProperty('release.bintray_user'))
+            throw new IllegalStateException("'BINTRAY_USER' or '-Prelease.bintray_user' must be set")
+        if (!System.getenv('BINTRAY_KEY') && !project.hasProperty('release.bintray_key'))
+            throw new IllegalStateException("'BINTRAY_KEY' or '-Prelease.bintray_key' must be set")
+        if (!System.getenv('GPG_PASSPHRASE') && !project.hasProperty('release.gpg_passphrase'))
+            throw new IllegalStateException("'GPG_PASSPHRASE' or '-Prelease.gpg_passphrase' must be set")
+        if (!System.getenv('SONATYPE_USER') && !project.hasProperty('release.sonatype_user'))
+            throw new IllegalStateException("'SONATYPE_USER' or '-Prelease.sonatype_user' must be set")
+        if (!System.getenv('SONATYPE_PASSWORD') && !project.hasProperty('release.sonatype_password'))
+            throw new IllegalStateException("'SONATYPE_PASSWORD' or '-Prelease.sonatype_password' must be set")
+    }
+}
+
 subprojects {
     ext {
         springBootVersion = '1.5.9.RELEASE'
@@ -88,17 +105,29 @@ subprojects {
         }
 
         bintray {
-            user = System.getenv('BINTRAY_USER')
-            key = System.getenv('BINTRAY_KEY')
+            user = System.getenv('BINTRAY_USER') ?: project.findProperty('release.bintray_user')
+            key = System.getenv('BINTRAY_KEY') ?: project.findProperty('release.bintray_key')
             publications = ['mavenJava']
+            publish = true
             pkg {
                 repo = project.group
                 name = project.name
                 licenses = ['Apache-2.0']
+                publicDownloadNumbers = true
                 version {
                     name = project.version
                     released = new Date()
                     vcsTag = scmVersion.tag.prefix + scmVersion.tag.versionSeparator + scmVersion.version
+                    gpg {
+                        sign = true
+                        passphrase = System.getenv('GPG_PASSPHRASE') ?: project.findProperty('release.gpg_passphrase')
+                    }
+                    mavenCentralSync {
+                        sync = true
+                        user = System.getenv('SONATYPE_USER') ?: project.findProperty('release.sonatype_user')
+                        password = System.getenv('SONATYPE_PASSWORD') ?: project.findProperty('release.sonatype_password')
+                        close = '1'
+                    }
                 }
             }
         }
@@ -120,4 +149,10 @@ subprojects {
             }
         }
     }
+}
+
+verifyRelease.finalizedBy(prereleaseCheck)
+subprojects.each {
+    if (it.ext.release)
+        verifyRelease.dependsOn("${it.name}:build")
 }

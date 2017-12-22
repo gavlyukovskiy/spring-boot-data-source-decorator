@@ -9,6 +9,7 @@
 .springBeans
 target/
 build/
+out/
 _site/
 .idea
 *.iml
