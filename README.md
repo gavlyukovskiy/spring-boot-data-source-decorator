@@ -20,37 +20,37 @@ Add one of the starters to the classpath of a Spring Boot application and your d
 
 If you want to use P6Spy
 ```groovy
-compile('com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.3.1')
+compile('com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.3.2')
 ```
 ```xml
 <dependency>
     <groupId>com.github.gavlyukovskiy</groupId>
     <artifactId>p6spy-spring-boot-starter</artifactId>
-    <version>1.3.1</version>
+    <version>1.3.2</version>
 </dependency>
 ```
 
 or Datasource Proxy:
 ```groovy
-compile('com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.3.1')
+compile('com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.3.2')
 ```
 ```xml
 <dependency>
     <groupId>com.github.gavlyukovskiy</groupId>
     <artifactId>datasource-proxy-spring-boot-starter</artifactId>
-    <version>1.3.1</version>
+    <version>1.3.2</version>
 </dependency>
 ```
 
 or FlexyPool
 ```groovy
-compile('com.github.gavlyukovskiy:flexy-pool-spring-boot-starter:1.3.1')
+compile('com.github.gavlyukovskiy:flexy-pool-spring-boot-starter:1.3.2')
 ```
 ```xml
 <dependency>
     <groupId>com.github.gavlyukovskiy</groupId>
     <artifactId>flexy-pool-spring-boot-starter</artifactId>
-    <version>1.3.1</version>
+    <version>1.3.2</version>
 </dependency>
 ```
 
