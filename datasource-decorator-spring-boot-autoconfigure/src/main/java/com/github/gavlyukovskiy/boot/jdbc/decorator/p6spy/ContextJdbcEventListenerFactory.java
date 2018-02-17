@@ -31,19 +31,13 @@ import java.util.List;
  */
 public class ContextJdbcEventListenerFactory implements JdbcEventListenerFactory {
 
-    private final JdbcEventListenerFactory delegate;
-    private final List<JdbcEventListener> listeners;
+    private final CompoundJdbcEventListener compoundJdbcEventListener;
 
     ContextJdbcEventListenerFactory(JdbcEventListenerFactory delegate, List<JdbcEventListener> listeners) {
+        Assert.notNull(delegate, "JdbcEventListenerFactory should not be null");
         Assert.notEmpty(listeners, "Listeners should not be empty");
-        this.delegate = delegate;
-        this.listeners = listeners;
-    }
 
-    @Override
-    public JdbcEventListener createJdbcEventListener() {
         JdbcEventListener jdbcEventListener = delegate.createJdbcEventListener();
-        CompoundJdbcEventListener compoundJdbcEventListener;
         if (jdbcEventListener instanceof CompoundJdbcEventListener) {
             compoundJdbcEventListener = (CompoundJdbcEventListener) jdbcEventListener;
         }
@@ -51,9 +45,11 @@ public class ContextJdbcEventListenerFactory implements JdbcEventListenerFactory
             compoundJdbcEventListener = new CompoundJdbcEventListener();
             compoundJdbcEventListener.addListender(jdbcEventListener);
         }
-        if (!compoundJdbcEventListener.getEventListeners().containsAll(listeners)) {
-            listeners.forEach(compoundJdbcEventListener::addListender);
-        }
+        listeners.forEach(compoundJdbcEventListener::addListender);
+    }
+
+    @Override
+    public JdbcEventListener createJdbcEventListener() {
         return compoundJdbcEventListener;
     }
 }

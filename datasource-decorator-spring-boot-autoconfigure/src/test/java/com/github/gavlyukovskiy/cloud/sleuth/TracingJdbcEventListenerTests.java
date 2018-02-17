@@ -39,12 +39,14 @@ import javax.sql.DataSource;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 public class TracingJdbcEventListenerTests {
 
@@ -249,6 +251,48 @@ public class TracingJdbcEventListenerTests {
         assertThat(statementSpan.getName()).isEqualTo("jdbc:/dataSource/query");
         assertThat(resultSetSpan.getName()).isEqualTo("jdbc:/dataSource/fetch");
         assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, "SELECT NOW()");
+    }
+
+    @Test
+    public void testShouldNotFailWhenResourceIsAlreadyClosed() throws Exception {
+        Connection connection = dataSource.getConnection();
+        Statement statement = connection.createStatement();
+        ResultSet resultSet = statement.executeQuery("SELECT NOW()");
+        resultSet.close();
+        resultSet.close();
+        statement.close();
+        statement.close();
+        connection.close();
+        connection.close();
+
+        assertThat(ExceptionUtils.getLastException()).isNull();
+
+        assertThat(spanReporter.getSpans()).hasSize(3);
+        Span connectionSpan = spanReporter.getSpans().get(0);
+        Span resultSetSpan = spanReporter.getSpans().get(1);
+        Span statementSpan = spanReporter.getSpans().get(2);
+        assertThat(connectionSpan.getName()).isEqualTo("jdbc:/dataSource/connection");
+        assertThat(statementSpan.getName()).isEqualTo("jdbc:/dataSource/query");
+        assertThat(resultSetSpan.getName()).isEqualTo("jdbc:/dataSource/fetch");
+        assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, "SELECT NOW()");
+    }
+
+    @Test
+    public void testShouldNotFailWhenResourceIsAlreadyClosed2() throws Exception {
+        Connection connection = dataSource.getConnection();
+        try {
+            connection.close();
+            connection.prepareStatement("SELECT NOW()");
+            fail("should fail due to closed connection");
+        }
+        catch (SQLException expected) {
+        }
+
+        assertThat(ExceptionUtils.getLastException()).isNull();
+
+        assertThat(spanReporter.getSpans()).hasSize(1);
+        Span connectionSpan = spanReporter.getSpans().get(0);
+        assertThat(connectionSpan.getName()).isEqualTo("jdbc:/dataSource/connection");
     }
 
     @Configuration

@@ -24,7 +24,6 @@ import com.p6spy.engine.common.StatementInformation;
 import com.p6spy.engine.event.SimpleJdbcEventListener;
 import org.springframework.cloud.sleuth.Span;
 import org.springframework.cloud.sleuth.Tracer;
-import org.springframework.cloud.sleuth.util.ExceptionUtils;
 import org.springframework.util.StringUtils;
 
 import java.sql.SQLException;
@@ -65,7 +64,7 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
         Span connectionSpan = connectionSpans.get(connectionInformation);
         if (e != null) {
             connectionSpans.remove(connectionInformation);
-            connectionSpan.tag(Span.SPAN_ERROR_TAG_NAME, ExceptionUtils.getExceptionMessage(e));
+            connectionSpan.tag(Span.SPAN_ERROR_TAG_NAME, getExceptionMessage(e));
             tracer.close(connectionSpan);
         }
     }
@@ -82,7 +81,7 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
         Span statementSpan = tracer.getCurrentSpan();
         statementSpan.tag(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, getSql(statementInformation));
         if (e != null) {
-            statementSpan.tag(Span.SPAN_ERROR_TAG_NAME, ExceptionUtils.getExceptionMessage(e));
+            statementSpan.tag(Span.SPAN_ERROR_TAG_NAME, getExceptionMessage(e));
         }
         tracer.close(statementSpan);
     }
@@ -90,13 +89,17 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
     @Override
     public void onAfterExecuteQuery(PreparedStatementInformation statementInformation, long timeElapsedNanos, SQLException e) {
         super.onAfterExecuteQuery(statementInformation, timeElapsedNanos, e);
-        createResultSetSpan(statementInformation);
+        if (e == null) {
+            createResultSetSpan(statementInformation);
+        }
     }
 
     @Override
     public void onAfterExecuteQuery(StatementInformation statementInformation, long timeElapsedNanos, String sql, SQLException e) {
         super.onAfterExecuteQuery(statementInformation, timeElapsedNanos, sql, e);
-        createResultSetSpan(statementInformation);
+        if (e == null) {
+            createResultSetSpan(statementInformation);
+        }
     }
 
     private void createResultSetSpan(StatementInformation statementInformation) {
@@ -121,10 +124,14 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
     @Override
     public void onAfterResultSetClose(ResultSetInformation resultSetInformation, SQLException e) {
         Span resultSetSpan = resultSetSpans.remove(resultSetInformation.getStatementInformation());
+        if (resultSetSpan == null) {
+            // connection is already closed
+            return;
+        }
         int rowCount = resultSetInformation.getCurrRow() + 1;
         resultSetSpan.tag(SleuthListenerAutoConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(rowCount));
         if (e != null) {
-            resultSetSpan.tag(Span.SPAN_ERROR_TAG_NAME, ExceptionUtils.getExceptionMessage(e));
+            resultSetSpan.tag(Span.SPAN_ERROR_TAG_NAME, getExceptionMessage(e));
         }
         tracer.close(resultSetSpan);
     }
@@ -135,7 +142,7 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
         Span resultSetSpan = resultSetSpans.remove(statementInformation);
         if (resultSetSpan != null) {
             if (e != null) {
-                resultSetSpan.tag(Span.SPAN_ERROR_TAG_NAME, ExceptionUtils.getExceptionMessage(e));
+                resultSetSpan.tag(Span.SPAN_ERROR_TAG_NAME, getExceptionMessage(e));
             }
             tracer.close(resultSetSpan);
         }
@@ -144,8 +151,12 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
     @Override
     public void onAfterCommit(ConnectionInformation connectionInformation, long timeElapsedNanos, SQLException e) {
         Span connectionSpan = connectionSpans.get(connectionInformation);
+        if (connectionSpan == null) {
+            // connection is already closed
+            return;
+        }
         if (e != null) {
-            connectionSpan.tag(Span.SPAN_ERROR_TAG_NAME, ExceptionUtils.getExceptionMessage(e));
+            connectionSpan.tag(Span.SPAN_ERROR_TAG_NAME, getExceptionMessage(e));
         }
         connectionSpan.logEvent("commit");
     }
@@ -153,8 +164,12 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
     @Override
     public void onAfterRollback(ConnectionInformation connectionInformation, long timeElapsedNanos, SQLException e) {
         Span connectionSpan = connectionSpans.get(connectionInformation);
+        if (connectionSpan == null) {
+            // connection is already closed
+            return;
+        }
         if (e != null) {
-            connectionSpan.tag(Span.SPAN_ERROR_TAG_NAME, ExceptionUtils.getExceptionMessage(e));
+            connectionSpan.tag(Span.SPAN_ERROR_TAG_NAME, getExceptionMessage(e));
         }
         else {
             connectionSpan.tag(Span.SPAN_ERROR_TAG_NAME, "Transaction rolled back");
@@ -165,8 +180,12 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
     @Override
     public void onAfterConnectionClose(ConnectionInformation connectionInformation, SQLException e) {
         Span connectionSpan = connectionSpans.remove(connectionInformation);
+        if (connectionSpan == null) {
+            // connection is already closed
+            return;
+        }
         if (e != null) {
-            connectionSpan.tag(Span.SPAN_ERROR_TAG_NAME, ExceptionUtils.getExceptionMessage(e));
+            connectionSpan.tag(Span.SPAN_ERROR_TAG_NAME, getExceptionMessage(e));
         }
         Span currentSpan = tracer.getCurrentSpan();
         // result set and statement were not closed but connection was, closing result set span as well
@@ -181,5 +200,9 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
         return StringUtils.hasText(statementInformation.getSqlWithValues())
                 ? statementInformation.getSqlWithValues()
                 : statementInformation.getSql();
+    }
+
+    private String getExceptionMessage(Throwable e) {
+        return e.getMessage() != null ? e.getMessage() : e.toString();
     }
 }
