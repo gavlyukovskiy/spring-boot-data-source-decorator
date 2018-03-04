@@ -156,6 +156,7 @@ subprojects {
 }
 
 verifyRelease.finalizedBy(prereleaseCheck)
+release.finalizedBy(bintrayUpload)
 subprojects.each {
     if (it.ext.release)
         verifyRelease.dependsOn("${it.name}:build")
