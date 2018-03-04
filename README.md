@@ -1,18 +1,11 @@
 **Spring Boot DataSource Decorator**
 
-Spring Boot autoconfiguration for integration with 
+Spring Boot auto-configuration for integration with
 * [P6Spy](https://github.com/p6spy/p6spy) - adds ability to intercept and log sql queries, including interception of a most `Connection`, `Statement` and `ResultSet` methods invocations
-* [Datasource Proxy](https://github.com/ttddyy/datasource-proxy) - more lightweight than p6spy, supports only `beforeQuery` and `afterQuery` events  
+* [Datasource Proxy](https://github.com/ttddyy/datasource-proxy) - adds ability to intercept all queries and `Connection`, Statement` and `ResultSet` method calls
 * [FlexyPool](https://github.com/vladmihalcea/flexy-pool) - adds connection pool metrics (jmx, codahale, dropwizard) and flexible strategies for adjusting pool size on demand
-* [Spring Cloud Sleuth](https://github.com/spring-cloud/spring-cloud-sleuth) - library for distributed tracing, if found in classpath enables jdbc connections (p6spy) and queries (p6spy, datasource-proxy) tracing 
-
-**Why Should I Care**
-
-Of course you can just create `DataSource` bean wrapped in any proxy you want, but what will you get using this library:
-* ability to configure your datasource using `spring.datasource.hikari.*`, `spring.datasource.dbcp2.*`, `spring.datasource.tomcat.*`
-* `/metrics` - will display your actual datasource stats (active, usage)
-* ability to disable proxying quick on appropriate environment
-* configure each library using only Spring Context without pain
+* [Spring Cloud Sleuth](https://github.com/spring-cloud/spring-cloud-sleuth) - library for distributed tracing, if found in classpath enables jdbc connections and queries tracing (only with p6spy or datasource-proxy)
+* [Micrometer](https://github.com/micrometer-metrics/micrometer) - metrics api, in combination with p6spy or datasource-proxy adds metrics for datasource.
 
 **Quick Start**
 
@@ -97,8 +90,6 @@ This done by adding `RuntimeListenerSupportFactory` into P6Spy `modulelist`, ove
 
 You can configure small set of parameters in your `application.properties`:
 ```properties
-# Register RuntimeListenerSupportFactory if JdbcEventListener beans were found
-decorator.datasource.p6spy.enable-runtime-listeners=true
 # Register P6LogFactory to log JDBC events
 decorator.datasource.p6spy.enable-logging=true
 # Use com.p6spy.engine.spy.appender.MultiLineFormat instead of com.p6spy.engine.spy.appender.SingleLineFormat
@@ -235,6 +226,12 @@ decorator.datasource.flexy-pool.metrics.reporter.log.millis=300000
 decorator.datasource.flexy-pool.threshold.connection.acquire=50
 # Enable logging and publishing ConnectionLeaseTimeThresholdExceededEvent when a connection lease has exceeded the given time threshold
 decorator.datasource.flexy-pool.threshold.connection.lease=1000
+
+# Creates span for every connection and query. Works only with p6spy or datasource-proxy.
+decorator.datasource.sleuth.enabled=true
+
+# Enables datasource metrics using micrometer
+decorator.datasource.metrics.enabled=true
 ```
 
 **Spring Cloud Sleuth**
@@ -259,6 +256,17 @@ Details of query span:
 ![alt text](images/query-span.png)
 
 ![alt text](images/query-span-error.png)
+
+**Micrometer**
+Exposes datasource metrics using micrometer api.
+
+Metrics are aligned with Hikari metrics, but works for other pools as well.
+ * `datasource.connections.acquire` - time to acquire connection
+ * `datasource.connections.usage` - time of connection usage, usually transaction time
+ * `datasource.connections.active` - number of currently active connections
+ * `datasource.connections.pending` - number of threads pending for free connection
+ * `datasource.connections.created` - number of total connections acquired
+ * `datasource.connections.failed` - number of total connections acquisition fails
 
 **Custom Decorators**
 

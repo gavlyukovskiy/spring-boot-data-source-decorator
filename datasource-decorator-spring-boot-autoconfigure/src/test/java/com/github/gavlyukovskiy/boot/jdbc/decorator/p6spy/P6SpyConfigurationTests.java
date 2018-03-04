@@ -27,13 +27,11 @@ import com.p6spy.engine.logging.LoggingEventListener;
 import com.p6spy.engine.spy.JdbcEventListenerFactory;
 import com.p6spy.engine.spy.P6DataSource;
 import com.p6spy.engine.spy.appender.CustomLineFormat;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.test.util.EnvironmentTestUtils;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -47,88 +45,75 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 
 public class P6SpyConfigurationTests {
 
-    private final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
-
-    @Before
-    public void init() {
-        EnvironmentTestUtils.addEnvironment(context,
-                "datasource.initialize:false",
-                "datasource.url:jdbc:h2:mem:testdb-" + new Random().nextInt());
-        context.setClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "net.ttddyy.dsproxy"));
-    }
-
-    @After
-    public void restore() {
-        context.close();
-    }
+    private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
+            .withConfiguration(AutoConfigurations.of(
+                    DataSourceAutoConfiguration.class,
+                    DataSourceDecoratorAutoConfiguration.class,
+                    PropertyPlaceholderAutoConfiguration.class
+            ))
+            .withPropertyValues("spring.datasource.initialization-mode=never",
+                    "spring.datasource.url:jdbc:h2:mem:testdb-" + new Random().nextInt())
+            .withClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "net.ttddyy.dsproxy"));
 
     @Test
     public void testCustomListeners() throws Exception {
-        context.register(CustomListenerConfiguration.class,
-                DataSourceAutoConfiguration.class,
-                DataSourceDecoratorAutoConfiguration.class,
-                PropertyPlaceholderAutoConfiguration.class);
-        context.refresh();
+        ApplicationContextRunner contextRunner = this.contextRunner.withUserConfiguration(CustomListenerConfiguration.class);
 
-        DataSource dataSource = context.getBean(DataSource.class);
-        JdbcEventListenerFactory jdbcEventListenerFactory = context.getBean(JdbcEventListenerFactory.class);
-        GetCountingListener getCountingListener = context.getBean(GetCountingListener.class);
-        ClosingCountingListener closingCountingListener = context.getBean(ClosingCountingListener.class);
-        P6DataSource p6DataSource = (P6DataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
-        assertThat(p6DataSource).extracting("jdbcEventListenerFactory").containsOnly(jdbcEventListenerFactory);
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            JdbcEventListenerFactory jdbcEventListenerFactory = context.getBean(JdbcEventListenerFactory.class);
+            GetCountingListener getCountingListener = context.getBean(GetCountingListener.class);
+            ClosingCountingListener closingCountingListener = context.getBean(ClosingCountingListener.class);
+            P6DataSource p6DataSource = (P6DataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
+            assertThat(p6DataSource).extracting("jdbcEventListenerFactory").containsOnly(jdbcEventListenerFactory);
 
-        CompoundJdbcEventListener jdbcEventListener = (CompoundJdbcEventListener) jdbcEventListenerFactory.createJdbcEventListener();
+            CompoundJdbcEventListener jdbcEventListener = (CompoundJdbcEventListener) jdbcEventListenerFactory.createJdbcEventListener();
 
-        assertThat(jdbcEventListener.getEventListeners()).contains(getCountingListener, closingCountingListener);
-        assertThat(getCountingListener.connectionCount).isEqualTo(0);
+            assertThat(jdbcEventListener.getEventListeners()).contains(getCountingListener, closingCountingListener);
+            assertThat(getCountingListener.connectionCount).isEqualTo(0);
 
-        Connection connection1 = p6DataSource.getConnection();
+            Connection connection1 = p6DataSource.getConnection();
 
-        assertThat(getCountingListener.connectionCount).isEqualTo(1);
-        assertThat(closingCountingListener.connectionCount).isEqualTo(0);
+            assertThat(getCountingListener.connectionCount).isEqualTo(1);
+            assertThat(closingCountingListener.connectionCount).isEqualTo(0);
 
-        Connection connection2 = p6DataSource.getConnection();
+            Connection connection2 = p6DataSource.getConnection();
 
-        assertThat(getCountingListener.connectionCount).isEqualTo(2);
+            assertThat(getCountingListener.connectionCount).isEqualTo(2);
 
-        connection1.close();
+            connection1.close();
 
-        assertThat(closingCountingListener.connectionCount).isEqualTo(1);
+            assertThat(closingCountingListener.connectionCount).isEqualTo(1);
 
-        connection2.close();
+            connection2.close();
 
-        assertThat(closingCountingListener.connectionCount).isEqualTo(2);
+            assertThat(closingCountingListener.connectionCount).isEqualTo(2);
+        });
     }
 
     @Test
     public void testDoesNotRegisterLoggingListenerIfDisabled() {
-        EnvironmentTestUtils.addEnvironment(context,
-                "decorator.datasource.p6spy.enable-logging: false");
-        context.register(DataSourceAutoConfiguration.class,
-                DataSourceDecoratorAutoConfiguration.class,
-                PropertyPlaceholderAutoConfiguration.class);
-        context.refresh();
+        ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("decorator.datasource.p6spy.enable-logging:false");
 
-        JdbcEventListenerFactory jdbcEventListenerFactory = context.getBean(JdbcEventListenerFactory.class);
-        CompoundJdbcEventListener jdbcEventListener = (CompoundJdbcEventListener) jdbcEventListenerFactory.createJdbcEventListener();
+        contextRunner.run(context -> {
+            JdbcEventListenerFactory jdbcEventListenerFactory = context.getBean(JdbcEventListenerFactory.class);
+            CompoundJdbcEventListener jdbcEventListener = (CompoundJdbcEventListener) jdbcEventListenerFactory.createJdbcEventListener();
 
-        assertThat(jdbcEventListener.getEventListeners()).extracting("class").doesNotContain(LoggingEventListener.class);
+            assertThat(jdbcEventListener.getEventListeners()).extracting("class").doesNotContain(LoggingEventListener.class);
+        });
     }
 
     @Test
     public void testCanSetCustomLoggingFormat() {
-        EnvironmentTestUtils.addEnvironment(context,
-                "decorator.datasource.p6spy.log-format: test %{connectionId}");
-        context.register(DataSourceAutoConfiguration.class,
-                DataSourceDecoratorAutoConfiguration.class,
-                PropertyPlaceholderAutoConfiguration.class);
-        context.refresh();
+        ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("decorator.datasource.p6spy.log-format:test %{connectionId}");
 
-        JdbcEventListenerFactory jdbcEventListenerFactory = context.getBean(JdbcEventListenerFactory.class);
-        CompoundJdbcEventListener jdbcEventListener = (CompoundJdbcEventListener) jdbcEventListenerFactory.createJdbcEventListener();
+        contextRunner.run(context -> {
+            JdbcEventListenerFactory jdbcEventListenerFactory = context.getBean(JdbcEventListenerFactory.class);
+            CompoundJdbcEventListener jdbcEventListener = (CompoundJdbcEventListener) jdbcEventListenerFactory.createJdbcEventListener();
 
-        assertThat(jdbcEventListener.getEventListeners()).extracting("class").contains(LoggingEventListener.class);
-        assertThat(P6LogQuery.getLogger()).extracting("strategy").extracting("class").contains(CustomLineFormat.class);
+            assertThat(jdbcEventListener.getEventListeners()).extracting("class").contains(LoggingEventListener.class);
+            assertThat(P6LogQuery.getLogger()).extracting("strategy").extracting("class").contains(CustomLineFormat.class);
+        });
     }
 
     @Configuration

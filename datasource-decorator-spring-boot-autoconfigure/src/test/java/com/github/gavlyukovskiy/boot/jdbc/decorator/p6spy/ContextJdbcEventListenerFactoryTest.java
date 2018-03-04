@@ -19,24 +19,25 @@ package com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy;
 import com.p6spy.engine.event.CompoundJdbcEventListener;
 import com.p6spy.engine.event.SimpleJdbcEventListener;
 import com.p6spy.engine.spy.JdbcEventListenerFactory;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(MockitoJUnitRunner.class)
-public class ContextJdbcEventListenerFactoryTest {
+class ContextJdbcEventListenerFactoryTest {
 
-    @Mock
     private JdbcEventListenerFactory delegate;
 
+    @BeforeEach
+    void setUp() {
+        delegate = Mockito.mock(JdbcEventListenerFactory.class);
+    }
+
     @Test
-    public void shouldUseDelegateToCreateListener() {
+    void shouldUseDelegateToCreateListener() {
         SimpleJdbcEventListener listener1 = new SimpleJdbcEventListener() {};
         SimpleJdbcEventListener listener2 = new SimpleJdbcEventListener() {};
         Mockito.when(delegate.createJdbcEventListener()).thenReturn(listener1);
@@ -48,7 +49,7 @@ public class ContextJdbcEventListenerFactoryTest {
     }
 
     @Test
-    public void shouldReuseCompoundListenerFromFactory() {
+    void shouldReuseCompoundListenerFromFactory() {
         SimpleJdbcEventListener listener1 = new SimpleJdbcEventListener() {};
         Mockito.when(delegate.createJdbcEventListener()).thenReturn(new CompoundJdbcEventListener());
         ContextJdbcEventListenerFactory contextJdbcEventListenerFactory = new ContextJdbcEventListenerFactory(delegate, Collections.singletonList(listener1));

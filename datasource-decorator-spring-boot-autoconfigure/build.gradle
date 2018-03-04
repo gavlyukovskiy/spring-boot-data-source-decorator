@@ -19,13 +19,16 @@ dependencies {
     compileOnly("com.vladmihalcea.flexy-pool:flexy-hikaricp:${flexyPoolVersion}")
     compileOnly("com.vladmihalcea.flexy-pool:flexy-tomcatcp:${flexyPoolVersion}")
 
+    compileOnly("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}")
     compileOnly("org.springframework.cloud:spring-cloud-sleuth-core:${sleuthVersion}")
     compileOnly("io.micrometer:micrometer-core:${micrometerVersion}")
-    compileOnly("io.micrometer:micrometer-spring-legacy:${micrometerVersion}")
 
-    testCompile("junit:junit:4.12")
+    testCompile("org.junit.jupiter:junit-jupiter-api:5.1.0")
+    testCompile("org.junit.jupiter:junit-jupiter-params:5.1.0")
+    testCompile("org.junit.jupiter:junit-jupiter-engine:5.1.0")
     testCompile("com.h2database:h2:1.4.193")
     testCompile("org.assertj:assertj-core:3.6.2")
+    testCompile("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}")
     testCompile("org.springframework.boot:spring-boot-starter-test:${springBootVersion}")
 
     testCompile("p6spy:p6spy:${p6SpyVersion}")

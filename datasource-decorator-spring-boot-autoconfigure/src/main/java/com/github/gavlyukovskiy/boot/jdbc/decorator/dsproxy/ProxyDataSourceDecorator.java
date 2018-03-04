@@ -17,9 +17,11 @@
 package com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy;
 
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecorator;
+import com.zaxxer.hikari.HikariDataSource;
 import net.ttddyy.dsproxy.support.ProxyDataSource;
 import net.ttddyy.dsproxy.support.ProxyDataSourceBuilder;
 import org.springframework.core.Ordered;
+import org.springframework.util.ClassUtils;
 
 import javax.sql.DataSource;
 
@@ -29,6 +31,9 @@ import javax.sql.DataSource;
  * @author Arthur Gavlyukovskiy
  */
 public class ProxyDataSourceDecorator implements DataSourceDecorator, Ordered {
+    private final static boolean HIKARI_AVAILABLE =
+            ClassUtils.isPresent("com.zaxxer.hikari.HikariDataSource", ProxyDataSourceDecorator.class.getClassLoader());
+
     private final ProxyDataSourceBuilder proxyDataSourceBuilder;
 
     ProxyDataSourceDecorator(ProxyDataSourceBuilder proxyDataSourceBuilder) {
@@ -37,7 +42,14 @@ public class ProxyDataSourceDecorator implements DataSourceDecorator, Ordered {
 
     @Override
     public DataSource decorate(String beanName, DataSource dataSource) {
-        return proxyDataSourceBuilder.dataSource(dataSource).name(beanName).build();
+        String dataSourceName = beanName;
+        if (HIKARI_AVAILABLE && dataSource instanceof HikariDataSource) {
+            HikariDataSource hikariDataSource = (HikariDataSource) dataSource;
+            if (hikariDataSource.getPoolName() != null) {
+                dataSourceName = hikariDataSource.getPoolName();
+            }
+        }
+        return proxyDataSourceBuilder.dataSource(dataSource).name(dataSourceName).build();
     }
 
     @Override

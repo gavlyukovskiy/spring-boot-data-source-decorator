@@ -27,13 +27,11 @@ import com.vladmihalcea.flexypool.strategy.IncrementPoolOnTimeoutConnectionAcqui
 import com.vladmihalcea.flexypool.strategy.RetryConnectionAcquiringStrategy;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.dbcp2.BasicDataSource;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.test.util.EnvironmentTestUtils;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.ReflectionUtils;
@@ -48,141 +46,117 @@ import java.util.Set;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
-public class FlexyPoolConfigurationTests {
+class FlexyPoolConfigurationTests {
 
-    private final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+    private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
+            .withConfiguration(AutoConfigurations.of(
+                    DataSourceAutoConfiguration.class,
+                    DataSourceDecoratorAutoConfiguration.class,
+                    PropertyPlaceholderAutoConfiguration.class
+            ))
+            .withPropertyValues("spring.datasource.initialization-mode=never",
+                    "spring.datasource.url:jdbc:h2:mem:testdb-" + new Random().nextInt())
+            .withClassLoader(new HidePackagesClassLoader("net.ttddyy.dsproxy", "com.p6spy"));
 
-    @Before
-    public void init() {
-        EnvironmentTestUtils.addEnvironment(context,
-                "datasource.initialize:false",
-                "datasource.url:jdbc:h2:mem:testdb-" + new Random().nextInt());
-        context.setClassLoader(new HidePackagesClassLoader("net.ttddyy.dsproxy", "com.p6spy"));
-    }
-
-    @After
-    public void restore() {
-        context.close();
+    @Test
+    void testDecoratingDefaultSource() throws Exception {
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            assertDataSourceOfType(dataSource, HikariDataSource.class);
+        });
     }
 
     @Test
-    public void testDecoratingTomcatDataSource() throws Exception {
-        context.register(DataSourceAutoConfiguration.class,
-                DataSourceDecoratorAutoConfiguration.class,
-                PropertyPlaceholderAutoConfiguration.class);
-        context.refresh();
+    void testNoDecoratingDefaultDataSourceWithoutAdapterDependency() throws Exception {
+        ApplicationContextRunner contextRunner = this.contextRunner.withClassLoader(new HidePackagesClassLoader("net.ttddyy.dsproxy", "com.p6spy", "com.vladmihalcea.flexypool.adaptor"));
 
-        DataSource dataSource = context.getBean(DataSource.class);
-        assertDataSourceOfType(dataSource, org.apache.tomcat.jdbc.pool.DataSource.class);
+        contextRunner.run(context -> {
+            assertThat(context).doesNotHaveBean(DecoratedDataSource.class);
+        });
     }
 
     @Test
-    public void testNoDecoratingTomcatDataSourceWithoutAdapterDependency() throws Exception {
-        context.setClassLoader(new HidePackagesClassLoader("net.ttddyy.dsproxy", "com.p6spy", "com.vladmihalcea.flexypool.adaptor.TomcatCPPoolAdapter"));
-        context.register(DataSourceAutoConfiguration.class,
-                DataSourceDecoratorAutoConfiguration.class,
-                PropertyPlaceholderAutoConfiguration.class);
-        context.refresh();
+    void testDecoratingDbcp2DataSource() throws Exception {
+        ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("spring.datasource.type:" + BasicDataSource.class.getName());
 
-        DataSource dataSource = context.getBean(DataSource.class);
-        assertThat(dataSource).isInstanceOf(org.apache.tomcat.jdbc.pool.DataSource.class);
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            assertDataSourceOfType(dataSource, BasicDataSource.class);
+        });
     }
 
     @Test
-    public void testDecoratingDbcp2DataSource() throws Exception {
-        EnvironmentTestUtils.addEnvironment(context,
-                "spring.datasource.type:" + BasicDataSource.class.getName());
-        context.register(DataSourceAutoConfiguration.class,
-                DataSourceDecoratorAutoConfiguration.class,
-                PropertyPlaceholderAutoConfiguration.class);
-        context.refresh();
+    void testDecoratingHikariDataSourceWithDefaultStrategies() throws Exception {
+        ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("spring.datasource.type:" + HikariDataSource.class.getName());
 
-        DataSource dataSource = context.getBean(DataSource.class);
-        DataSource realDataSource = ((DecoratedDataSource) dataSource).getRealDataSource();
-        assertDataSourceOfType(dataSource, BasicDataSource.class);
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            assertDataSourceOfType(dataSource, HikariDataSource.class);
+            FlexyPoolDataSource<HikariDataSource> flexyPoolDataSource = assertDataSourceOfType(dataSource, HikariDataSource.class);
+            IncrementPoolOnTimeoutConnectionAcquiringStrategy strategy1 =
+                    findStrategy(flexyPoolDataSource, IncrementPoolOnTimeoutConnectionAcquiringStrategy.class);
+            assertThat(strategy1).isNotNull();
+            assertThat(strategy1).hasFieldOrPropertyWithValue("maxOverflowPoolSize", 15);
+            assertThat(strategy1).hasFieldOrPropertyWithValue("timeoutMillis", 500);
+
+            RetryConnectionAcquiringStrategy strategy2 =
+                    findStrategy(flexyPoolDataSource, RetryConnectionAcquiringStrategy.class);
+            assertThat(strategy2).isNotNull();
+            assertThat(strategy2).hasFieldOrPropertyWithValue("retryAttempts", 2);
+        });
     }
 
     @Test
-    public void testDecoratingHikariDataSourceWithDefaultStrategies() throws Exception {
-        EnvironmentTestUtils.addEnvironment(context,
-                "spring.datasource.type:" + HikariDataSource.class.getName());
-        context.register(DataSourceAutoConfiguration.class,
-                DataSourceDecoratorAutoConfiguration.class,
-                PropertyPlaceholderAutoConfiguration.class);
-        context.refresh();
-
-        DataSource dataSource = context.getBean(DataSource.class);
-        assertDataSourceOfType(dataSource, HikariDataSource.class);
-        FlexyPoolDataSource<HikariDataSource> flexyPoolDataSource = assertDataSourceOfType(dataSource, HikariDataSource.class);
-        IncrementPoolOnTimeoutConnectionAcquiringStrategy strategy1 =
-                findStrategy(flexyPoolDataSource, IncrementPoolOnTimeoutConnectionAcquiringStrategy.class);
-        assertThat(strategy1).isNotNull();
-        assertThat(strategy1).hasFieldOrPropertyWithValue("maxOverflowPoolSize", 15);
-        assertThat(strategy1).hasFieldOrPropertyWithValue("timeoutMillis", 500);
-
-        RetryConnectionAcquiringStrategy strategy2 =
-                findStrategy(flexyPoolDataSource, RetryConnectionAcquiringStrategy.class);
-        assertThat(strategy2).isNotNull();
-        assertThat(strategy2).hasFieldOrPropertyWithValue("retryAttempts", 2);
-    }
-
-    @Test
-    public void testDecoratingHikariDataSourceWithCustomPropertyStrategies() throws Exception {
-        EnvironmentTestUtils.addEnvironment(context,
-                "spring.datasource.type:" + HikariDataSource.class.getName(),
+    void testDecoratingHikariDataSourceWithCustomPropertyStrategies() throws Exception {
+        ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("spring.datasource.type:" + HikariDataSource.class.getName(),
                 "decorator.datasource.flexy-pool.acquiring-strategy.increment-pool.max-overflow-pool-size:15",
                 "decorator.datasource.flexy-pool.acquiring-strategy.increment-pool.timeout-millis:500",
-                "decorator.datasource.flexy-pool.acquiring-strategy.retry.attempts:5");
-        context.register(DataSourceAutoConfiguration.class,
-                DataSourceDecoratorAutoConfiguration.class,
-                PropertyPlaceholderAutoConfiguration.class,
-                HikariConfiguration.class);
-        context.refresh();
+                "decorator.datasource.flexy-pool.acquiring-strategy.retry.attempts:5")
+                .withUserConfiguration(HikariConfiguration.class);
 
-        DataSource dataSource = context.getBean(DataSource.class);
-        FlexyPoolDataSource<HikariDataSource> flexyPoolDataSource = assertDataSourceOfType(dataSource, HikariDataSource.class);
-        IncrementPoolOnTimeoutConnectionAcquiringStrategy strategy1 =
-                findStrategy(flexyPoolDataSource, IncrementPoolOnTimeoutConnectionAcquiringStrategy.class);
-        assertThat(strategy1).isNotNull();
-        assertThat(strategy1).hasFieldOrPropertyWithValue("maxOverflowPoolSize", 35);
-        assertThat(strategy1).hasFieldOrPropertyWithValue("timeoutMillis", 10000);
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            FlexyPoolDataSource<HikariDataSource> flexyPoolDataSource = assertDataSourceOfType(dataSource, HikariDataSource.class);
+            IncrementPoolOnTimeoutConnectionAcquiringStrategy strategy1 =
+                    findStrategy(flexyPoolDataSource, IncrementPoolOnTimeoutConnectionAcquiringStrategy.class);
+            assertThat(strategy1).isNotNull();
+            assertThat(strategy1).hasFieldOrPropertyWithValue("maxOverflowPoolSize", 35);
+            assertThat(strategy1).hasFieldOrPropertyWithValue("timeoutMillis", 10000);
 
-        RetryConnectionAcquiringStrategy strategy2 =
-                findStrategy(flexyPoolDataSource, RetryConnectionAcquiringStrategy.class);
-        assertThat(strategy2).isNotNull();
-        assertThat(strategy2).hasFieldOrPropertyWithValue("retryAttempts", 5);
+            RetryConnectionAcquiringStrategy strategy2 =
+                    findStrategy(flexyPoolDataSource, RetryConnectionAcquiringStrategy.class);
+            assertThat(strategy2).isNotNull();
+            assertThat(strategy2).hasFieldOrPropertyWithValue("retryAttempts", 5);
+        });
     }
 
     @Test
-    public void testDecoratingHikariDataSourceWithCustomBeanStrategies() throws Exception {
-        EnvironmentTestUtils.addEnvironment(context,
-                "spring.datasource.type:" + HikariDataSource.class.getName());
-        context.register(DataSourceAutoConfiguration.class,
-                DataSourceDecoratorAutoConfiguration.class,
-                PropertyPlaceholderAutoConfiguration.class,
-                HikariConfiguration.class);
-        context.refresh();
+    void testDecoratingHikariDataSourceWithCustomBeanStrategies() throws Exception {
+        ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("spring.datasource.type:" + HikariDataSource.class.getName())
+                .withConfiguration(AutoConfigurations.of(HikariConfiguration.class));
 
-        DataSource dataSource = context.getBean(DataSource.class);
-        FlexyPoolDataSource<HikariDataSource> flexyPoolDataSource = assertDataSourceOfType(dataSource, HikariDataSource.class);
-        IncrementPoolOnTimeoutConnectionAcquiringStrategy strategy1 =
-                findStrategy(flexyPoolDataSource, IncrementPoolOnTimeoutConnectionAcquiringStrategy.class);
-        assertThat(strategy1).isNotNull();
-        assertThat(strategy1).hasFieldOrPropertyWithValue("maxOverflowPoolSize", 35);
-        assertThat(strategy1).hasFieldOrPropertyWithValue("timeoutMillis", 10000);
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            FlexyPoolDataSource<HikariDataSource> flexyPoolDataSource = assertDataSourceOfType(dataSource, HikariDataSource.class);
+            IncrementPoolOnTimeoutConnectionAcquiringStrategy strategy1 =
+                    findStrategy(flexyPoolDataSource, IncrementPoolOnTimeoutConnectionAcquiringStrategy.class);
+            assertThat(strategy1).isNotNull();
+            assertThat(strategy1).hasFieldOrPropertyWithValue("maxOverflowPoolSize", 35);
+            assertThat(strategy1).hasFieldOrPropertyWithValue("timeoutMillis", 10000);
 
-        RetryConnectionAcquiringStrategy strategy2 =
-                findStrategy(flexyPoolDataSource, RetryConnectionAcquiringStrategy.class);
-        assertThat(strategy2).isNotNull();
-        assertThat(strategy2).hasFieldOrPropertyWithValue("retryAttempts", 5);
+            RetryConnectionAcquiringStrategy strategy2 =
+                    findStrategy(flexyPoolDataSource, RetryConnectionAcquiringStrategy.class);
+            assertThat(strategy2).isNotNull();
+            assertThat(strategy2).hasFieldOrPropertyWithValue("retryAttempts", 5);
 
-        HikariConnectionAcquiringFactory strategy3 =
-                findStrategy(flexyPoolDataSource, HikariConnectionAcquiringFactory.class);
-        assertThat(strategy3).isNotNull();
+            HikariConnectionAcquiringFactory strategy3 =
+                    findStrategy(flexyPoolDataSource, HikariConnectionAcquiringFactory.class);
+            assertThat(strategy3).isNotNull();
 
-        Dbcp2ConnectionAcquiringFactory strategy4 =
-                findStrategy(flexyPoolDataSource, Dbcp2ConnectionAcquiringFactory.class);
-        assertThat(strategy4).isNull();
+            Dbcp2ConnectionAcquiringFactory strategy4 =
+                    findStrategy(flexyPoolDataSource, Dbcp2ConnectionAcquiringFactory.class);
+            assertThat(strategy4).isNull();
+        });
     }
 
     @SuppressWarnings("unchecked")

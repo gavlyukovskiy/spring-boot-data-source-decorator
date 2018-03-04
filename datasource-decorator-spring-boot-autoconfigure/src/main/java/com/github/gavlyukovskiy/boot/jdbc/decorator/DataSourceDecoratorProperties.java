@@ -19,6 +19,8 @@ package com.github.gavlyukovskiy.boot.jdbc.decorator;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy.DataSourceProxyProperties;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool.FlexyPoolProperties;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy.P6SpyProperties;
+import com.github.gavlyukovskiy.cloud.sleuth.SleuthProperties;
+import com.github.gavlyukovskiy.micrometer.MetricsProperties;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -37,7 +39,13 @@ import java.util.Collections;
 @ConfigurationProperties(prefix = "decorator.datasource")
 public class DataSourceDecoratorProperties {
 
+    /**
+     * Enables data source decorating.
+     */
     private boolean enabled = true;
+    /**
+     * Beans that won't be decorated.
+     */
     private Collection<String> excludeBeans = Collections.emptyList();
 
     @NestedConfigurationProperty
@@ -48,4 +56,10 @@ public class DataSourceDecoratorProperties {
 
     @NestedConfigurationProperty
     private FlexyPoolProperties flexyPool = new FlexyPoolProperties();
+
+    @NestedConfigurationProperty
+    private SleuthProperties sleuth = new SleuthProperties();
+
+    @NestedConfigurationProperty
+    private MetricsProperties metrics = new MetricsProperties();
 }
