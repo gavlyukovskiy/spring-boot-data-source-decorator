@@ -7,11 +7,24 @@ Spring Boot auto-configuration for integration with
 * [Spring Cloud Sleuth](https://github.com/spring-cloud/spring-cloud-sleuth) - library for distributed tracing, if found in classpath enables jdbc connections and queries tracing (only with p6spy or datasource-proxy)
 * [Micrometer](https://github.com/micrometer-metrics/micrometer) - metrics api, in combination with p6spy or datasource-proxy adds metrics for datasource.
 
+**Why need this?**
+
+Instead of using the library you can manually wrap your datasource, but using my library also provides
+* ability to use `@ConfiguationProperties` - custom or provided by Spring Boot (`spring.datasource.hikari.*`, `spring.datasource.dbcp2.*`)
+* ability to disable decorating by deployment property `decorator.datasource.enabled=true/false`
+* just like with other auto-configurations you can configure any supported proxy provider library using `application.properties/yml` or define custom modules in the spring context
+* integration with [Spring Cloud Sleuth](https://github.com/spring-cloud/spring-cloud-sleuth) and [Micrometer](https://github.com/micrometer-metrics/micrometer)
+
+
 **Quick Start**
 
-Add one of the starters to the classpath of a Spring Boot application and your datasources (autoconfigured or custom) will be wrapped into one of a datasource proxy providers above.
+First you need to chose correct version:
+* to use with Spring Boot 1.x.x - 1.3.2
+* to use with Spring Boot 2.x.x - 1.4.0
 
-If you want to use P6Spy
+Then add one of the starters to the classpath of a Spring Boot application and your datasources (auto-configured or custom) will be wrapped into one of a datasource proxy providers below.
+
+If you want to use [P6Spy](https://github.com/p6spy/p6spy)
 ```groovy
 compile('com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.4.0')
 ```
@@ -23,7 +36,7 @@ compile('com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.4.0')
 </dependency>
 ```
 
-or Datasource Proxy:
+or [Datasource Proxy](https://github.com/ttddyy/datasource-proxy):
 ```groovy
 compile('com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.4.0')
 ```
@@ -35,7 +48,7 @@ compile('com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.4.0')
 </dependency>
 ```
 
-or FlexyPool
+or [FlexyPool](https://github.com/vladmihalcea/flexy-pool)
 ```groovy
 compile('com.github.gavlyukovskiy:flexy-pool-spring-boot-starter:1.4.0')
 ```
