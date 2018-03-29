@@ -8,22 +8,18 @@ spring:
     sampler:
       percentage: 1
   datasource:
-    type: com.zaxxer.hikari.HikariDataSource
     initialize: false
 
-    hikari:
-      jdbc-url: jdbc:h2:mem:test-${random.int};DB_CLOSE_DELAY=-1
+    dbcp2:
+      url: jdbc:h2:mem:test-${random.int};DB_CLOSE_DELAY=-1
       username: sa
       password:
-      maximum-pool-size: 10
   zipkin:
     enabled: false
 
 decorator:
   datasource:
     p6spy:
-      enable-runtime-listeners: true
       enable-logging: true
       multiline: true
       logging: slf4j
-      log-file: spy.log

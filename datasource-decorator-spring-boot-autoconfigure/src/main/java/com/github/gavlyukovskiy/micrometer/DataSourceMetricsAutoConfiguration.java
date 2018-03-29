@@ -26,13 +26,11 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.AnyNestedCondition;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.jdbc.metadata.DataSourcePoolMetadataProvider;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.Collection;
 
 /**
  * {@link EnableAutoConfiguration Auto-configuration} for integration with micrometer.
@@ -43,16 +41,17 @@ import java.util.Collection;
 @Configuration
 @ConditionalOnBean(MeterRegistry.class)
 @Conditional(OnAnyListenableProxyProviderCondition.class)
+@ConditionalOnProperty(name = "decorator.datasource.metrics.enabled", havingValue = "true", matchIfMissing = true)
 @AutoConfigureAfter(name = {
     "io.micrometer.spring.autoconfigure.MetricsAutoConfiguration",
-    "org.springframework.boot.actuate.autoconfigure.metrics.MetricsAutoConfiguration"
+    "org.springframework.boot.actuate.autoconfigure.metrics.MetricsAutoConfiguration",
+    "org.springframework.boot.actuate.autoconfigure.metrics.export.simple.SimpleMetricsExportAutoConfiguration"
 })
 public class DataSourceMetricsAutoConfiguration {
 
     @Bean
-    public DataSourceMetricsBinder dataSourceMetricsBinder(ApplicationContext applicationContext,
-            Collection<DataSourcePoolMetadataProvider> metadataProviders, MeterRegistry registry) {
-        return new DataSourceMetricsBinder(applicationContext, metadataProviders, registry);
+    public DataSourceMetricsBinder dataSourceMetricsBinder(ApplicationContext applicationContext) {
+        return new DataSourceMetricsBinder(applicationContext);
     }
 
     @Configuration

@@ -16,7 +16,10 @@
 
 package com.github.gavlyukovskiy.boot.jdbc.decorator;
 
+import com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy.ProxyDataSourceDecorator;
+import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.context.ApplicationContext;
+import org.springframework.util.ClassUtils;
 
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
@@ -31,6 +34,8 @@ import java.util.Map.Entry;
  * @since 1.3.0
  */
 public class DataSourceNameResolver {
+    private final static boolean HIKARI_AVAILABLE =
+            ClassUtils.isPresent("com.zaxxer.hikari.HikariDataSource", ProxyDataSourceDecorator.class.getClassLoader());
 
     private final ApplicationContext applicationContext;
     private Map<String, DataSource> dataSources;
@@ -40,6 +45,12 @@ public class DataSourceNameResolver {
     }
 
     public String resolveDataSourceName(CommonDataSource dataSource) {
+        if (HIKARI_AVAILABLE && dataSource instanceof HikariDataSource) {
+            HikariDataSource hikariDataSource = (HikariDataSource) dataSource;
+            if (hikariDataSource.getPoolName() != null && !hikariDataSource.getPoolName().startsWith("HikariPool-")) {
+                return hikariDataSource.getPoolName();
+            }
+        }
         if (dataSources == null) {
             this.dataSources = applicationContext.getBeansOfType(DataSource.class);
         }

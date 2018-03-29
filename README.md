@@ -1,56 +1,62 @@
 **Spring Boot DataSource Decorator**
 
-Spring Boot autoconfiguration for integration with 
+Spring Boot auto-configuration for integration with
 * [P6Spy](https://github.com/p6spy/p6spy) - adds ability to intercept and log sql queries, including interception of a most `Connection`, `Statement` and `ResultSet` methods invocations
-* [Datasource Proxy](https://github.com/ttddyy/datasource-proxy) - more lightweight than p6spy, supports only `beforeQuery` and `afterQuery` events  
+* [Datasource Proxy](https://github.com/ttddyy/datasource-proxy) - adds ability to intercept all queries and `Connection`, Statement` and `ResultSet` method calls
 * [FlexyPool](https://github.com/vladmihalcea/flexy-pool) - adds connection pool metrics (jmx, codahale, dropwizard) and flexible strategies for adjusting pool size on demand
-* [Spring Cloud Sleuth](https://github.com/spring-cloud/spring-cloud-sleuth) - library for distributed tracing, if found in classpath enables jdbc connections (p6spy) and queries (p6spy, datasource-proxy) tracing 
+* [Spring Cloud Sleuth](https://github.com/spring-cloud/spring-cloud-sleuth) - library for distributed tracing, if found in classpath enables jdbc connections and queries tracing (only with p6spy or datasource-proxy)
+* [Micrometer](https://github.com/micrometer-metrics/micrometer) - metrics api, in combination with p6spy or datasource-proxy adds metrics for datasource.
 
-**Why Should I Care**
+**Why need this?**
 
-Of course you can just create `DataSource` bean wrapped in any proxy you want, but what will you get using this library:
-* ability to configure your datasource using `spring.datasource.hikari.*`, `spring.datasource.dbcp2.*`, `spring.datasource.tomcat.*`
-* `/metrics` - will display your actual datasource stats (active, usage)
-* ability to disable proxying quick on appropriate environment
-* configure each library using only Spring Context without pain
+Instead of using the library you can manually wrap your datasource, but using my library also provides
+* ability to use `@ConfiguationProperties` - custom or provided by Spring Boot (`spring.datasource.hikari.*`, `spring.datasource.dbcp2.*`)
+* ability to disable decorating by deployment property `decorator.datasource.enabled=true/false`
+* just like with other auto-configurations you can configure any supported proxy provider library using `application.properties/yml` or define custom modules in the spring context
+* integration with [Spring Cloud Sleuth](https://github.com/spring-cloud/spring-cloud-sleuth) and [Micrometer](https://github.com/micrometer-metrics/micrometer)
+
 
 **Quick Start**
 
-Add one of the starters to the classpath of a Spring Boot application and your datasources (autoconfigured or custom) will be wrapped into one of a datasource proxy providers above.
+First you need to chose correct version:
+* to use with Spring Boot 1.x.x - 1.3.2
+* to use with Spring Boot 2.x.x - 1.4.0
 
-If you want to use P6Spy
+Then add one of the starters to the classpath of a Spring Boot application and your datasources (auto-configured or custom) will be wrapped into one of a datasource proxy providers below.
+
+If you want to use [P6Spy](https://github.com/p6spy/p6spy)
 ```groovy
-compile('com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.3.2')
+compile('com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.4.0')
 ```
 ```xml
 <dependency>
     <groupId>com.github.gavlyukovskiy</groupId>
     <artifactId>p6spy-spring-boot-starter</artifactId>
-    <version>1.3.2</version>
+    <version>1.4.0</version>
 </dependency>
 ```
 
-or Datasource Proxy:
+or [Datasource Proxy](https://github.com/ttddyy/datasource-proxy):
 ```groovy
-compile('com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.3.2')
+compile('com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.4.0')
 ```
 ```xml
 <dependency>
     <groupId>com.github.gavlyukovskiy</groupId>
     <artifactId>datasource-proxy-spring-boot-starter</artifactId>
-    <version>1.3.2</version>
+    <version>1.4.0</version>
 </dependency>
 ```
 
-or FlexyPool
+or [FlexyPool](https://github.com/vladmihalcea/flexy-pool)
 ```groovy
-compile('com.github.gavlyukovskiy:flexy-pool-spring-boot-starter:1.3.2')
+compile('com.github.gavlyukovskiy:flexy-pool-spring-boot-starter:1.4.0')
 ```
 ```xml
 <dependency>
     <groupId>com.github.gavlyukovskiy</groupId>
     <artifactId>flexy-pool-spring-boot-starter</artifactId>
-    <version>1.3.2</version>
+    <version>1.4.0</version>
 </dependency>
 ```
 
@@ -97,8 +103,6 @@ This done by adding `RuntimeListenerSupportFactory` into P6Spy `modulelist`, ove
 
 You can configure small set of parameters in your `application.properties`:
 ```properties
-# Register RuntimeListenerSupportFactory if JdbcEventListener beans were found
-decorator.datasource.p6spy.enable-runtime-listeners=true
 # Register P6LogFactory to log JDBC events
 decorator.datasource.p6spy.enable-logging=true
 # Use com.p6spy.engine.spy.appender.MultiLineFormat instead of com.p6spy.engine.spy.appender.SingleLineFormat
@@ -235,6 +239,12 @@ decorator.datasource.flexy-pool.metrics.reporter.log.millis=300000
 decorator.datasource.flexy-pool.threshold.connection.acquire=50
 # Enable logging and publishing ConnectionLeaseTimeThresholdExceededEvent when a connection lease has exceeded the given time threshold
 decorator.datasource.flexy-pool.threshold.connection.lease=1000
+
+# Creates span for every connection and query. Works only with p6spy or datasource-proxy.
+decorator.datasource.sleuth.enabled=true
+
+# Enables datasource metrics using micrometer
+decorator.datasource.metrics.enabled=true
 ```
 
 **Spring Cloud Sleuth**
@@ -259,6 +269,17 @@ Details of query span:
 ![alt text](images/query-span.png)
 
 ![alt text](images/query-span-error.png)
+
+**Micrometer**
+Exposes datasource metrics using micrometer api.
+
+Metrics are aligned with Hikari metrics, but works for other pools as well.
+ * `datasource.connections.acquire` - time to acquire connection
+ * `datasource.connections.usage` - time of connection usage, usually transaction time
+ * `datasource.connections.active` - number of currently active connections
+ * `datasource.connections.pending` - number of threads pending for free connection
+ * `datasource.connections.created` - number of total connections acquired
+ * `datasource.connections.failed` - number of total connections acquisition fails
 
 **Custom Decorators**
 

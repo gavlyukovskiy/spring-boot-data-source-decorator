@@ -17,14 +17,10 @@
 package com.github.gavlyukovskiy.micrometer;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import org.springframework.boot.autoconfigure.jdbc.metadata.DataSourcePoolMetadata;
-import org.springframework.boot.autoconfigure.jdbc.metadata.DataSourcePoolMetadataProvider;
-import org.springframework.boot.autoconfigure.jdbc.metadata.DataSourcePoolMetadataProviders;
 import org.springframework.context.ApplicationContext;
 
 import javax.sql.DataSource;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -34,26 +30,24 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Arthur Gavlyukovskiy
  * @since 1.3.0
  */
-public class DataSourceMetricsBinder {
+class DataSourceMetricsBinder {
 
     private final ApplicationContext applicationContext;
-    private final Collection<DataSourcePoolMetadataProvider> metadataProviders;
-    private final MeterRegistry registry;
-    private Map<String, DataSourceMetricsHolder> dataSourceMetrics = new ConcurrentHashMap<>();;
+    private final Map<String, DataSourceMetricsHolder> dataSourceMetrics = new ConcurrentHashMap<>();
+    private MeterRegistry registry;
 
-    public DataSourceMetricsBinder(ApplicationContext applicationContext, Collection<DataSourcePoolMetadataProvider> metadataProviders, MeterRegistry registry) {
+    DataSourceMetricsBinder(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
-        this.metadataProviders = metadataProviders;
-        this.registry = registry;
     }
 
-    public DataSourceMetricsHolder getMetrics(String dataSourceName) {
-        return dataSourceMetrics.computeIfAbsent(dataSourceName, beanName -> {
-            DataSource dataSource = applicationContext.getBean(beanName, DataSource.class);
-            DataSourcePoolMetadataProviders providers = new DataSourcePoolMetadataProviders(metadataProviders);
-            DataSourcePoolMetadata dataSourcePoolMetadata = providers.getDataSourcePoolMetadata(dataSource);
-            DataSourceMetricsHolder dataSourceMetricsHolder = new DataSourceMetricsHolder(beanName, dataSourcePoolMetadata, registry);
-            return dataSourceMetricsHolder;
-        });
+    DataSourceMetricsHolder getMetrics(String dataSourceName) {
+        return dataSourceMetrics.computeIfAbsent(dataSourceName, name -> new DataSourceMetricsHolder(name, getMeterRegistry()));
+    }
+
+    private MeterRegistry getMeterRegistry() {
+        if (registry == null) {
+            registry = applicationContext.getBean(MeterRegistry.class);
+        }
+        return registry;
     }
 }

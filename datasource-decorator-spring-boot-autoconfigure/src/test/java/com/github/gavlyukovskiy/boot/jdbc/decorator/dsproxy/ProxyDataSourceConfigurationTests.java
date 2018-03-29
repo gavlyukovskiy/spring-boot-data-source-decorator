@@ -29,16 +29,16 @@ import net.ttddyy.dsproxy.listener.logging.JULQueryLoggingListener;
 import net.ttddyy.dsproxy.listener.logging.JULSlowQueryListener;
 import net.ttddyy.dsproxy.listener.logging.SLF4JQueryLoggingListener;
 import net.ttddyy.dsproxy.listener.logging.SLF4JSlowQueryListener;
+import net.ttddyy.dsproxy.listener.logging.SystemOutQueryLoggingListener;
+import net.ttddyy.dsproxy.listener.logging.SystemOutSlowQueryListener;
 import net.ttddyy.dsproxy.support.ProxyDataSource;
 import net.ttddyy.dsproxy.transform.ParameterTransformer;
 import net.ttddyy.dsproxy.transform.QueryTransformer;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.test.util.EnvironmentTestUtils;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -49,115 +49,106 @@ import java.util.Random;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
-public class ProxyDataSourceConfigurationTests {
+class ProxyDataSourceConfigurationTests {
 
-    private final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+    private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
+            .withConfiguration(AutoConfigurations.of(
+                    DataSourceAutoConfiguration.class,
+                    DataSourceDecoratorAutoConfiguration.class,
+                    PropertyPlaceholderAutoConfiguration.class
+            ))
+            .withPropertyValues("spring.datasource.initialization-mode=never",
+                    "spring.datasource.url:jdbc:h2:mem:testdb-" + new Random().nextInt())
+            .withClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "com.p6spy"));
 
-    @Before
-    public void init() {
-        EnvironmentTestUtils.addEnvironment(context,
-                "datasource.initialize:false",
-                "datasource.url:jdbc:h2:mem:testdb-" + new Random().nextInt());
-        context.setClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "com.p6spy"));
+    @Test
+    void testRegisterLogAndSlowQueryLogByDefaultToSlf4j() throws Exception {
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
+            ChainListener chainListener = proxyDataSource.getProxyConfig().getQueryListener();
+            assertThat(chainListener.getListeners()).extracting("class").contains(SLF4JSlowQueryListener.class);
+            assertThat(chainListener.getListeners()).extracting("class").contains(SLF4JQueryLoggingListener.class);
+        });
     }
+    @Test
+    void testRegisterLogAndSlowQueryLogByUsingSlf4j() throws Exception {
+        ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("decorator.datasource.datasource-proxy.logging:slf4j");
 
-    @After
-    public void restore() {
-        context.close();
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
+            ChainListener chainListener = proxyDataSource.getProxyConfig().getQueryListener();
+            assertThat(chainListener.getListeners()).extracting("class").contains(SLF4JSlowQueryListener.class);
+            assertThat(chainListener.getListeners()).extracting("class").contains(SLF4JQueryLoggingListener.class);
+        });
     }
 
     @Test
-    public void testRegisterLogAndSlowQueryLogByDefaultToSlf4j() throws Exception {
-        context.register(DataSourceAutoConfiguration.class,
-                DataSourceDecoratorAutoConfiguration.class,
-                PropertyPlaceholderAutoConfiguration.class);
-        context.refresh();
+    void testRegisterLogAndSlowQueryLogUsingSystemOut() throws Exception {
+        ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("decorator.datasource.datasource-proxy.logging:sysout");
 
-        DataSource dataSource = context.getBean(DataSource.class);
-        ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
-        ChainListener chainListener = proxyDataSource.getProxyConfig().getQueryListener();
-        assertThat(chainListener.getListeners()).extracting("class").contains(SLF4JSlowQueryListener.class);
-        assertThat(chainListener.getListeners()).extracting("class").contains(SLF4JQueryLoggingListener.class);
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
+            ChainListener chainListener = proxyDataSource.getProxyConfig().getQueryListener();
+            assertThat(chainListener.getListeners()).extracting("class").contains(SystemOutSlowQueryListener.class);
+            assertThat(chainListener.getListeners()).extracting("class").contains(SystemOutQueryLoggingListener.class);
+        });
     }
 
     @Test
-    public void testRegisterLogAndSlowQueryLogUsingSlf4j() throws Exception {
-        EnvironmentTestUtils.addEnvironment(context,
-                "decorator.datasource.datasource-proxy.logging:slf4j");
-        context.register(DataSourceAutoConfiguration.class,
-                DataSourceDecoratorAutoConfiguration.class,
-                PropertyPlaceholderAutoConfiguration.class);
-        context.refresh();
+    void testRegisterLogAndSlowQueryLogUsingJUL() throws Exception {
+        ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("decorator.datasource.datasourceProxy.logging:jul");
 
-        DataSource dataSource = context.getBean(DataSource.class);
-        ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
-        ChainListener chainListener = proxyDataSource.getProxyConfig().getQueryListener();
-        assertThat(chainListener.getListeners()).extracting("class").contains(SLF4JSlowQueryListener.class);
-        assertThat(chainListener.getListeners()).extracting("class").contains(SLF4JQueryLoggingListener.class);
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
+            ChainListener chainListener = proxyDataSource.getProxyConfig().getQueryListener();
+            assertThat(chainListener.getListeners()).extracting("class").contains(JULSlowQueryListener.class);
+            assertThat(chainListener.getListeners()).extracting("class").contains(JULQueryLoggingListener.class);
+        });
     }
 
     @Test
-    public void testRegisterLogAndSlowQueryLogUsingJUL() throws Exception {
-        EnvironmentTestUtils.addEnvironment(context,
-                "decorator.datasource.datasourceProxy.logging:jul");
-        context.register(DataSourceAutoConfiguration.class,
-                DataSourceDecoratorAutoConfiguration.class,
-                PropertyPlaceholderAutoConfiguration.class);
-        context.refresh();
+    void testRegisterLogAndSlowQueryLogUsingApacheCommons() throws Exception {
+        ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("decorator.datasource.datasourceProxy.logging:commons");
 
-        DataSource dataSource = context.getBean(DataSource.class);
-        ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
-        ChainListener chainListener = proxyDataSource.getProxyConfig().getQueryListener();
-        assertThat(chainListener.getListeners()).extracting("class").contains(JULSlowQueryListener.class);
-        assertThat(chainListener.getListeners()).extracting("class").contains(JULQueryLoggingListener.class);
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
+            ChainListener chainListener = proxyDataSource.getProxyConfig().getQueryListener();
+            assertThat(chainListener.getListeners()).extracting("class").contains(CommonsSlowQueryListener.class);
+            assertThat(chainListener.getListeners()).extracting("class").contains(CommonsQueryLoggingListener.class);
+        });
     }
 
     @Test
-    public void testRegisterLogAndSlowQueryLogUsingApacheCommons() throws Exception {
-        EnvironmentTestUtils.addEnvironment(context,
-                "decorator.datasource.datasourceProxy.logging:commons");
-        context.register(DataSourceAutoConfiguration.class,
-                DataSourceDecoratorAutoConfiguration.class,
-                PropertyPlaceholderAutoConfiguration.class);
-        context.refresh();
+    void testCustomParameterAndQueryTransformer() throws Exception {
+        ApplicationContextRunner contextRunner = this.contextRunner.withUserConfiguration(CustomParameterAndQueryTransformerConfiguration.class);
 
-        DataSource dataSource = context.getBean(DataSource.class);
-        ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
-        ChainListener chainListener = proxyDataSource.getProxyConfig().getQueryListener();
-        assertThat(chainListener.getListeners()).extracting("class").contains(CommonsSlowQueryListener.class);
-        assertThat(chainListener.getListeners()).extracting("class").contains(CommonsQueryLoggingListener.class);
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
+            ParameterTransformer parameterTransformer = context.getBean(ParameterTransformer.class);
+            QueryTransformer queryTransformer = context.getBean(QueryTransformer.class);
+            assertThat(proxyDataSource.getProxyConfig().getParameterTransformer()).isSameAs(parameterTransformer);
+            assertThat(proxyDataSource.getProxyConfig().getQueryTransformer()).isSameAs(queryTransformer);
+        });
     }
 
     @Test
-    public void testCustomParameterAndQueryTransformer() throws Exception {
-        context.register(CustomParameterAndQueryTransformerConfiguration.class,
-                DataSourceAutoConfiguration.class,
-                DataSourceDecoratorAutoConfiguration.class,
-                PropertyPlaceholderAutoConfiguration.class);
-        context.refresh();
+    void testCustomListeners() throws Exception {
+        ApplicationContextRunner contextRunner = this.contextRunner.withUserConfiguration(CustomListenerConfiguration.class);
 
-        DataSource dataSource = context.getBean(DataSource.class);
-        ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
-        ParameterTransformer parameterTransformer = context.getBean(ParameterTransformer.class);
-        QueryTransformer queryTransformer = context.getBean(QueryTransformer.class);
-        assertThat(proxyDataSource.getProxyConfig().getParameterTransformer()).isSameAs(parameterTransformer);
-        assertThat(proxyDataSource.getProxyConfig().getQueryTransformer()).isSameAs(queryTransformer);
-    }
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
+            QueryExecutionListener queryExecutionListener = context.getBean(QueryExecutionListener.class);
 
-    @Test
-    public void testCustomListeners() throws Exception {
-        context.register(CustomListenerConfiguration.class,
-                DataSourceAutoConfiguration.class,
-                DataSourceDecoratorAutoConfiguration.class,
-                PropertyPlaceholderAutoConfiguration.class);
-        context.refresh();
-
-        DataSource dataSource = context.getBean(DataSource.class);
-        ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
-        QueryExecutionListener queryExecutionListener = context.getBean(QueryExecutionListener.class);
-
-        ChainListener chainListener = proxyDataSource.getProxyConfig().getQueryListener();
-        assertThat(chainListener.getListeners()).contains(queryExecutionListener);
+            ChainListener chainListener = proxyDataSource.getProxyConfig().getQueryListener();
+            assertThat(chainListener.getListeners()).contains(queryExecutionListener);
+        });
     }
 
     @Configuration
