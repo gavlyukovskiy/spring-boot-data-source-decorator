@@ -60,7 +60,7 @@ compile('com.github.gavlyukovskiy:flexy-pool-spring-boot-starter:1.4.0')
 </dependency>
 ```
 
-NOTE: To use FlexyPool you must add `PoolAdapter` for your particular connection pool.
+NOTE: To use FlexyPool with connection pool different than HikariCP you must add `PoolAdapter` for your particular connection pool.
 
 NOTE 2: You can use all of them if you want, if so decorating order is next:
 ```

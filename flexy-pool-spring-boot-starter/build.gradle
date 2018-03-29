@@ -1,4 +1,5 @@
 dependencies {
     compile(project(":datasource-decorator-spring-boot-autoconfigure"))
     compile("com.vladmihalcea.flexy-pool:flexy-pool-core:${flexyPoolVersion}")
+    compile("com.vladmihalcea.flexy-pool:flexy-hikaricp:${flexyPoolVersion}")
 }
