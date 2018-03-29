@@ -4,9 +4,6 @@ server:
 spring:
   application:
     name: flexy-pool-sample
-  sleuth:
-    sampler:
-      percentage: 1
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     initialize: false
@@ -17,8 +14,6 @@ spring:
       username: sa
       password:
       maximum-pool-size: 10
-  zipkin:
-    enabled: false
 
 decorator:
   datasource:
