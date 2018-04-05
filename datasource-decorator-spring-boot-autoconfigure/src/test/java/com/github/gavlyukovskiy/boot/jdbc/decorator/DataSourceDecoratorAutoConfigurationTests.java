@@ -18,8 +18,6 @@ package com.github.gavlyukovskiy.boot.jdbc.decorator;
 
 import com.p6spy.engine.spy.P6DataSource;
 import com.vladmihalcea.flexypool.FlexyPoolDataSource;
-import com.vladmihalcea.flexypool.metric.MetricsFactory;
-import com.vladmihalcea.flexypool.metric.MetricsFactoryService;
 import com.zaxxer.hikari.HikariDataSource;
 import net.ttddyy.dsproxy.support.ProxyDataSource;
 import org.apache.commons.dbcp2.BasicDataSource;
@@ -46,8 +44,6 @@ import java.util.Random;
 import java.util.logging.Logger;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.mockito.Mockito.RETURNS_MOCKS;
-import static org.mockito.Mockito.mock;
 
 public class DataSourceDecoratorAutoConfigurationTests {
 
@@ -254,15 +250,6 @@ public class DataSourceDecoratorAutoConfigurationTests {
             return pool;
         }
 
-    }
-
-    // see META-INF/services/com.vladmihalcea.flexypool.metric.MetricsFactoryService
-    public static class TestMetricsFactoryService implements MetricsFactoryService {
-
-        @Override
-        public MetricsFactory load() {
-            return mock(MetricsFactory.class, RETURNS_MOCKS);
-        }
     }
 
     /**
