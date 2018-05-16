@@ -2,7 +2,7 @@
 
 Spring Boot auto-configuration for integration with
 * [P6Spy](https://github.com/p6spy/p6spy) - adds ability to intercept and log sql queries, including interception of a most `Connection`, `Statement` and `ResultSet` methods invocations
-* [Datasource Proxy](https://github.com/ttddyy/datasource-proxy) - adds ability to intercept all queries and `Connection`, Statement` and `ResultSet` method calls
+* [Datasource Proxy](https://github.com/ttddyy/datasource-proxy) - adds ability to intercept all queries and `Connection`, `Statement` and `ResultSet` method calls
 * [FlexyPool](https://github.com/vladmihalcea/flexy-pool) - adds connection pool metrics (jmx, codahale, dropwizard) and flexible strategies for adjusting pool size on demand
 * [Spring Cloud Sleuth](https://github.com/spring-cloud/spring-cloud-sleuth) - library for distributed tracing, if found in classpath enables jdbc connections and queries tracing (only with p6spy or datasource-proxy)
 * [Micrometer](https://github.com/micrometer-metrics/micrometer) - metrics api, in combination with p6spy or datasource-proxy adds metrics for datasource.
