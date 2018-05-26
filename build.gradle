@@ -104,7 +104,7 @@ subprojects {
                     artifact javadocJar
                     groupId project.group
                     artifactId project.name
-                    version project.version
+                    version scmVersion.version
                     pom.withXml {
                         def root = asNode()
                         root.appendNode('description', 'Spring Boot integration with p6spy, datasource-proxy and flexy-pool')
@@ -127,7 +127,7 @@ subprojects {
                 licenses = ['Apache-2.0']
                 publicDownloadNumbers = true
                 version {
-                    name = project.version
+                    name = scmVersion.version
                     released = new Date()
                     vcsTag = scmVersion.tag.prefix + scmVersion.tag.versionSeparator + scmVersion.version
                     gpg {
