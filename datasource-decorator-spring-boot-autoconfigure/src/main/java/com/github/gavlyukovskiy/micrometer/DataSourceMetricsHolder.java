@@ -17,10 +17,9 @@
 package com.github.gavlyukovskiy.micrometer;
 
 import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
-import org.springframework.boot.autoconfigure.jdbc.metadata.DataSourcePoolMetadata;
 import org.springframework.util.Assert;
 
 import javax.sql.DataSource;
@@ -36,51 +35,25 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author Arthur Gavlyukovskiy
  * @since 1.3.0
  */
-public class DataSourceMetricsHolder {
+class DataSourceMetricsHolder {
 
-    private final AtomicInteger activeConnections = new AtomicInteger();
-    private final AtomicInteger pendingConnections = new AtomicInteger();
     private final Map<Object, Long> connectionAcquireTimestamp = new ConcurrentHashMap<>();
 
-    private Timer connectionObtainTimer;
-    private Timer connectionUsageTimer;
-    private Counter connectionCreatedCounter;
-    private Counter connectionFailedCounter;
+    private final Timer connectionObtainTimer;
+    private final Timer connectionUsageTimer;
+    private final Counter connectionCreatedCounter;
+    private final Counter connectionFailedCounter;
+    private final AtomicInteger activeConnections;
+    private final AtomicInteger pendingConnections;
 
-    DataSourceMetricsHolder(String dataSourceName, DataSourcePoolMetadata poolMetadata, MeterRegistry registry) {
-        connectionObtainTimer = Timer.builder("data.source.connections.wait")
-                .tags("pool", dataSourceName)
-                .register(registry);
-
-        connectionUsageTimer = Timer.builder("data.source.connections.usage")
-                .tags("pool", dataSourceName)
-                .register(registry);
-
-        connectionCreatedCounter = Counter.builder("data.source.connections.created")
-                .tags("pool", dataSourceName)
-                .register(registry);
-
-        connectionFailedCounter = Counter.builder("data.source.connections.failed")
-                .tags("pool", dataSourceName)
-                .register(registry);
-
-        Gauge.builder("data.source.connections.active", this, metrics -> activeConnections.doubleValue())
-                .tags("pool", dataSourceName)
-                .register(registry);
-
-        Gauge.builder("data.source.connections.pending", this, metrics -> pendingConnections.doubleValue())
-                .tags("pool", dataSourceName)
-                .register(registry);
-
-        if (poolMetadata != null) {
-            Gauge.builder("data.source.connections.max", this, metrics -> poolMetadata.getMax())
-                    .tags("pool", dataSourceName)
-                    .register(registry);
-
-            Gauge.builder("data.source.connections.min", this, metrics -> poolMetadata.getMin())
-                    .tags("pool", dataSourceName)
-                    .register(registry);
-        }
+    DataSourceMetricsHolder(String dataSourceName, MeterRegistry registry) {
+        Tags tags = Tags.of("pool", dataSourceName);
+        connectionObtainTimer = registry.timer("datasource.connections.acquire", tags);
+        connectionUsageTimer = registry.timer("datasource.connections.usage", tags);
+        connectionCreatedCounter = registry.counter("datasource.connections.created", tags);
+        connectionFailedCounter = registry.counter("datasource.connections.failed", tags);
+        activeConnections = registry.gauge("datasource.connections.active", tags, new AtomicInteger());
+        pendingConnections = registry.gauge("datasource.connections.pending", tags, new AtomicInteger());
     }
 
     void beforeAcquireConnection() {
