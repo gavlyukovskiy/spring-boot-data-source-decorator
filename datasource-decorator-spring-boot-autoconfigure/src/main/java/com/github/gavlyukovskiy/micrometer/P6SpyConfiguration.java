@@ -32,7 +32,6 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @ConditionalOnBean(P6SpyDataSourceDecorator.class)
-@ConditionalOnMissingBean(HikariMetricsConfiguration.class)
 class P6SpyConfiguration {
 
     @Bean

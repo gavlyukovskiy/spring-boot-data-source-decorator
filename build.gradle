@@ -49,12 +49,12 @@ task prereleaseCheck() {
 
 subprojects {
     ext {
-        springBootVersion = '2.0.0.RELEASE'
+        springBootVersion = '2.0.2.RELEASE'
         p6SpyVersion = '3.6.0'
         datasourceProxyVersion = '1.4.5'
         flexyPoolVersion = '1.3.0'
         sleuthVersion = '1.3.1.RELEASE'
-        micrometerVersion = '1.0.0'
+        micrometerVersion = '1.0.4'
 
         release = !project.name.contains("sample")
     }

@@ -31,7 +31,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @ConditionalOnBean(ProxyDataSourceDecorator.class)
-@ConditionalOnMissingBean({ P6SpyConfiguration.class, HikariMetricsConfiguration.class })
+@ConditionalOnMissingBean(P6SpyConfiguration.class)
 class ProxyDataSourceConfiguration {
 
     @Bean

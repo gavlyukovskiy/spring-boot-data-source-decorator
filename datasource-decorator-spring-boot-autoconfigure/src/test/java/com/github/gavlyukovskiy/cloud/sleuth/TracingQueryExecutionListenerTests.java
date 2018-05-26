@@ -18,6 +18,8 @@ package com.github.gavlyukovskiy.cloud.sleuth;
 
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorAutoConfiguration;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.HidePackagesClassLoader;
+import com.github.gavlyukovskiy.cloud.sleuth.SavingSpanReporterConfiguration.CollectingSpanReporter;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
@@ -32,9 +34,12 @@ import javax.sql.DataSource;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 class TracingQueryExecutionListenerTests {
 
@@ -54,10 +59,31 @@ class TracingQueryExecutionListenerTests {
             .withClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "com.p6spy"));
 
     @Test
+    void testShouldAddSpanForConnection() {
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            CollectingSpanReporter spanReporter = context.getBean(CollectingSpanReporter.class);
+
+            Connection connection = dataSource.getConnection();
+            connection.commit();
+            connection.rollback();
+            connection.close();
+
+            assertThat(ExceptionUtils.getLastException()).isNull();
+
+            Assertions.assertThat(spanReporter.getSpans()).hasSize(1);
+            Span connectionSpan = spanReporter.getSpans().get(0);
+            assertThat(connectionSpan.getName()).isEqualTo("jdbc:/test/connection");
+            assertThat(connectionSpan.logs()).extracting("event").contains("commit");
+            assertThat(connectionSpan.logs()).extracting("event").contains("rollback");
+        });
+    }
+
+    @Test
     void testShouldAddSpanForPreparedStatementExecute() throws Exception {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
-            SavingSpanReporterConfiguration.CollectingSpanReporter spanReporter = context.getBean(SavingSpanReporterConfiguration.CollectingSpanReporter.class);
+            CollectingSpanReporter spanReporter = context.getBean(CollectingSpanReporter.class);
 
             Connection connection = dataSource.getConnection();
             connection.prepareStatement("SELECT NOW()").execute();
@@ -65,7 +91,7 @@ class TracingQueryExecutionListenerTests {
 
             assertThat(ExceptionUtils.getLastException()).isNull();
 
-            assertThat(spanReporter.getSpans()).hasSize(2);
+            Assertions.assertThat(spanReporter.getSpans()).hasSize(2);
             Span connectionSpan = spanReporter.getSpans().get(0);
             Span statementSpan = spanReporter.getSpans().get(1);
             assertThat(connectionSpan.getName()).isEqualTo("jdbc:/test/connection");
@@ -78,7 +104,7 @@ class TracingQueryExecutionListenerTests {
     void testShouldAddSpanForPreparedStatementExecuteUpdate() throws Exception {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
-            SavingSpanReporterConfiguration.CollectingSpanReporter spanReporter = context.getBean(SavingSpanReporterConfiguration.CollectingSpanReporter.class);
+            CollectingSpanReporter spanReporter = context.getBean(CollectingSpanReporter.class);
 
             Connection connection = dataSource.getConnection();
             connection.prepareStatement("UPDATE INFORMATION_SCHEMA.TABLES SET table_Name = '' WHERE 0 = 1").executeUpdate();
@@ -86,7 +112,7 @@ class TracingQueryExecutionListenerTests {
 
             assertThat(ExceptionUtils.getLastException()).isNull();
 
-            assertThat(spanReporter.getSpans()).hasSize(2);
+            Assertions.assertThat(spanReporter.getSpans()).hasSize(2);
             Span connectionSpan = spanReporter.getSpans().get(0);
             Span statementSpan = spanReporter.getSpans().get(1);
             assertThat(connectionSpan.getName()).isEqualTo("jdbc:/test/connection");
@@ -98,16 +124,218 @@ class TracingQueryExecutionListenerTests {
     }
 
     @Test
+    void testShouldAddSpanForStatementExecuteUpdate() throws Exception {
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            CollectingSpanReporter spanReporter = context.getBean(CollectingSpanReporter.class);
+
+            Connection connection = dataSource.getConnection();
+            connection.createStatement().executeUpdate("UPDATE INFORMATION_SCHEMA.TABLES SET table_Name = '' WHERE 0 = 1");
+            connection.close();
+
+            assertThat(ExceptionUtils.getLastException()).isNull();
+
+            Assertions.assertThat(spanReporter.getSpans()).hasSize(2);
+            Span connectionSpan = spanReporter.getSpans().get(0);
+            Span statementSpan = spanReporter.getSpans().get(1);
+            assertThat(connectionSpan.getName()).isEqualTo("jdbc:/test/connection");
+            assertThat(statementSpan.getName()).isEqualTo("jdbc:/test/query");
+            assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME,
+                    "UPDATE INFORMATION_SCHEMA.TABLES SET table_Name = '' WHERE 0 = 1");
+        });
+    }
+
+    @Test
     void testShouldAddSpanForPreparedStatementExecuteQueryIncludingTimeToCloseResultSet() throws Exception {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
-            SavingSpanReporterConfiguration.CollectingSpanReporter spanReporter = context.getBean(SavingSpanReporterConfiguration.CollectingSpanReporter.class);
+            CollectingSpanReporter spanReporter = context.getBean(CollectingSpanReporter.class);
 
             Connection connection = dataSource.getConnection();
             ResultSet resultSet = connection.prepareStatement("SELECT NOW()").executeQuery();
+            resultSet.next();
+            resultSet.next();
+            resultSet.close();
+            connection.close();
+
+            assertThat(ExceptionUtils.getLastException()).isNull();
+
+            Assertions.assertThat(spanReporter.getSpans()).hasSize(3);
+            Span connectionSpan = spanReporter.getSpans().get(0);
+            Span resultSetSpan = spanReporter.getSpans().get(1);
+            Span statementSpan = spanReporter.getSpans().get(2);
+            assertThat(connectionSpan.getName()).isEqualTo("jdbc:/test/connection");
+            assertThat(statementSpan.getName()).isEqualTo("jdbc:/test/query");
+            assertThat(resultSetSpan.getName()).isEqualTo("jdbc:/test/fetch");
+            assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, "SELECT NOW()");
+        });
+    }
+
+    @Test
+    void testShouldAddSpanForStatementAndResultSet() throws Exception {
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            CollectingSpanReporter spanReporter = context.getBean(CollectingSpanReporter.class);
+
+            Connection connection = dataSource.getConnection();
+            ResultSet resultSet = connection.createStatement().executeQuery("SELECT NOW()");
+            resultSet.next();
             Thread.sleep(200L);
             resultSet.close();
             connection.close();
+
+            assertThat(ExceptionUtils.getLastException()).isNull();
+
+            Assertions.assertThat(spanReporter.getSpans()).hasSize(3);
+            Span connectionSpan = spanReporter.getSpans().get(0);
+            Span resultSetSpan = spanReporter.getSpans().get(1);
+            Span statementSpan = spanReporter.getSpans().get(2);
+            assertThat(connectionSpan.getName()).isEqualTo("jdbc:/test/connection");
+            assertThat(statementSpan.getName()).isEqualTo("jdbc:/test/query");
+            assertThat(resultSetSpan.getName()).isEqualTo("jdbc:/test/fetch");
+            assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, "SELECT NOW()");
+        });
+    }
+
+    @Test
+    void testShouldNotFailWhenStatementIsClosedWihoutResultSet() throws Exception {
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            CollectingSpanReporter spanReporter = context.getBean(CollectingSpanReporter.class);
+
+            Connection connection = dataSource.getConnection();
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("SELECT NOW()");
+            resultSet.next();
+            statement.close();
+            connection.close();
+
+            assertThat(ExceptionUtils.getLastException()).isNull();
+
+            Assertions.assertThat(spanReporter.getSpans()).hasSize(3);
+            Span connectionSpan = spanReporter.getSpans().get(0);
+            Span resultSetSpan = spanReporter.getSpans().get(1);
+            Span statementSpan = spanReporter.getSpans().get(2);
+            assertThat(connectionSpan.getName()).isEqualTo("jdbc:/test/connection");
+            assertThat(statementSpan.getName()).isEqualTo("jdbc:/test/query");
+            assertThat(resultSetSpan.getName()).isEqualTo("jdbc:/test/fetch");
+            assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, "SELECT NOW()");
+        });
+    }
+
+    @Test
+    void testShouldNotFailWhenConnectionIsClosedWihoutResultSet() throws Exception {
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            CollectingSpanReporter spanReporter = context.getBean(CollectingSpanReporter.class);
+
+            Connection connection = dataSource.getConnection();
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("SELECT NOW()");
+            resultSet.next();
+            connection.close();
+
+            assertThat(ExceptionUtils.getLastException()).isNull();
+
+            Assertions.assertThat(spanReporter.getSpans()).hasSize(3);
+            Span connectionSpan = spanReporter.getSpans().get(0);
+            Span resultSetSpan = spanReporter.getSpans().get(1);
+            Span statementSpan = spanReporter.getSpans().get(2);
+            assertThat(connectionSpan.getName()).isEqualTo("jdbc:/test/connection");
+            assertThat(statementSpan.getName()).isEqualTo("jdbc:/test/query");
+            assertThat(resultSetSpan.getName()).isEqualTo("jdbc:/test/fetch");
+            assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, "SELECT NOW()");
+        });
+    }
+
+    @Test
+    void testShouldNotFailWhenResultSetNextWasNotCalled() throws Exception {
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            CollectingSpanReporter spanReporter = context.getBean(CollectingSpanReporter.class);
+
+            Connection connection = dataSource.getConnection();
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("SELECT NOW()");
+            resultSet.close();
+            statement.close();
+            connection.close();
+
+            assertThat(ExceptionUtils.getLastException()).isNull();
+
+            Assertions.assertThat(spanReporter.getSpans()).hasSize(3);
+            Span connectionSpan = spanReporter.getSpans().get(0);
+            Span resultSetSpan = spanReporter.getSpans().get(1);
+            Span statementSpan = spanReporter.getSpans().get(2);
+            assertThat(connectionSpan.getName()).isEqualTo("jdbc:/test/connection");
+            assertThat(statementSpan.getName()).isEqualTo("jdbc:/test/query");
+            assertThat(resultSetSpan.getName()).isEqualTo("jdbc:/test/fetch");
+            assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, "SELECT NOW()");
+        });
+    }
+
+    @Test
+    void testShouldNotFailWhenResourceIsAlreadyClosed() throws Exception {
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            CollectingSpanReporter spanReporter = context.getBean(CollectingSpanReporter.class);
+
+            Connection connection = dataSource.getConnection();
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("SELECT NOW()");
+            resultSet.close();
+            resultSet.close();
+            statement.close();
+            statement.close();
+            connection.close();
+            connection.close();
+
+            assertThat(ExceptionUtils.getLastException()).isNull();
+
+            Assertions.assertThat(spanReporter.getSpans()).hasSize(3);
+            Span connectionSpan = spanReporter.getSpans().get(0);
+            Span resultSetSpan = spanReporter.getSpans().get(1);
+            Span statementSpan = spanReporter.getSpans().get(2);
+            assertThat(connectionSpan.getName()).isEqualTo("jdbc:/test/connection");
+            assertThat(statementSpan.getName()).isEqualTo("jdbc:/test/query");
+            assertThat(resultSetSpan.getName()).isEqualTo("jdbc:/test/fetch");
+            assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, "SELECT NOW()");
+        });
+    }
+
+    @Test
+    void testShouldNotFailWhenResourceIsAlreadyClosed2() {
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            CollectingSpanReporter spanReporter = context.getBean(CollectingSpanReporter.class);
+
+            Connection connection = dataSource.getConnection();
+            try {
+                connection.close();
+                connection.prepareStatement("SELECT NOW()");
+                fail("should fail due to closed connection");
+            }
+            catch (SQLException expected) {
+            }
+
+            assertThat(ExceptionUtils.getLastException()).isNull();
+
+            Assertions.assertThat(spanReporter.getSpans()).hasSize(1);
+            Span connectionSpan = spanReporter.getSpans().get(0);
+            assertThat(connectionSpan.getName()).isEqualTo("jdbc:/test/connection");
+        });
+    }
+
+    @Test
+    public void testShouldNotFailToCloseSpanForTwoConsecutiveConnections() throws Exception {
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            CollectingSpanReporter spanReporter = context.getBean(CollectingSpanReporter.class);
+
+            Connection connection1 = dataSource.getConnection();
+            Connection connection2 = dataSource.getConnection();
+            connection1.close();
+            connection2.close();
 
             assertThat(ExceptionUtils.getLastException()).isNull();
 
@@ -115,8 +343,7 @@ class TracingQueryExecutionListenerTests {
             Span connectionSpan = spanReporter.getSpans().get(0);
             Span statementSpan = spanReporter.getSpans().get(1);
             assertThat(connectionSpan.getName()).isEqualTo("jdbc:/test/connection");
-            assertThat(statementSpan.getName()).isEqualTo("jdbc:/test/query");
-            assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, "SELECT NOW()");
+            assertThat(statementSpan.getName()).isEqualTo("jdbc:/test/connection");
         });
     }
 }

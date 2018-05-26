@@ -16,10 +16,12 @@
 
 package com.github.gavlyukovskiy.micrometer;
 
+import com.zaxxer.hikari.HikariDataSource;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -32,6 +34,7 @@ import org.springframework.context.annotation.Import;
  */
 @Configuration
 @ConditionalOnBean(MeterRegistry.class)
+@ConditionalOnMissingBean(HikariDataSource.class)
 @ConditionalOnProperty(name = "decorator.datasource.metrics.enabled", havingValue = "true", matchIfMissing = true)
 @AutoConfigureAfter(name = {
     "io.micrometer.spring.autoconfigure.MetricsAutoConfiguration",
@@ -39,7 +42,6 @@ import org.springframework.context.annotation.Import;
     "org.springframework.boot.actuate.autoconfigure.metrics.export.simple.SimpleMetricsExportAutoConfiguration"
 })
 @Import({
-            HikariMetricsConfiguration.class,
             P6SpyConfiguration.class,
             ProxyDataSourceConfiguration.class
         })

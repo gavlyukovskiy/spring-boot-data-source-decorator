@@ -243,7 +243,7 @@ decorator.datasource.flexy-pool.threshold.connection.lease=1000
 # Creates span for every connection and query. Works only with p6spy or datasource-proxy.
 decorator.datasource.sleuth.enabled=true
 
-# Enables datasource metrics using micrometer
+# Enables datasource metrics using micrometer, disabled if you're using HikariCP in favor of its more accurate metrics
 decorator.datasource.metrics.enabled=true
 ```
 
@@ -257,6 +257,7 @@ With P6Spy span will be created for:
 With Datasource Proxy span will be created for:
  * `jdbc:/<dataSource>/connection` - opening connection including events for commits and rollbacks
  * `jdbc:/<dataSource>/query` - executing query including sql text (without parameters) and number of affected rows in the tags
+ * `jdbc:/<dataSource>/fetch` - fetching result set data
 
 
 Example request:
