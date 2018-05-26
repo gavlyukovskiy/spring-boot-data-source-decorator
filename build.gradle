@@ -6,7 +6,7 @@ buildscript {
 
 plugins {
     id "com.jfrog.bintray" version "1.8.0"
-    id "pl.allegro.tech.build.axion-release" version "1.8.1"
+    id "pl.allegro.tech.build.axion-release" version "1.9.1"
 }
 
 def pomConfig = {
@@ -156,6 +156,7 @@ subprojects {
 }
 
 verifyRelease.finalizedBy(prereleaseCheck)
+release.finalizedBy(bintrayUpload)
 subprojects.each {
     if (it.ext.release)
         verifyRelease.dependsOn("${it.name}:build")
