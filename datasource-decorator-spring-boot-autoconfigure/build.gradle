@@ -41,7 +41,7 @@ dependencies {
     testCompile("commons-dbcp:commons-dbcp:1.4")
     testCompile("org.apache.commons:commons-dbcp2:2.1.1")
     testCompile("org.apache.tomcat:tomcat-jdbc:8.5.13")
-    testCompile("com.zaxxer:HikariCP:2.7.1")
+    testCompile("com.zaxxer:HikariCP:2.7.9")
 
     testCompileOnly("org.projectlombok:lombok:1.16.10")
 }
