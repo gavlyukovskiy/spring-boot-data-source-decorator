@@ -44,7 +44,6 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
     // using Tracer#currentSpan is not safe due to possibility to commit/rollback connection without closing Statement/ResultSet
     // in this case events and tags will be logged in wrong Span
     private final Map<ConnectionInformation, Span> connectionSpans = new ConcurrentHashMap<>();
-    private final Map<StatementInformation, Span> resultSetSpans = new ConcurrentHashMap<>();
 
     TracingJdbcEventListener(Tracer tracer, DataSourceNameResolver dataSourceNameResolver) {
         this.tracer = tracer;
@@ -106,7 +105,6 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
         String dataSourceName = dataSourceNameResolver.resolveDataSourceName(statementInformation.getConnectionInformation().getDataSource());
         Span resultSetSpan = tracer.createSpan("jdbc:/" + dataSourceName + SleuthListenerAutoConfiguration.SPAN_FETCH_POSTFIX);
         resultSetSpan.tag(Span.SPAN_LOCAL_COMPONENT_TAG_NAME, "database");
-        resultSetSpans.put(statementInformation, resultSetSpan);
     }
 
     @Override
@@ -123,28 +121,28 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
 
     @Override
     public void onAfterResultSetClose(ResultSetInformation resultSetInformation, SQLException e) {
-        Span resultSetSpan = resultSetSpans.remove(resultSetInformation.getStatementInformation());
-        if (resultSetSpan == null) {
-            // connection is already closed
+        Span currentSpan = tracer.getCurrentSpan();
+        // current span may be not ResultSet span if Connection was closed before ResultSet
+        if (currentSpan == null || !currentSpan.getName().contains(SleuthListenerAutoConfiguration.SPAN_FETCH_POSTFIX)) {
             return;
         }
         int rowCount = resultSetInformation.getCurrRow() + 1;
-        resultSetSpan.tag(SleuthListenerAutoConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(rowCount));
+        currentSpan.tag(SleuthListenerAutoConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(rowCount));
         if (e != null) {
-            resultSetSpan.tag(Span.SPAN_ERROR_TAG_NAME, getExceptionMessage(e));
+            currentSpan.tag(Span.SPAN_ERROR_TAG_NAME, getExceptionMessage(e));
         }
-        tracer.close(resultSetSpan);
+        tracer.close(currentSpan);
     }
 
     @Override
     public void onAfterStatementClose(StatementInformation statementInformation, SQLException e) {
-        // if result set is not closed statement span may be open at this moment, double checking it here
-        Span resultSetSpan = resultSetSpans.remove(statementInformation);
-        if (resultSetSpan != null) {
+        // if ResultSet is not closed statement span may be open at this moment, double checking it here
+        Span currentSpan = tracer.getCurrentSpan();
+        if (currentSpan.getName().contains(SleuthListenerAutoConfiguration.SPAN_FETCH_POSTFIX)) {
             if (e != null) {
-                resultSetSpan.tag(Span.SPAN_ERROR_TAG_NAME, getExceptionMessage(e));
+                currentSpan.tag(Span.SPAN_ERROR_TAG_NAME, getExceptionMessage(e));
             }
-            tracer.close(resultSetSpan);
+            tracer.close(currentSpan);
         }
     }
 
@@ -189,11 +187,20 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
         }
         Span currentSpan = tracer.getCurrentSpan();
         // result set and statement were not closed but connection was, closing result set span as well
-        if (currentSpan.getSpanId() != connectionSpan.getSpanId()
-                && currentSpan.getName().contains(SleuthListenerAutoConfiguration.SPAN_FETCH_POSTFIX)) {
-            tracer.close(currentSpan);
+        if (currentSpan.getSpanId() == connectionSpan.getSpanId()) {
+            tracer.close(connectionSpan);
         }
-        tracer.close(connectionSpan);
+        else {
+            if (currentSpan.getName().contains(SleuthListenerAutoConfiguration.SPAN_FETCH_POSTFIX)) {
+                tracer.close(currentSpan);
+                tracer.close(connectionSpan);
+            }
+            else {
+                tracer.continueSpan(connectionSpan);
+                tracer.close(connectionSpan);
+                tracer.continueSpan(currentSpan);
+            }
+        }
     }
 
     private String getSql(StatementInformation statementInformation) {

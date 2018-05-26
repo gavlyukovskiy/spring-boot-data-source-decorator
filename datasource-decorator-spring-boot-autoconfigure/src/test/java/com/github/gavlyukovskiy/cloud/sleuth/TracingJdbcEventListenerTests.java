@@ -295,6 +295,22 @@ public class TracingJdbcEventListenerTests {
         assertThat(connectionSpan.getName()).isEqualTo("jdbc:/dataSource/connection");
     }
 
+    @Test
+    public void testShouldNotFailToCloseSpanForTwoConsecutiveConnections() throws Exception {
+        Connection connection1 = dataSource.getConnection();
+        Connection connection2 = dataSource.getConnection();
+        connection1.close();
+        connection2.close();
+
+        assertThat(ExceptionUtils.getLastException()).isNull();
+
+        assertThat(spanReporter.getSpans()).hasSize(2);
+        Span connectionSpan = spanReporter.getSpans().get(0);
+        Span statementSpan = spanReporter.getSpans().get(1);
+        assertThat(connectionSpan.getName()).isEqualTo("jdbc:/dataSource/connection");
+        assertThat(statementSpan.getName()).isEqualTo("jdbc:/dataSource/connection");
+    }
+
     @Configuration
     static class SavingSpanReporterConfiguration {
 
