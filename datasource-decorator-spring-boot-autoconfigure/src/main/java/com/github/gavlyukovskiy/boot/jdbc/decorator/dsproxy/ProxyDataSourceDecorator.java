@@ -45,7 +45,7 @@ public class ProxyDataSourceDecorator implements DataSourceDecorator, Ordered {
         String dataSourceName = beanName;
         if (HIKARI_AVAILABLE && dataSource instanceof HikariDataSource) {
             HikariDataSource hikariDataSource = (HikariDataSource) dataSource;
-            if (hikariDataSource.getPoolName() != null) {
+            if (hikariDataSource.getPoolName() != null && !hikariDataSource.getPoolName().startsWith("HikariPool-")) {
                 dataSourceName = hikariDataSource.getPoolName();
             }
         }
