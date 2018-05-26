@@ -32,18 +32,22 @@ def pomConfig = {
 
 task prereleaseCheck() {
     doLast {
+        def errors = []
         if (!project.hasProperty('release.version'))
-            throw new IllegalStateException("'-Prelease.version' must be set")
+            errors.add("'-Prelease.version' must be set")
         if (!System.getenv('BINTRAY_USER') && !project.hasProperty('release.bintray_user'))
-            throw new IllegalStateException("'BINTRAY_USER' or '-Prelease.bintray_user' must be set")
+            errors.add("'BINTRAY_USER' or '-Prelease.bintray_user' must be set")
         if (!System.getenv('BINTRAY_KEY') && !project.hasProperty('release.bintray_key'))
-            throw new IllegalStateException("'BINTRAY_KEY' or '-Prelease.bintray_key' must be set")
+            errors.add("'BINTRAY_KEY' or '-Prelease.bintray_key' must be set")
         if (!System.getenv('GPG_PASSPHRASE') && !project.hasProperty('release.gpg_passphrase'))
-            throw new IllegalStateException("'GPG_PASSPHRASE' or '-Prelease.gpg_passphrase' must be set")
+            errors.add("'GPG_PASSPHRASE' or '-Prelease.gpg_passphrase' must be set")
         if (!System.getenv('SONATYPE_USER') && !project.hasProperty('release.sonatype_user'))
-            throw new IllegalStateException("'SONATYPE_USER' or '-Prelease.sonatype_user' must be set")
+            errors.add("'SONATYPE_USER' or '-Prelease.sonatype_user' must be set")
         if (!System.getenv('SONATYPE_PASSWORD') && !project.hasProperty('release.sonatype_password'))
-            throw new IllegalStateException("'SONATYPE_PASSWORD' or '-Prelease.sonatype_password' must be set")
+            errors.add("'SONATYPE_PASSWORD' or '-Prelease.sonatype_password' must be set")
+        if (!errors.isEmpty()) {
+            throw new IllegalStateException(errors.join("\n"));
+        }
     }
 }
 
