@@ -35,6 +35,10 @@ task prereleaseCheck() {
         def errors = []
         if (!project.hasProperty('release.version'))
             errors.add("'-Prelease.version' must be set")
+        if (!project.hasProperty('release.customUsername'))
+            errors.add("'-Prelease.customUsername' must be set")
+        if (!project.hasProperty('release.customPassword'))
+            errors.add("'-Prelease.customPassword' must be set")
         if (!System.getenv('BINTRAY_USER') && !project.hasProperty('release.bintray_user'))
             errors.add("'BINTRAY_USER' or '-Prelease.bintray_user' must be set")
         if (!System.getenv('BINTRAY_KEY') && !project.hasProperty('release.bintray_key'))
