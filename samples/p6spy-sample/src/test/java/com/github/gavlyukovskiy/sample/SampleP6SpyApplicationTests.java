@@ -1,8 +1,8 @@
 package com.github.gavlyukovskiy.sample;
 
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DecoratedDataSource;
-import com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy.ProxyDataSourceDecorator;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool.FlexyPoolDataSourceDecorator;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy.P6SpyDataSourceDecorator;
 import com.zaxxer.hikari.HikariDataSource;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class SampleApplicationTests {
+public class SampleP6SpyApplicationTests {
 
     @Autowired
     private DataSource dataSource;
@@ -28,6 +28,6 @@ public class SampleApplicationTests {
 
         DecoratedDataSource decoratedDataSource = (DecoratedDataSource) dataSource;
 
-        assertThat(decoratedDataSource.getDecoratingChain().get(0).getDataSourceDecorator()).isInstanceOf(ProxyDataSourceDecorator.class);
+        assertThat(decoratedDataSource.getDecoratingChain().get(0).getDataSourceDecorator()).isInstanceOf(P6SpyDataSourceDecorator.class);
     }
 }
