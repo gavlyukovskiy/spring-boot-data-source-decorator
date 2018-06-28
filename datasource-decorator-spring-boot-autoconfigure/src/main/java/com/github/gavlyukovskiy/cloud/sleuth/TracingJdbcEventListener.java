@@ -136,9 +136,10 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
 
     @Override
     public void onAfterStatementClose(StatementInformation statementInformation, SQLException e) {
-        // if ResultSet is not closed statement span may be open at this moment, double checking it here
+        // if Connection was closed before Statement current span may be null (see #18)
+        // if ResultSet is not closed Statement span may be open at this moment, double checking it here
         Span currentSpan = tracer.getCurrentSpan();
-        if (currentSpan.getName().contains(SleuthListenerAutoConfiguration.SPAN_FETCH_POSTFIX)) {
+        if (currentSpan != null && currentSpan.getName().contains(SleuthListenerAutoConfiguration.SPAN_FETCH_POSTFIX)) {
             if (e != null) {
                 currentSpan.tag(Span.SPAN_ERROR_TAG_NAME, getExceptionMessage(e));
             }
