@@ -41,7 +41,7 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
 
     TracingJdbcEventListener(Tracer tracer, DataSourceNameResolver dataSourceNameResolver) {
         this.dataSourceNameResolver = dataSourceNameResolver;
-        this.strategy = new TracingListenerStrategy(tracer);
+        this.strategy = new TracingListenerStrategy<>(tracer);
     }
 
     @Override
