@@ -30,7 +30,7 @@ def pomConfig = {
     }
 }
 
-task prereleaseCheck() {
+task releaseCheck() {
     doLast {
         def errors = []
         if (!project.hasProperty('release.version'))
@@ -39,6 +39,18 @@ task prereleaseCheck() {
             errors.add("'-Prelease.customUsername' must be set")
         if (!project.hasProperty('release.customPassword'))
             errors.add("'-Prelease.customPassword' must be set")
+        if (!errors.isEmpty()) {
+            throw new IllegalStateException(errors.join("\n"));
+        }
+    }
+}
+
+task bintrayUploadCheck() {
+    doLast {
+        def errors = []
+        if (project.version.contains("SNAPSHOT")) {
+            errors.add("Cannot release SNAPSHOT version")
+        }
         if (!System.getenv('BINTRAY_USER') && !project.hasProperty('release.bintray_user'))
             errors.add("'BINTRAY_USER' or '-Prelease.bintray_user' must be set")
         if (!System.getenv('BINTRAY_KEY') && !project.hasProperty('release.bintray_key'))
@@ -163,8 +175,8 @@ subprojects {
     }
 }
 
-verifyRelease.finalizedBy(prereleaseCheck)
-release.finalizedBy(bintrayUpload)
+verifyRelease.finalizedBy(releaseCheck)
+bintrayUpload.dependsOn(bintrayUploadCheck)
 subprojects.each {
     if (it.ext.release)
         verifyRelease.dependsOn("${it.name}:build")
