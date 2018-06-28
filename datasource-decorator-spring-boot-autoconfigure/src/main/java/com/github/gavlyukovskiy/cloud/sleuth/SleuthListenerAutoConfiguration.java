@@ -16,17 +16,19 @@
 
 package com.github.gavlyukovskiy.cloud.sleuth;
 
+import brave.Tracer;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorAutoConfiguration;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceNameResolver;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy.ProxyDataSourceDecorator;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy.P6SpyDataSourceDecorator;
-import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceNameResolver;
+import net.ttddyy.dsproxy.proxy.ResultSetProxyLogicFactory;
+import net.ttddyy.dsproxy.proxy.SimpleResultSetProxyLogicFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.cloud.sleuth.Tracer;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -64,6 +66,12 @@ public class SleuthListenerAutoConfiguration {
     @ConditionalOnBean(ProxyDataSourceDecorator.class)
     @ConditionalOnMissingBean(P6SpyConfiguration.class)
     static class ProxyDataSourceConfiguration {
+
+        @Bean
+        @ConditionalOnMissingBean
+        public ResultSetProxyLogicFactory resultSetProxyLogicFactory() {
+            return new SimpleResultSetProxyLogicFactory();
+        }
 
         @Bean
         public TracingQueryExecutionListener tracingQueryExecutionListener(Tracer tracer) {

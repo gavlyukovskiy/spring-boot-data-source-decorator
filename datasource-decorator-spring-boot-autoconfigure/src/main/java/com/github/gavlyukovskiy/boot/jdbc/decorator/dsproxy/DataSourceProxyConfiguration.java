@@ -17,6 +17,7 @@
 package com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy;
 
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorProperties;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceNameResolver;
 import net.ttddyy.dsproxy.listener.QueryCountStrategy;
 import net.ttddyy.dsproxy.listener.QueryExecutionListener;
 import net.ttddyy.dsproxy.listener.SingleQueryCountHolder;
@@ -57,8 +58,8 @@ public class DataSourceProxyConfiguration {
     }
 
     @Bean
-    public ProxyDataSourceDecorator proxyDataSourceDecorator(ProxyDataSourceBuilder proxyDataSourceBuilder) {
-        return new ProxyDataSourceDecorator(proxyDataSourceBuilder);
+    public ProxyDataSourceDecorator proxyDataSourceDecorator(ProxyDataSourceBuilder proxyDataSourceBuilder, DataSourceNameResolver dataSourceNameResolver) {
+        return new ProxyDataSourceDecorator(proxyDataSourceBuilder, dataSourceNameResolver);
     }
 
     @Bean

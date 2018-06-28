@@ -16,38 +16,21 @@
 
 package com.github.gavlyukovskiy.cloud.sleuth;
 
-import org.springframework.cloud.sleuth.Sampler;
-import org.springframework.cloud.sleuth.Span;
-import org.springframework.cloud.sleuth.SpanReporter;
-import org.springframework.cloud.sleuth.sampler.AlwaysSampler;
+import brave.sampler.Sampler;
+import org.springframework.cloud.sleuth.util.ArrayListSpanReporter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Configuration
 class SavingSpanReporterConfiguration {
 
     @Bean
-    public CollectingSpanReporter spanReporter() {
-        return new CollectingSpanReporter();
+    public ArrayListSpanReporter spanReporter() {
+        return new ArrayListSpanReporter();
     }
 
     @Bean
     public Sampler sampler() {
-        return new AlwaysSampler();
-    }
-
-    static class CollectingSpanReporter implements SpanReporter {
-        private List<Span> spans = new ArrayList<>();
-        @Override
-        public void report(Span span) {
-            spans.add(0, span);
-        }
-
-        List<Span> getSpans() {
-            return spans;
-        }
+        return Sampler.ALWAYS_SAMPLE;
     }
 }

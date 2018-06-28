@@ -21,6 +21,7 @@ import net.ttddyy.dsproxy.listener.QueryCountStrategy;
 import net.ttddyy.dsproxy.listener.QueryExecutionListener;
 import net.ttddyy.dsproxy.listener.logging.CommonsLogLevel;
 import net.ttddyy.dsproxy.listener.logging.SLF4JLogLevel;
+import net.ttddyy.dsproxy.proxy.ResultSetProxyLogicFactory;
 import net.ttddyy.dsproxy.support.ProxyDataSourceBuilder;
 import net.ttddyy.dsproxy.transform.ParameterTransformer;
 import net.ttddyy.dsproxy.transform.QueryTransformer;
@@ -60,6 +61,9 @@ public class ProxyDataSourceBuilderConfigurer {
 
     @Autowired(required = false)
     private QueryTransformer queryTransformer;
+
+    @Autowired(required = false)
+    private ResultSetProxyLogicFactory resultSetProxyLogicFactory;
 
     public void configure(ProxyDataSourceBuilder proxyDataSourceBuilder, DataSourceProxyProperties datasourceProxy) {
         switch (datasourceProxy.getLogging()) {
@@ -126,6 +130,9 @@ public class ProxyDataSourceBuilderConfigurer {
         }
         if (queryTransformer != null) {
             proxyDataSourceBuilder.queryTransformer(queryTransformer);
+        }
+        if (resultSetProxyLogicFactory != null) {
+            proxyDataSourceBuilder.proxyResultSet(resultSetProxyLogicFactory);
         }
     }
 

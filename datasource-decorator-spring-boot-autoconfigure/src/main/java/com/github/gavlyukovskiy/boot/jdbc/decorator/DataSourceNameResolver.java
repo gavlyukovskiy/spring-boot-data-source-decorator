@@ -24,6 +24,7 @@ import org.springframework.util.ClassUtils;
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -38,34 +39,40 @@ public class DataSourceNameResolver {
             ClassUtils.isPresent("com.zaxxer.hikari.HikariDataSource", ProxyDataSourceDecorator.class.getClassLoader());
 
     private final ApplicationContext applicationContext;
-    private Map<String, DataSource> dataSources;
+    private final Map<CommonDataSource, String> cachedNames = new HashMap<>();
 
     public DataSourceNameResolver(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
 
     public String resolveDataSourceName(CommonDataSource dataSource) {
-        if (HIKARI_AVAILABLE && dataSource instanceof HikariDataSource) {
-            HikariDataSource hikariDataSource = (HikariDataSource) dataSource;
-            if (hikariDataSource.getPoolName() != null && !hikariDataSource.getPoolName().startsWith("HikariPool-")) {
-                return hikariDataSource.getPoolName();
+        String dataSourceName = cachedNames.get(dataSource);
+        if (dataSourceName == null) {
+            // even if two threads compute this in parallel result will be the same
+            synchronized (cachedNames) {
+                if (HIKARI_AVAILABLE && dataSource instanceof HikariDataSource) {
+                    HikariDataSource hikariDataSource = (HikariDataSource) dataSource;
+                    if (hikariDataSource.getPoolName() != null && !hikariDataSource.getPoolName().startsWith("HikariPool-")) {
+                        return hikariDataSource.getPoolName();
+                    }
+                }
+                Map<String, DataSource> dataSources = applicationContext.getBeansOfType(DataSource.class);
+                dataSourceName = dataSources.entrySet()
+                        .stream()
+                        .filter(entry -> {
+                            DataSource candidate = entry.getValue();
+                            if (candidate instanceof DecoratedDataSource) {
+                                return matchesDataSource((DecoratedDataSource) candidate, dataSource);
+                            }
+                            return candidate == dataSource;
+                        })
+                        .findFirst()
+                        .map(Entry::getKey)
+                        .orElse("dataSource");
+                cachedNames.put(dataSource, dataSourceName);
             }
         }
-        if (dataSources == null) {
-            this.dataSources = applicationContext.getBeansOfType(DataSource.class);
-        }
-        return dataSources.entrySet()
-                .stream()
-                .filter(entry -> {
-                    DataSource candidate = entry.getValue();
-                    if (candidate instanceof DecoratedDataSource) {
-                        return matchesDataSource((DecoratedDataSource) candidate, dataSource);
-                    }
-                    return candidate == dataSource;
-                })
-                .findFirst()
-                .map(Entry::getKey)
-                .orElse("dataSource");
+        return dataSourceName;
     }
 
     private boolean matchesDataSource(DecoratedDataSource decoratedCandidate, CommonDataSource dataSource) {
