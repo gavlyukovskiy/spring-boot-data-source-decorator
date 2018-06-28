@@ -349,4 +349,30 @@ class TracingJdbcEventListenerTests {
             assertThat(statementSpan.getName()).isEqualTo("jdbc:/test/connection");
         });
     }
+
+    @Test
+    void testShouldNotFailWhenClosedInReversedOrder() {
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            CollectingSpanReporter spanReporter = context.getBean(CollectingSpanReporter.class);
+
+            Connection connection = dataSource.getConnection();
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("SELECT NOW()");
+            connection.close();
+            statement.close();
+            resultSet.close();
+
+            assertThat(ExceptionUtils.getLastException()).isNull();
+
+            Assertions.assertThat(spanReporter.getSpans()).hasSize(3);
+            Span connectionSpan = spanReporter.getSpans().get(0);
+            Span resultSetSpan = spanReporter.getSpans().get(1);
+            Span statementSpan = spanReporter.getSpans().get(2);
+            assertThat(connectionSpan.getName()).isEqualTo("jdbc:/test/connection");
+            assertThat(statementSpan.getName()).isEqualTo("jdbc:/test/query");
+            assertThat(resultSetSpan.getName()).isEqualTo("jdbc:/test/fetch");
+            assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, "SELECT NOW()");
+        });
+    }
 }
