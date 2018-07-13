@@ -54,10 +54,10 @@ public class TracingQueryExecutionListener implements QueryExecutionListener, Me
     @Override
     public void afterQuery(ExecutionInfo execInfo, List<QueryInfo> queryInfoList) {
         if (execInfo.getMethod().getName().equals("executeUpdate") && execInfo.getThrowable() == null) {
-            strategy.addQueryRowCount((int) execInfo.getResult());
+            strategy.addQueryRowCount(execInfo.getStatement(), (int) execInfo.getResult());
         }
         String sql = queryInfoList.stream().map(QueryInfo::getQuery).collect(Collectors.joining("\n"));
-        strategy.afterQuery(sql, execInfo.getThrowable());
+        strategy.afterQuery(execInfo.getStatement(), sql, execInfo.getThrowable());
     }
 
     @Override

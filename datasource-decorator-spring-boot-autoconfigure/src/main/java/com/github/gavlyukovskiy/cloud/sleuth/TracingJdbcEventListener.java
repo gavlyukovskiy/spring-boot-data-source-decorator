@@ -63,7 +63,7 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
 
     @Override
     public void onAfterAnyExecute(StatementInformation statementInformation, long timeElapsedNanos, SQLException e) {
-        strategy.afterQuery(getSql(statementInformation), e);
+        strategy.afterQuery(statementInformation, getSql(statementInformation), e);
     }
 
     @Override
@@ -74,13 +74,13 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
 
     @Override
     public void onAfterExecuteUpdate(PreparedStatementInformation statementInformation, long timeElapsedNanos, int rowCount, SQLException e) {
-        strategy.addQueryRowCount(rowCount);
+        strategy.addQueryRowCount(statementInformation, rowCount);
         super.onAfterExecuteUpdate(statementInformation, timeElapsedNanos, rowCount, e);
     }
 
     @Override
     public void onAfterExecuteUpdate(StatementInformation statementInformation, long timeElapsedNanos, String sql, int rowCount, SQLException e) {
-        strategy.addQueryRowCount(rowCount);
+        strategy.addQueryRowCount(statementInformation, rowCount);
         super.onAfterExecuteUpdate(statementInformation, timeElapsedNanos, sql, rowCount, e);
     }
 

@@ -15,6 +15,7 @@ class TracingListenerStrategy<CON, STMT, RS> {
     private final Map<STMT, Collection<RS>> nestedResultSetsByStatement = new ConcurrentHashMap<>();
     
     private final Map<CON, Span> connectionSpans = new ConcurrentHashMap<>();
+    private final Map<STMT, Span> statementSpans = new ConcurrentHashMap<>();
     private final Map<RS, Span> resultSetSpans = new ConcurrentHashMap<>();
 
     private final Tracer tracer;
@@ -27,7 +28,7 @@ class TracingListenerStrategy<CON, STMT, RS> {
         Span connectionSpan = tracer.nextSpan().name("jdbc:/" + dataSourceName + SleuthListenerAutoConfiguration.SPAN_CONNECTION_POSTFIX);
         connectionSpan.kind(Kind.CLIENT);
         connectionSpan.start();
-        tracer.withSpanInScope(connectionSpan);
+        //tracer.withSpanInScope(connectionSpan);
         connectionSpans.put(connectionKey, connectionSpan);
     }
 
@@ -45,15 +46,17 @@ class TracingListenerStrategy<CON, STMT, RS> {
         statementSpan.kind(Kind.CLIENT);
         statementSpan.start();
         tracer.withSpanInScope(statementSpan);
+        statementSpans.put(statementKey, statementSpan);
         nestedStatementsByConnection.computeIfAbsent(connectionKey, (key) -> new HashSet<>()).add(statementKey);
     }
 
-    void addQueryRowCount(int rowCount) {
-        tracer.currentSpan().tag(SleuthListenerAutoConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(rowCount));
+    void addQueryRowCount(STMT statementKey, int rowCount) {
+        Span statementSpan = statementSpans.get(statementKey);
+        statementSpan.tag(SleuthListenerAutoConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(rowCount));
     }
 
-    void afterQuery(String sql, Throwable t) {
-        Span statementSpan = tracer.currentSpan();
+    void afterQuery(STMT statementKey, String sql, Throwable t) {
+        Span statementSpan = statementSpans.remove(statementKey);
         statementSpan.tag(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, sql);
         if (t != null) {
             statementSpan.error(t);

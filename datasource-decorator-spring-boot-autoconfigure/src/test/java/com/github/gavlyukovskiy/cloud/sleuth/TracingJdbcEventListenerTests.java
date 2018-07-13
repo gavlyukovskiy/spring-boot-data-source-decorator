@@ -35,6 +35,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -348,6 +351,36 @@ class TracingJdbcEventListenerTests {
             assertThat(statementSpan.name()).isEqualTo("jdbc:/test/query");
             assertThat(resultSetSpan.name()).isEqualTo("jdbc:/test/fetch");
             assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, "SELECT NOW()");
+        });
+    }
+
+    @Test
+    void testSingleConnectionAcrossMultipleThreads() {
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+
+            Connection connection = dataSource.getConnection();
+            IntStream.range(0, 5)
+                    .mapToObj(i -> CompletableFuture.runAsync(() -> {
+                        try {
+                            Statement statement = connection.createStatement();
+                            ResultSet resultSet = statement.executeQuery("SELECT NOW()");
+                            resultSet.next();
+                            statement.close();
+                            resultSet.close();
+                        }
+                        catch (SQLException e) {
+                            throw new IllegalStateException(e);
+                        }
+                    }))
+                    .collect(Collectors.toList())
+                    .forEach(CompletableFuture::join);
+            connection.close();
+
+            assertThat(spanReporter.getSpans()).hasSize(1 + 2 * 5);
+            assertThat(spanReporter.getSpans()).extracting("name")
+                    .contains("jdbc:/test/query", "jdbc:/test/fetch", "jdbc:/test/connection");
         });
     }
 }
