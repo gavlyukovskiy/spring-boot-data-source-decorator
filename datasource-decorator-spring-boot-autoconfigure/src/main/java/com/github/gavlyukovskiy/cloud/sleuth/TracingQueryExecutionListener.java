@@ -153,12 +153,13 @@ public class TracingQueryExecutionListener implements QueryExecutionListener, Me
             else if (methodName.equals("close")) {
                 // if ResultSet is not closed statement span may be open at this moment, double checking it here
                 Span currentSpan = tracer.getCurrentSpan();
-                if (currentSpan.getName().contains(SleuthListenerAutoConfiguration.SPAN_FETCH_POSTFIX)) {
-                    if (e != null) {
-                        currentSpan.tag(Span.SPAN_ERROR_TAG_NAME, getExceptionMessage(e));
-                    }
-                    tracer.close(currentSpan);
+                if (currentSpan == null || !currentSpan.getName().contains(SleuthListenerAutoConfiguration.SPAN_FETCH_POSTFIX)) {
+                    return;
                 }
+                if (e != null) {
+                    currentSpan.tag(Span.SPAN_ERROR_TAG_NAME, getExceptionMessage(e));
+                }
+                tracer.close(currentSpan);
             }
         }
         else if (target instanceof ResultSet) {
