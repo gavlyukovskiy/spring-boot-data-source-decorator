@@ -18,21 +18,11 @@ package com.github.gavlyukovskiy.sample;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootApplication
-@EnableScheduling
 public class SampleP6SpyApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(SampleP6SpyApplication.class, args);
-    }
-
-    @Scheduled(fixedDelay = 1000)
-    @Transactional
-    public void test() {
-        System.out.println("test");
     }
 }
