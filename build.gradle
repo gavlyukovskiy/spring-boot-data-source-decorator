@@ -5,7 +5,7 @@ buildscript {
 }
 
 plugins {
-    id "com.jfrog.bintray" version "1.8.0"
+    id "com.jfrog.bintray" version "1.8.4"
     id "pl.allegro.tech.build.axion-release" version "1.9.1"
 }
 
@@ -40,7 +40,7 @@ task releaseCheck() {
         if (!project.hasProperty('release.customPassword'))
             errors.add("'-Prelease.customPassword' must be set")
         if (!errors.isEmpty()) {
-            throw new IllegalStateException(errors.join("\n"));
+            throw new IllegalStateException(errors.join("\n"))
         }
     }
 }
@@ -62,7 +62,7 @@ task bintrayUploadCheck() {
         if (!System.getenv('SONATYPE_PASSWORD') && !project.hasProperty('release.sonatype_password'))
             errors.add("'SONATYPE_PASSWORD' or '-Prelease.sonatype_password' must be set")
         if (!errors.isEmpty()) {
-            throw new IllegalStateException(errors.join("\n"));
+            throw new IllegalStateException(errors.join("\n"))
         }
     }
 }
@@ -76,7 +76,12 @@ subprojects {
         sleuthVersion = '2.0.0.RELEASE'
         micrometerVersion = '1.0.4'
 
-        release = !project.name.contains("sample")
+        release = [
+                "datasource-decorator-spring-boot-autoconfigure",
+                "datasource-proxy-spring-boot-starter",
+                "flexy-pool-spring-boot-starter",
+                "p6spy-spring-boot-starter"
+        ].contains(project.name)
     }
 
     apply plugin: 'java'
@@ -112,11 +117,13 @@ subprojects {
             publications {
                 mavenJava(MavenPublication) {
                     from components.java
-                    artifact sourceJar
-                    artifact javadocJar
-                    groupId project.group
-                    artifactId project.name
-                    version scmVersion.version
+                    afterEvaluate {
+                        artifact sourceJar
+                        artifact javadocJar
+                        groupId project.group
+                        artifactId project.name
+                        version scmVersion.version
+                    }
                     pom.withXml {
                         def root = asNode()
                         root.appendNode('description', 'Spring Boot integration with p6spy, datasource-proxy and flexy-pool')
@@ -178,6 +185,8 @@ subprojects {
 verifyRelease.finalizedBy(releaseCheck)
 bintrayUpload.dependsOn(bintrayUploadCheck)
 subprojects.each {
-    if (it.ext.release)
+    if (it.ext.release) {
         verifyRelease.dependsOn("${it.name}:build")
+        println "$it.name"
+    }
 }
