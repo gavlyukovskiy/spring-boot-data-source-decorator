@@ -5,7 +5,7 @@ buildscript {
 }
 
 plugins {
-    id "com.jfrog.bintray" version "1.8.0"
+    id "com.jfrog.bintray" version "1.8.4"
     id "pl.allegro.tech.build.axion-release" version "1.9.1"
 }
 
@@ -76,7 +76,12 @@ subprojects {
         sleuthVersion = '1.3.1.RELEASE'
         micrometerVersion = '1.0.4'
 
-        release = !project.name.contains("sample")
+        release = [
+                "datasource-decorator-spring-boot-autoconfigure",
+                "datasource-proxy-spring-boot-starter",
+                "flexy-pool-spring-boot-starter",
+                "p6spy-spring-boot-starter"
+        ].contains(project.name)
     }
 
     apply plugin: 'java'
@@ -180,6 +185,8 @@ subprojects {
 verifyRelease.finalizedBy(releaseCheck)
 bintrayUpload.dependsOn(bintrayUploadCheck)
 subprojects.each {
-    if (it.ext.release)
+    if (it.ext.release) {
         verifyRelease.dependsOn("${it.name}:build")
+        println "$it.name"
+    }
 }
