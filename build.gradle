@@ -5,7 +5,7 @@ buildscript {
 }
 
 plugins {
-    id "com.jfrog.bintray" version "1.8.4"
+    id "com.jfrog.bintray" version "1.8.4" apply false
     id "pl.allegro.tech.build.axion-release" version "1.9.1"
 }
 
@@ -27,43 +27,6 @@ def pomConfig = {
 
     scm {
         url "https://github.com/gavlyukovskiy/spring-boot-data-source-decorator"
-    }
-}
-
-task releaseCheck() {
-    doLast {
-        def errors = []
-        if (!project.hasProperty('release.version'))
-            errors.add("'-Prelease.version' must be set")
-        if (!project.hasProperty('release.customUsername'))
-            errors.add("'-Prelease.customUsername' must be set")
-        if (!project.hasProperty('release.customPassword'))
-            errors.add("'-Prelease.customPassword' must be set")
-        if (!errors.isEmpty()) {
-            throw new IllegalStateException(errors.join("\n"))
-        }
-    }
-}
-
-task bintrayUploadCheck() {
-    doLast {
-        def errors = []
-        if (project.version.contains("SNAPSHOT")) {
-            errors.add("Cannot release SNAPSHOT version")
-        }
-        if (!System.getenv('BINTRAY_USER') && !project.hasProperty('release.bintray_user'))
-            errors.add("'BINTRAY_USER' or '-Prelease.bintray_user' must be set")
-        if (!System.getenv('BINTRAY_KEY') && !project.hasProperty('release.bintray_key'))
-            errors.add("'BINTRAY_KEY' or '-Prelease.bintray_key' must be set")
-        if (!System.getenv('GPG_PASSPHRASE') && !project.hasProperty('release.gpg_passphrase'))
-            errors.add("'GPG_PASSPHRASE' or '-Prelease.gpg_passphrase' must be set")
-        if (!System.getenv('SONATYPE_USER') && !project.hasProperty('release.sonatype_user'))
-            errors.add("'SONATYPE_USER' or '-Prelease.sonatype_user' must be set")
-        if (!System.getenv('SONATYPE_PASSWORD') && !project.hasProperty('release.sonatype_password'))
-            errors.add("'SONATYPE_PASSWORD' or '-Prelease.sonatype_password' must be set")
-        if (!errors.isEmpty()) {
-            throw new IllegalStateException(errors.join("\n"))
-        }
     }
 }
 
@@ -112,6 +75,47 @@ subprojects {
     if (ext.release) {
         apply plugin: 'maven-publish'
         apply plugin: 'com.jfrog.bintray'
+
+        task releaseCheck() {
+            doLast {
+                def errors = []
+                if (!project.hasProperty('release.version'))
+                    errors.add("'-Prelease.version' must be set")
+                if (!project.hasProperty('release.customUsername'))
+                    errors.add("'-Prelease.customUsername' must be set")
+                if (!project.hasProperty('release.customPassword'))
+                    errors.add("'-Prelease.customPassword' must be set")
+                if (!errors.isEmpty()) {
+                    throw new IllegalStateException(errors.join("\n"))
+                }
+            }
+        }
+
+        task bintrayUploadCheck() {
+            doLast {
+                def errors = []
+                if (project.version.contains("SNAPSHOT")) {
+                    errors.add("Cannot release SNAPSHOT version")
+                }
+                if (!System.getenv('BINTRAY_USER') && !project.hasProperty('release.bintray_user'))
+                    errors.add("'BINTRAY_USER' or '-Prelease.bintray_user' must be set")
+                if (!System.getenv('BINTRAY_KEY') && !project.hasProperty('release.bintray_key'))
+                    errors.add("'BINTRAY_KEY' or '-Prelease.bintray_key' must be set")
+                if (!System.getenv('GPG_PASSPHRASE') && !project.hasProperty('release.gpg_passphrase'))
+                    errors.add("'GPG_PASSPHRASE' or '-Prelease.gpg_passphrase' must be set")
+                if (!System.getenv('SONATYPE_USER') && !project.hasProperty('release.sonatype_user'))
+                    errors.add("'SONATYPE_USER' or '-Prelease.sonatype_user' must be set")
+                if (!System.getenv('SONATYPE_PASSWORD') && !project.hasProperty('release.sonatype_password'))
+                    errors.add("'SONATYPE_PASSWORD' or '-Prelease.sonatype_password' must be set")
+                if (!errors.isEmpty()) {
+                    throw new IllegalStateException(errors.join("\n"))
+                }
+            }
+        }
+
+        verifyRelease.finalizedBy(releaseCheck)
+        bintrayUpload.dependsOn(bintrayUploadCheck)
+        verifyRelease.dependsOn(build)
 
         publishing {
             publications {
@@ -179,14 +183,5 @@ subprojects {
                 into 'META-INF'
             }
         }
-    }
-}
-
-verifyRelease.finalizedBy(releaseCheck)
-bintrayUpload.dependsOn(bintrayUploadCheck)
-subprojects.each {
-    if (it.ext.release) {
-        verifyRelease.dependsOn("${it.name}:build")
-        println "$it.name"
     }
 }
