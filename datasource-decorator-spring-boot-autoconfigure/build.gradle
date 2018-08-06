@@ -3,8 +3,10 @@ dependencies {
     compile("org.springframework.boot:spring-boot:${springBootVersion}")
     compile("org.springframework.boot:spring-boot-autoconfigure:${springBootVersion}")
 
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:${springBootVersion}")
+    annotationProcessor("org.projectlombok:lombok:1.16.20")
     compileOnly("org.springframework.boot:spring-boot-configuration-processor:${springBootVersion}")
-    compileOnly("org.projectlombok:lombok:1.16.10")
+    compileOnly("org.projectlombok:lombok:1.16.20")
 
     compileOnly("org.springframework.boot:spring-boot-actuator:${springBootVersion}")
 
@@ -46,7 +48,8 @@ dependencies {
     testCompile("org.apache.tomcat:tomcat-jdbc:8.5.13")
     testCompile("com.zaxxer:HikariCP:2.7.9")
 
-    testCompileOnly("org.projectlombok:lombok:1.16.10")
+    testAnnotationProcessor("org.projectlombok:lombok:1.16.20")
+    testCompileOnly("org.projectlombok:lombok:1.16.20")
 }
 
 gradle.projectsEvaluated {
