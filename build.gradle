@@ -40,7 +40,7 @@ task releaseCheck() {
         if (!project.hasProperty('release.customPassword'))
             errors.add("'-Prelease.customPassword' must be set")
         if (!errors.isEmpty()) {
-            throw new IllegalStateException(errors.join("\n"));
+            throw new IllegalStateException(errors.join("\n"))
         }
     }
 }
@@ -62,7 +62,7 @@ task bintrayUploadCheck() {
         if (!System.getenv('SONATYPE_PASSWORD') && !project.hasProperty('release.sonatype_password'))
             errors.add("'SONATYPE_PASSWORD' or '-Prelease.sonatype_password' must be set")
         if (!errors.isEmpty()) {
-            throw new IllegalStateException(errors.join("\n"));
+            throw new IllegalStateException(errors.join("\n"))
         }
     }
 }
@@ -112,11 +112,13 @@ subprojects {
             publications {
                 mavenJava(MavenPublication) {
                     from components.java
-                    artifact sourceJar
-                    artifact javadocJar
-                    groupId project.group
-                    artifactId project.name
-                    version scmVersion.version
+                    afterEvaluate {
+                        artifact sourceJar
+                        artifact javadocJar
+                        groupId project.group
+                        artifactId project.name
+                        version scmVersion.version
+                    }
                     pom.withXml {
                         def root = asNode()
                         root.appendNode('description', 'Spring Boot integration with p6spy, datasource-proxy and flexy-pool')

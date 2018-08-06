@@ -1,3 +1,5 @@
+enableFeaturePreview('STABLE_PUBLISHING')
+
 rootProject.name = 'spring-boot-data-source-decorator'
 include 'datasource-decorator-spring-boot-autoconfigure'
 include 'p6spy-spring-boot-starter'
