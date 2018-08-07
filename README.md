@@ -32,7 +32,7 @@ compile('com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.4.3')
 <dependency>
     <groupId>com.github.gavlyukovskiy</groupId>
     <artifactId>p6spy-spring-boot-starter</artifactId>
-    <version>1.4.2</version>
+    <version>1.4.3</version>
 </dependency>
 ```
 
@@ -44,7 +44,7 @@ compile('com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.4.3')
 <dependency>
     <groupId>com.github.gavlyukovskiy</groupId>
     <artifactId>datasource-proxy-spring-boot-starter</artifactId>
-    <version>1.4.2</version>
+    <version>1.4.3</version>
 </dependency>
 ```
 
@@ -56,7 +56,7 @@ compile('com.github.gavlyukovskiy:flexy-pool-spring-boot-starter:1.4.3')
 <dependency>
     <groupId>com.github.gavlyukovskiy</groupId>
     <artifactId>flexy-pool-spring-boot-starter</artifactId>
-    <version>1.4.2</version>
+    <version>1.4.3</version>
 </dependency>
 ```
 
