@@ -19,14 +19,14 @@ Instead of using the library you can manually wrap your datasource, but using my
 **Quick Start**
 
 First you need to chose correct version:
-* to use with Spring Boot 1.x.x - 1.3.4
-* to use with Spring Boot 2.x.x - 1.4.2
+* to use with Spring Boot 1.x.x - 1.3.5
+* to use with Spring Boot 2.x.x - 1.4.3
 
 Then add one of the starters to the classpath of a Spring Boot application and your datasources (auto-configured or custom) will be wrapped into one of a datasource proxy providers below.
 
 If you want to use [P6Spy](https://github.com/p6spy/p6spy)
 ```groovy
-compile('com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.4.2')
+compile('com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.4.3')
 ```
 ```xml
 <dependency>
@@ -38,7 +38,7 @@ compile('com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.4.2')
 
 or [Datasource Proxy](https://github.com/ttddyy/datasource-proxy):
 ```groovy
-compile('com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.4.2')
+compile('com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.4.3')
 ```
 ```xml
 <dependency>
@@ -50,7 +50,7 @@ compile('com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.4.2')
 
 or [FlexyPool](https://github.com/vladmihalcea/flexy-pool)
 ```groovy
-compile('com.github.gavlyukovskiy:flexy-pool-spring-boot-starter:1.4.2')
+compile('com.github.gavlyukovskiy:flexy-pool-spring-boot-starter:1.4.3')
 ```
 ```xml
 <dependency>
