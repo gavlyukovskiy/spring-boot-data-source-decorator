@@ -28,7 +28,6 @@ class TracingListenerStrategy<CON, STMT, RS> {
         Span connectionSpan = tracer.nextSpan().name("jdbc:/" + dataSourceName + SleuthListenerAutoConfiguration.SPAN_CONNECTION_POSTFIX);
         connectionSpan.kind(Kind.CLIENT);
         connectionSpan.start();
-        //tracer.withSpanInScope(connectionSpan);
         connectionSpans.put(connectionKey, connectionSpan);
     }
 

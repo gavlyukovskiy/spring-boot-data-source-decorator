@@ -5,7 +5,7 @@ spring:
   application:
     name: p6spy-sample
   sleuth:
-    enabled: true
+    enabled: false
     sampler:
       probability: 1
   datasource:
@@ -17,7 +17,7 @@ spring:
       password:
       maximum-pool-size: 10
   zipkin:
-    enabled: true
+    enabled: false
 
 decorator:
   datasource:
