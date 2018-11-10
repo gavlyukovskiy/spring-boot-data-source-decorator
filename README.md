@@ -5,7 +5,6 @@ Spring Boot auto-configuration for integration with
 * [Datasource Proxy](https://github.com/ttddyy/datasource-proxy) - adds ability to intercept all queries and `Connection`, `Statement` and `ResultSet` method calls
 * [FlexyPool](https://github.com/vladmihalcea/flexy-pool) - adds connection pool metrics (jmx, codahale, dropwizard) and flexible strategies for adjusting pool size on demand
 * [Spring Cloud Sleuth](https://github.com/spring-cloud/spring-cloud-sleuth) - library for distributed tracing, if found in classpath enables jdbc connections and queries tracing (only with p6spy or datasource-proxy)
-* [Micrometer](https://github.com/micrometer-metrics/micrometer) - metrics api, in combination with p6spy or datasource-proxy adds metrics for datasource.
 
 **Why need this?**
 
@@ -249,16 +248,10 @@ decorator.datasource.metrics.enabled=true
 
 **Spring Cloud Sleuth**
 
-With P6Spy span will be created for:
+P6Spy or Datasource Proxy allows to create spans on various jdbc events:
  * `jdbc:/<dataSource>/connection` - opening connection including events for commits and rollbacks
  * `jdbc:/<dataSource>/query` - executing query including sql text and number of affected rows in the tags
  * `jdbc:/<dataSource>/fetch` - fetching result set data including number of rows in the tags
-
-With Datasource Proxy span will be created for:
- * `jdbc:/<dataSource>/connection` - opening connection including events for commits and rollbacks
- * `jdbc:/<dataSource>/query` - executing query including sql text (without parameters) and number of affected rows in the tags
- * `jdbc:/<dataSource>/fetch` - fetching result set data
-
 
 Example request:
 ![alt text](images/zipkin.png)
@@ -270,17 +263,6 @@ Details of query span:
 ![alt text](images/query-span.png)
 
 ![alt text](images/query-span-error.png)
-
-**Micrometer**
-Exposes datasource metrics using micrometer api.
-
-Metrics are aligned with Hikari metrics, but works for other pools as well.
- * `datasource.connections.acquire` - time to acquire connection
- * `datasource.connections.usage` - time of connection usage, usually transaction time
- * `datasource.connections.active` - number of currently active connections
- * `datasource.connections.pending` - number of threads pending for free connection
- * `datasource.connections.created` - number of total connections acquired
- * `datasource.connections.failed` - number of total connections acquisition fails
 
 **Custom Decorators**
 

@@ -12,24 +12,3 @@ spring:
       username: sa
       password:
       maximum-pool-size: 10
-
-decorator:
-  datasource:
-    flexy-pool:
-      acquiring-strategy:
-        retry:
-          attempts: 2
-        increment-pool:
-          max-overflow-pool-size: 15
-          timeout-millis: 500
-      metrics:
-        reporter:
-          jmx:
-            enabled: true
-            auto-start: false
-          log:
-            millis: 300000
-      threshold:
-        connection:
-          acquire: 50
-          lease: 1000

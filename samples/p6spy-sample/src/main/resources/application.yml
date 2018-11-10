@@ -18,10 +18,3 @@ spring:
       maximum-pool-size: 10
   zipkin:
     enabled: false
-
-decorator:
-  datasource:
-    p6spy:
-      enable-logging: true
-      multiline: true
-      logging: slf4j

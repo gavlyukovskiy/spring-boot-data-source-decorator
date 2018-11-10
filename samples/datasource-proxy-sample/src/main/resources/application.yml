@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: p6spy-sample
+    name: datasource-proxy-sample
   sleuth:
     enabled: false
     sampler:
@@ -19,16 +19,3 @@ spring:
   zipkin:
     enabled: false
 
-decorator:
-  datasource:
-    datasource-proxy:
-      logging: slf4j
-      query:
-        enable-logging: true
-        logger-name:
-        log-level: DEBUG
-      slow-query:
-        enable-logging: true
-        logger-name:
-        log-level: WARN
-        threshold: 300

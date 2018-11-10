@@ -20,7 +20,6 @@ import com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy.DataSourceProxyPrope
 import com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool.FlexyPoolProperties;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy.P6SpyProperties;
 import com.github.gavlyukovskiy.cloud.sleuth.SleuthProperties;
-import com.github.gavlyukovskiy.micrometer.MetricsProperties;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -59,7 +58,4 @@ public class DataSourceDecoratorProperties {
 
     @NestedConfigurationProperty
     private SleuthProperties sleuth = new SleuthProperties();
-
-    @NestedConfigurationProperty
-    private MetricsProperties metrics = new MetricsProperties();
 }

@@ -1,5 +1,5 @@
 plugins {
-    id 'org.springframework.boot' version '2.0.3.RELEASE'
+    id 'org.springframework.boot' version '2.0.6.RELEASE'
 }
 
 repositories {
@@ -10,25 +10,27 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 
 dependencies {
-    compile("com.github.gavlyukovskiy:p6spy-spring-boot-starter:${project.version}")
+    compile("com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.4.3")
 
-    compile("org.springframework.boot:spring-boot:2.0.3.RELEASE")
-    compile("org.springframework.boot:spring-boot-starter:2.0.3.RELEASE")
-    compile("org.springframework.boot:spring-boot-autoconfigure:2.0.3.RELEASE")
-    compile("org.springframework.boot:spring-boot-starter-logging:2.0.3.RELEASE")
-    compile("org.springframework.boot:spring-boot-starter-tomcat:2.0.3.RELEASE")
-    compile("org.springframework.boot:spring-boot-starter-web:2.0.3.RELEASE")
-    compile("org.springframework.boot:spring-boot-starter-jdbc:2.0.3.RELEASE")
-    compile("org.springframework.boot:spring-boot-starter-aop:2.0.3.RELEASE")
+    compile("org.springframework.boot:spring-boot:2.0.6.RELEASE")
+    compile("org.springframework.boot:spring-boot-starter:2.0.6.RELEASE")
+    compile("org.springframework.boot:spring-boot-autoconfigure:2.0.6.RELEASE")
+    compile("org.springframework.boot:spring-boot-starter-logging:2.0.6.RELEASE")
+    compile("org.springframework.boot:spring-boot-starter-tomcat:2.0.6.RELEASE")
+    compile("org.springframework.boot:spring-boot-starter-web:2.0.6.RELEASE")
+    compile("org.springframework.boot:spring-boot-starter-jdbc:2.0.6.RELEASE")
+    compile("org.springframework.boot:spring-boot-starter-aop:2.0.6.RELEASE")
 
-    compile("org.springframework.cloud:spring-cloud-sleuth-core:2.0.0.RELEASE")
-    compile("org.springframework.cloud:spring-cloud-sleuth-zipkin:2.0.0.RELEASE")
+    compile("org.springframework.cloud:spring-cloud-sleuth-core:2.0.2.RELEASE")
+    compile("org.springframework.cloud:spring-cloud-sleuth-zipkin:2.0.2.RELEASE")
 
     compile("com.h2database:h2:1.4.193")
     compile("org.apache.commons:commons-io:1.3.2")
 
-    testCompile("org.springframework.boot:spring-boot-starter-test:2.0.3.RELEASE")
-    testCompile("junit:junit:4.12")
+    testCompile("org.springframework.boot:spring-boot-starter-test:2.0.6.RELEASE")
+    testCompile("org.junit.jupiter:junit-jupiter-api:5.3.1")
+    testCompile("org.junit.jupiter:junit-jupiter-params:5.3.1")
+    testCompile("org.junit.jupiter:junit-jupiter-engine:5.3.1")
 }
 
 bootRun {
