@@ -16,7 +16,6 @@
 
 package com.github.gavlyukovskiy.boot.jdbc.decorator;
 
-import com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy.ProxyDataSourceDecorator;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.ClassUtils;
@@ -36,7 +35,7 @@ import java.util.Map.Entry;
  */
 public class DataSourceNameResolver {
     private final static boolean HIKARI_AVAILABLE =
-            ClassUtils.isPresent("com.zaxxer.hikari.HikariDataSource", ProxyDataSourceDecorator.class.getClassLoader());
+            ClassUtils.isPresent("com.zaxxer.hikari.HikariDataSource", DataSourceNameResolver.class.getClassLoader());
 
     private final ApplicationContext applicationContext;
     private final Map<CommonDataSource, String> cachedNames = new HashMap<>();

@@ -47,7 +47,7 @@ class TracingListenerStrategy<CON, STMT, RS> {
         statementSpan.start();
         tracer.withSpanInScope(statementSpan);
         statementSpans.put(statementKey, statementSpan);
-        nestedStatementsByConnection.computeIfAbsent(connectionKey, (key) -> new HashSet<>()).add(statementKey);
+        nestedStatementsByConnection.computeIfAbsent(connectionKey, key -> new HashSet<>()).add(statementKey);
     }
 
     void addQueryRowCount(STMT statementKey, int rowCount) {
@@ -73,7 +73,7 @@ class TracingListenerStrategy<CON, STMT, RS> {
         resultSetSpan.kind(Kind.CLIENT);
         resultSetSpan.start();
         tracer.withSpanInScope(resultSetSpan);
-        nestedResultSetsByStatement.computeIfAbsent(statementKey, (key) -> new HashSet<>()).add(resultSetKey);
+        nestedResultSetsByStatement.computeIfAbsent(statementKey, key -> new HashSet<>()).add(resultSetKey);
         resultSetSpans.put(resultSetKey, resultSetSpan);
     }
 
