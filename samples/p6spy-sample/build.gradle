@@ -10,7 +10,7 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 
 dependencies {
-    compile("com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.4.3")
+    compile("com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.5.0")
 
     compile("org.springframework.boot:spring-boot:2.0.6.RELEASE")
     compile("org.springframework.boot:spring-boot-starter:2.0.6.RELEASE")
