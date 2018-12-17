@@ -18,9 +18,8 @@ Instead of using the library you can manually wrap your datasource, but using my
 **Quick Start**
 
 First you need to chose correct version:
+* to use with Spring Boot 2.x.x - 1.5.1
 * to use with Spring Boot 1.x.x - 1.3.5
-* to use with Spring Boot 2.x.x and Spring Cloud Edgware - 1.4.3
-* to use with Spring Boot 2.x.x and Spring Cloud Finchley - 1.5.1
 
 Then add one of the starters to the classpath of a Spring Boot application and your datasources (auto-configured or custom) will be wrapped into one of a datasource proxy providers below.
 
