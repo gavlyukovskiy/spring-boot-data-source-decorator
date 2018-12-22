@@ -22,6 +22,7 @@ import net.ttddyy.dsproxy.QueryInfo;
 import net.ttddyy.dsproxy.listener.MethodExecutionContext;
 import net.ttddyy.dsproxy.listener.MethodExecutionListener;
 import net.ttddyy.dsproxy.listener.QueryExecutionListener;
+import org.springframework.core.Ordered;
 
 import javax.sql.DataSource;
 
@@ -38,7 +39,7 @@ import java.util.stream.Collectors;
  * @author Arthur Gavlyukovskiy
  * @since 1.2
  */
-public class TracingQueryExecutionListener implements QueryExecutionListener, MethodExecutionListener {
+public class TracingQueryExecutionListener implements QueryExecutionListener, MethodExecutionListener, Ordered {
 
     private final TracingListenerStrategy<String, Statement, ResultSet> strategy;
 
@@ -116,5 +117,10 @@ public class TracingQueryExecutionListener implements QueryExecutionListener, Me
                 strategy.afterResultSetClose(resultSet, -1, t);
             }
         }
+    }
+
+    @Override
+    public int getOrder() {
+        return Ordered.HIGHEST_PRECEDENCE + 10;
     }
 }

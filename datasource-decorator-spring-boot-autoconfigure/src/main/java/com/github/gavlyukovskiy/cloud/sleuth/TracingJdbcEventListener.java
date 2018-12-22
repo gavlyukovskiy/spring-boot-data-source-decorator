@@ -23,6 +23,7 @@ import com.p6spy.engine.common.PreparedStatementInformation;
 import com.p6spy.engine.common.ResultSetInformation;
 import com.p6spy.engine.common.StatementInformation;
 import com.p6spy.engine.event.SimpleJdbcEventListener;
+import org.springframework.core.Ordered;
 import org.springframework.util.StringUtils;
 
 import java.sql.SQLException;
@@ -33,7 +34,7 @@ import java.sql.SQLException;
  * @author Arthur Gavlyukovskiy
  * @since 1.2
  */
-public class TracingJdbcEventListener extends SimpleJdbcEventListener {
+public class TracingJdbcEventListener extends SimpleJdbcEventListener implements Ordered {
 
     private final DataSourceNameResolver dataSourceNameResolver;
 
@@ -113,5 +114,10 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener {
         return StringUtils.hasText(statementInformation.getSqlWithValues())
                 ? statementInformation.getSqlWithValues()
                 : statementInformation.getSql();
+    }
+
+    @Override
+    public int getOrder() {
+        return Ordered.HIGHEST_PRECEDENCE + 10;
     }
 }
