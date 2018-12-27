@@ -40,7 +40,6 @@ import javax.sql.DataSource;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Random;
 import java.util.Set;
 
@@ -59,7 +58,7 @@ class FlexyPoolConfigurationTests {
             .withClassLoader(new HidePackagesClassLoader("net.ttddyy.dsproxy", "com.p6spy"));
 
     @Test
-    void testDecoratingDefaultSource() throws Exception {
+    void testDecoratingDefaultSource() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
             assertDataSourceOfType(dataSource, HikariDataSource.class);
@@ -67,7 +66,7 @@ class FlexyPoolConfigurationTests {
     }
 
     @Test
-    void testNoDecoratingDefaultDataSourceWithoutAdapterDependency() throws Exception {
+    void testNoDecoratingDefaultDataSourceWithoutAdapterDependency() {
         ApplicationContextRunner contextRunner = this.contextRunner.withClassLoader(new HidePackagesClassLoader("net.ttddyy.dsproxy", "com.p6spy", "com.vladmihalcea.flexypool.adaptor"));
 
         contextRunner.run(context -> {
@@ -76,7 +75,7 @@ class FlexyPoolConfigurationTests {
     }
 
     @Test
-    void testDecoratingDbcp2DataSource() throws Exception {
+    void testDecoratingDbcp2DataSource() {
         ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("spring.datasource.type:" + BasicDataSource.class.getName());
 
         contextRunner.run(context -> {
@@ -86,7 +85,7 @@ class FlexyPoolConfigurationTests {
     }
 
     @Test
-    void testDecoratingHikariDataSourceWithDefaultStrategies() throws Exception {
+    void testDecoratingHikariDataSourceWithDefaultStrategies() {
         ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("spring.datasource.type:" + HikariDataSource.class.getName());
 
         contextRunner.run(context -> {
@@ -107,7 +106,7 @@ class FlexyPoolConfigurationTests {
     }
 
     @Test
-    void testDecoratingHikariDataSourceWithCustomPropertyStrategies() throws Exception {
+    void testDecoratingHikariDataSourceWithCustomPropertyStrategies() {
         ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("spring.datasource.type:" + HikariDataSource.class.getName(),
                 "decorator.datasource.flexy-pool.acquiring-strategy.increment-pool.max-overflow-pool-size:15",
                 "decorator.datasource.flexy-pool.acquiring-strategy.increment-pool.timeout-millis:500",
@@ -131,7 +130,7 @@ class FlexyPoolConfigurationTests {
     }
 
     @Test
-    void testDecoratingHikariDataSourceWithCustomBeanStrategies() throws Exception {
+    void testDecoratingHikariDataSourceWithCustomBeanStrategies() {
         ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("spring.datasource.type:" + HikariDataSource.class.getName())
                 .withConfiguration(AutoConfigurations.of(HikariConfiguration.class));
 
@@ -208,7 +207,7 @@ class FlexyPoolConfigurationTests {
     static class HikariConnectionAcquiringFactory implements ConnectionAcquiringStrategy {
 
         @Override
-        public Connection getConnection(ConnectionRequestContext requestContext) throws SQLException {
+        public Connection getConnection(ConnectionRequestContext requestContext) {
             return null;
         }
     }
@@ -216,7 +215,7 @@ class FlexyPoolConfigurationTests {
     static class Dbcp2ConnectionAcquiringFactory implements ConnectionAcquiringStrategy {
 
         @Override
-        public Connection getConnection(ConnectionRequestContext requestContext) throws SQLException {
+        public Connection getConnection(ConnectionRequestContext requestContext) {
             return null;
         }
     }

@@ -77,7 +77,7 @@ class TracingQueryExecutionListenerTests {
     }
 
     @Test
-    void testShouldAddSpanForPreparedStatementExecute() throws Exception {
+    void testShouldAddSpanForPreparedStatementExecute() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
             ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
@@ -96,7 +96,7 @@ class TracingQueryExecutionListenerTests {
     }
 
     @Test
-    void testShouldAddSpanForPreparedStatementExecuteUpdate() throws Exception {
+    void testShouldAddSpanForPreparedStatementExecuteUpdate() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
             ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
@@ -117,7 +117,7 @@ class TracingQueryExecutionListenerTests {
     }
 
     @Test
-    void testShouldAddSpanForStatementExecuteUpdate() throws Exception {
+    void testShouldAddSpanForStatementExecuteUpdate() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
             ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
@@ -137,7 +137,7 @@ class TracingQueryExecutionListenerTests {
     }
 
     @Test
-    void testShouldAddSpanForPreparedStatementExecuteQueryIncludingTimeToCloseResultSet() throws Exception {
+    void testShouldAddSpanForPreparedStatementExecuteQueryIncludingTimeToCloseResultSet() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
             ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
@@ -161,7 +161,7 @@ class TracingQueryExecutionListenerTests {
     }
 
     @Test
-    void testShouldAddSpanForStatementAndResultSet() throws Exception {
+    void testShouldAddSpanForStatementAndResultSet() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
             ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
@@ -185,7 +185,7 @@ class TracingQueryExecutionListenerTests {
     }
 
     @Test
-    void testShouldNotFailWhenStatementIsClosedWihoutResultSet() throws Exception {
+    void testShouldNotFailWhenStatementIsClosedWihoutResultSet() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
             ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
@@ -209,7 +209,7 @@ class TracingQueryExecutionListenerTests {
     }
 
     @Test
-    void testShouldNotFailWhenConnectionIsClosedWihoutResultSet() throws Exception {
+    void testShouldNotFailWhenConnectionIsClosedWihoutResultSet() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
             ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
@@ -232,7 +232,7 @@ class TracingQueryExecutionListenerTests {
     }
 
     @Test
-    void testShouldNotFailWhenResultSetNextWasNotCalled() throws Exception {
+    void testShouldNotFailWhenResultSetNextWasNotCalled() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
             ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
@@ -257,7 +257,7 @@ class TracingQueryExecutionListenerTests {
     }
 
     @Test
-    void testShouldNotFailWhenResourceIsAlreadyClosed() throws Exception {
+    void testShouldNotFailWhenResourceIsAlreadyClosed() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
             ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
@@ -306,7 +306,7 @@ class TracingQueryExecutionListenerTests {
     }
 
     @Test
-    public void testShouldNotFailToCloseSpanForTwoConsecutiveConnections() throws Exception {
+    public void testShouldNotFailToCloseSpanForTwoConsecutiveConnections() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
             ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);

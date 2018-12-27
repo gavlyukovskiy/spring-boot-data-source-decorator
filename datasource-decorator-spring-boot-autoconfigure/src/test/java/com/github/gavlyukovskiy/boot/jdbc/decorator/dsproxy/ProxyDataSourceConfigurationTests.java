@@ -62,7 +62,7 @@ class ProxyDataSourceConfigurationTests {
             .withClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "com.p6spy"));
 
     @Test
-    void testRegisterLogAndSlowQueryLogByDefaultToSlf4j() throws Exception {
+    void testRegisterLogAndSlowQueryLogByDefaultToSlf4j() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
             ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
@@ -72,7 +72,7 @@ class ProxyDataSourceConfigurationTests {
         });
     }
     @Test
-    void testRegisterLogAndSlowQueryLogByUsingSlf4j() throws Exception {
+    void testRegisterLogAndSlowQueryLogByUsingSlf4j() {
         ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("decorator.datasource.datasource-proxy.logging:slf4j");
 
         contextRunner.run(context -> {
@@ -85,7 +85,7 @@ class ProxyDataSourceConfigurationTests {
     }
 
     @Test
-    void testRegisterLogAndSlowQueryLogUsingSystemOut() throws Exception {
+    void testRegisterLogAndSlowQueryLogUsingSystemOut() {
         ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("decorator.datasource.datasource-proxy.logging:sysout");
 
         contextRunner.run(context -> {
@@ -98,7 +98,7 @@ class ProxyDataSourceConfigurationTests {
     }
 
     @Test
-    void testRegisterLogAndSlowQueryLogUsingJUL() throws Exception {
+    void testRegisterLogAndSlowQueryLogUsingJUL() {
         ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("decorator.datasource.datasourceProxy.logging:jul");
 
         contextRunner.run(context -> {
@@ -111,7 +111,7 @@ class ProxyDataSourceConfigurationTests {
     }
 
     @Test
-    void testRegisterLogAndSlowQueryLogUsingApacheCommons() throws Exception {
+    void testRegisterLogAndSlowQueryLogUsingApacheCommons() {
         ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("decorator.datasource.datasourceProxy.logging:commons");
 
         contextRunner.run(context -> {
@@ -124,7 +124,7 @@ class ProxyDataSourceConfigurationTests {
     }
 
     @Test
-    void testCustomParameterAndQueryTransformer() throws Exception {
+    void testCustomParameterAndQueryTransformer() {
         ApplicationContextRunner contextRunner = this.contextRunner.withUserConfiguration(CustomParameterAndQueryTransformerConfiguration.class);
 
         contextRunner.run(context -> {
@@ -138,7 +138,7 @@ class ProxyDataSourceConfigurationTests {
     }
 
     @Test
-    void testCustomListeners() throws Exception {
+    void testCustomListeners() {
         ApplicationContextRunner contextRunner = this.contextRunner.withUserConfiguration(CustomListenerConfiguration.class);
 
         contextRunner.run(context -> {

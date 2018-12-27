@@ -56,7 +56,7 @@ public class P6SpyConfigurationTests {
             .withClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "net.ttddyy.dsproxy"));
 
     @Test
-    public void testCustomListeners() throws Exception {
+    public void testCustomListeners() {
         ApplicationContextRunner contextRunner = this.contextRunner.withUserConfiguration(CustomListenerConfiguration.class);
 
         contextRunner.run(context -> {

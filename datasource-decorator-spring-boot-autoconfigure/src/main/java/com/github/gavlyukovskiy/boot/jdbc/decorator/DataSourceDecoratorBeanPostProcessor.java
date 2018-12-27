@@ -17,6 +17,7 @@
 package com.github.gavlyukovskiy.boot.jdbc.decorator;
 
 import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.aop.scope.ScopedProxyUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationContext;
@@ -51,7 +52,9 @@ public class DataSourceDecoratorBeanPostProcessor implements BeanPostProcessor, 
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        if (bean instanceof DataSource && !getDataSourceDecoratorProperties().getExcludeBeans().contains(beanName)) {
+        if (bean instanceof DataSource
+                && !ScopedProxyUtils.isScopedTarget(beanName)
+                && !getDataSourceDecoratorProperties().getExcludeBeans().contains(beanName)) {
             DataSource dataSource = (DataSource) bean;
             DataSource decoratedDataSource = dataSource;
             Map<String, DataSourceDecorator> decorators = new LinkedHashMap<>();

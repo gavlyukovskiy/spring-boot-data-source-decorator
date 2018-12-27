@@ -32,13 +32,13 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 
 import javax.sql.DataSource;
 
 import java.io.PrintWriter;
 import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
@@ -57,7 +57,7 @@ public class DataSourceDecoratorAutoConfigurationTests {
                     "spring.datasource.url:jdbc:h2:mem:testdb-" + new Random().nextInt());
 
     @Test
-    void testDecoratingInDefaultOrder() throws Exception {
+    void testDecoratingInDefaultOrder() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
 
@@ -66,7 +66,7 @@ public class DataSourceDecoratorAutoConfigurationTests {
     }
 
     @Test
-    void testNoDecoratingForExcludeBeans() throws Exception {
+    void testNoDecoratingForExcludeBeans() {
         ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("decorator.datasource.exclude-beans:dataSource");
 
         contextRunner.run(context -> {
@@ -77,7 +77,7 @@ public class DataSourceDecoratorAutoConfigurationTests {
     }
 
     @Test
-    void testDecoratingWhenDefaultProxyProviderNotAvailable() throws Exception {
+    void testDecoratingWhenDefaultProxyProviderNotAvailable() {
         ApplicationContextRunner contextRunner = this.contextRunner.withClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool"));
 
         contextRunner.run(context -> {
@@ -89,7 +89,7 @@ public class DataSourceDecoratorAutoConfigurationTests {
     }
 
     @Test
-    void testDecoratedHikariSpecificPropertiesIsSet() throws Exception {
+    void testDecoratedHikariSpecificPropertiesIsSet() {
         ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues(
                 "spring.datasource.type:" + HikariDataSource.class.getName(),
                 "spring.datasource.hikari.catalog:test_catalog"
@@ -106,7 +106,7 @@ public class DataSourceDecoratorAutoConfigurationTests {
     }
 
     @Test
-    void testCustomDataSourceIsDecorated() throws Exception {
+    void testCustomDataSourceIsDecorated() {
         ApplicationContextRunner contextRunner = this.contextRunner.withUserConfiguration(TestDataSourceConfiguration.class);
 
         contextRunner.run(context -> {
@@ -118,7 +118,18 @@ public class DataSourceDecoratorAutoConfigurationTests {
     }
 
     @Test
-    void testCustomDataSourceDecoratorApplied() throws Exception {
+    void testScopedDataSourceIsNotDecorated() {
+        ApplicationContextRunner contextRunner = this.contextRunner.withUserConfiguration(TestScopedDataSourceConfiguration.class);
+
+        contextRunner.run(context -> {
+            assertThat(context).getBeanNames(DataSource.class).containsOnly("dataSource", "scopedTarget.dataSource");
+            assertThat(context).getBean("dataSource").isInstanceOf(DecoratedDataSource.class);
+            assertThat(context).getBean("scopedTarget.dataSource").isNotInstanceOf(DecoratedDataSource.class);
+        });
+    }
+
+    @Test
+    void testCustomDataSourceDecoratorApplied() {
         ApplicationContextRunner contextRunner = this.contextRunner.withUserConfiguration(TestDataSourceDecoratorConfiguration.class);
 
         contextRunner.run(context -> {
@@ -136,7 +147,7 @@ public class DataSourceDecoratorAutoConfigurationTests {
     }
 
     @Test
-    void testDecoratingCanBeDisabled() throws Exception {
+    void testDecoratingCanBeDisabled() {
         ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("decorator.datasource.enabled:false");
 
         contextRunner.run(context -> {
@@ -146,7 +157,7 @@ public class DataSourceDecoratorAutoConfigurationTests {
     }
 
     @Test
-    void testDecoratingCanBeDisabledForSpecificBeans() throws Exception {
+    void testDecoratingCanBeDisabledForSpecificBeans() {
         ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("decorator.datasource.exclude-beans:secondDataSource")
                 .withUserConfiguration(TestMultiDataSourceConfiguration.class);
 
@@ -160,7 +171,7 @@ public class DataSourceDecoratorAutoConfigurationTests {
     }
 
     @Test
-    void testDecoratingChainBuiltCorrectly() throws Exception {
+    void testDecoratingChainBuiltCorrectly() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
 
@@ -252,6 +263,23 @@ public class DataSourceDecoratorAutoConfigurationTests {
 
     }
 
+    @Configuration
+    static class TestScopedDataSourceConfiguration {
+
+        private BasicDataSource pool;
+
+        @Bean
+        @Scope(value = "prototype", proxyMode = ScopedProxyMode.TARGET_CLASS)
+        public DataSource dataSource() {
+            pool = new BasicDataSource();
+            pool.setDriverClassName("org.hsqldb.jdbcDriver");
+            pool.setUrl("jdbc:hsqldb:target/overridedb");
+            pool.setUsername("sa");
+            return pool;
+        }
+
+    }
+
     /**
      * Custom proxy data source for tests.
      *
@@ -266,47 +294,47 @@ public class DataSourceDecoratorAutoConfigurationTests {
         }
 
         @Override
-        public Connection getConnection() throws SQLException {
+        public Connection getConnection() {
             return null;
         }
 
         @Override
-        public Connection getConnection(String username, String password) throws SQLException {
+        public Connection getConnection(String username, String password) {
             return null;
         }
 
         @Override
-        public <T> T unwrap(Class<T> iface) throws SQLException {
+        public <T> T unwrap(Class<T> iface) {
             return null;
         }
 
         @Override
-        public boolean isWrapperFor(Class<?> iface) throws SQLException {
+        public boolean isWrapperFor(Class<?> iface) {
             return false;
         }
 
         @Override
-        public PrintWriter getLogWriter() throws SQLException {
+        public PrintWriter getLogWriter() {
             return null;
         }
 
         @Override
-        public void setLogWriter(PrintWriter out) throws SQLException {
+        public void setLogWriter(PrintWriter out) {
 
         }
 
         @Override
-        public void setLoginTimeout(int seconds) throws SQLException {
+        public void setLoginTimeout(int seconds) {
 
         }
 
         @Override
-        public int getLoginTimeout() throws SQLException {
+        public int getLoginTimeout() {
             return 0;
         }
 
         @Override
-        public Logger getParentLogger() throws SQLFeatureNotSupportedException {
+        public Logger getParentLogger() {
             return null;
         }
     }

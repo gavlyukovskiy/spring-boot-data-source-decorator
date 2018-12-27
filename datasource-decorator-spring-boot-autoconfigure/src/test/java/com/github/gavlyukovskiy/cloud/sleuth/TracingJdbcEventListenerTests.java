@@ -79,7 +79,7 @@ class TracingJdbcEventListenerTests {
     }
 
     @Test
-    void testShouldAddSpanForPreparedStatementExecute() throws Exception {
+    void testShouldAddSpanForPreparedStatementExecute() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
             ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
@@ -98,7 +98,7 @@ class TracingJdbcEventListenerTests {
     }
 
     @Test
-    void testShouldAddSpanForPreparedStatementExecuteUpdate() throws Exception {
+    void testShouldAddSpanForPreparedStatementExecuteUpdate() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
             ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
@@ -119,7 +119,7 @@ class TracingJdbcEventListenerTests {
     }
 
     @Test
-    void testShouldAddSpanForStatementExecuteUpdate() throws Exception {
+    void testShouldAddSpanForStatementExecuteUpdate() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
             ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
@@ -140,7 +140,7 @@ class TracingJdbcEventListenerTests {
     }
 
     @Test
-    void testShouldAddSpanForPreparedStatementExecuteQueryIncludingTimeToCloseResultSet() throws Exception {
+    void testShouldAddSpanForPreparedStatementExecuteQueryIncludingTimeToCloseResultSet() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
             ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
@@ -165,7 +165,7 @@ class TracingJdbcEventListenerTests {
     }
 
     @Test
-    void testShouldAddSpanForStatementAndResultSet() throws Exception {
+    void testShouldAddSpanForStatementAndResultSet() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
             ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
@@ -190,7 +190,7 @@ class TracingJdbcEventListenerTests {
     }
 
     @Test
-    void testShouldNotFailWhenStatementIsClosedWihoutResultSet() throws Exception {
+    void testShouldNotFailWhenStatementIsClosedWihoutResultSet() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
             ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
@@ -214,7 +214,7 @@ class TracingJdbcEventListenerTests {
     }
 
     @Test
-    void testShouldNotFailWhenConnectionIsClosedWihoutResultSet() throws Exception {
+    void testShouldNotFailWhenConnectionIsClosedWihoutResultSet() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
             ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
@@ -237,7 +237,7 @@ class TracingJdbcEventListenerTests {
     }
 
     @Test
-    void testShouldNotFailWhenResultSetNextWasNotCalled() throws Exception {
+    void testShouldNotFailWhenResultSetNextWasNotCalled() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
             ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
@@ -262,7 +262,7 @@ class TracingJdbcEventListenerTests {
     }
 
     @Test
-    void testShouldNotFailWhenResourceIsAlreadyClosed() throws Exception {
+    void testShouldNotFailWhenResourceIsAlreadyClosed() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
             ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
@@ -311,7 +311,7 @@ class TracingJdbcEventListenerTests {
     }
 
     @Test
-    public void testShouldNotFailToCloseSpanForTwoConsecutiveConnections() throws Exception {
+    public void testShouldNotFailToCloseSpanForTwoConsecutiveConnections() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
             ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
