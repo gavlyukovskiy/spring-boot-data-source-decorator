@@ -12,7 +12,7 @@ Instead of using the library you can manually wrap your datasource, but using my
 * ability to use `@ConfiguationProperties` - custom or provided by Spring Boot (`spring.datasource.hikari.*`, `spring.datasource.dbcp2.*`)
 * ability to disable decorating by deployment property `decorator.datasource.enabled=true/false`
 * just like with other auto-configurations you can configure any supported proxy provider library using `application.properties/yml` or define custom modules in the spring context
-* integration with [Spring Cloud Sleuth](https://github.com/spring-cloud/spring-cloud-sleuth) and [Micrometer](https://github.com/micrometer-metrics/micrometer)
+* integration with [Spring Cloud Sleuth](https://github.com/spring-cloud/spring-cloud-sleuth)
 
 
 **Quick Start**
@@ -241,9 +241,6 @@ decorator.datasource.flexy-pool.threshold.connection.lease=1000
 
 # Creates span for every connection and query. Works only with p6spy or datasource-proxy.
 decorator.datasource.sleuth.enabled=true
-
-# Enables datasource metrics using micrometer, disabled if you're using HikariCP in favor of its more accurate metrics
-decorator.datasource.metrics.enabled=true
 ```
 
 **Spring Cloud Sleuth**
