@@ -214,11 +214,9 @@ public class DataSourceDecoratorAutoConfigurationTests {
     @Configuration
     static class TestDataSourceConfiguration {
 
-        private BasicDataSource pool;
-
         @Bean
         public DataSource dataSource() {
-            pool = new BasicDataSource();
+            BasicDataSource pool = new BasicDataSource();
             pool.setDriverClassName("org.hsqldb.jdbcDriver");
             pool.setUrl("jdbc:hsqldb:target/overridedb");
             pool.setUsername("sa");
@@ -240,12 +238,10 @@ public class DataSourceDecoratorAutoConfigurationTests {
     @Configuration
     static class TestMultiDataSourceConfiguration {
 
-        private BasicDataSource pool;
-
         @Bean
         @Primary
         public DataSource dataSource() {
-            pool = new BasicDataSource();
+            BasicDataSource pool = new BasicDataSource();
             pool.setDriverClassName("org.hsqldb.jdbcDriver");
             pool.setUrl("jdbc:hsqldb:target/db");
             pool.setUsername("sa");
@@ -254,7 +250,7 @@ public class DataSourceDecoratorAutoConfigurationTests {
 
         @Bean
         public DataSource secondDataSource() {
-            pool = new BasicDataSource();
+            BasicDataSource pool = new BasicDataSource();
             pool.setDriverClassName("org.hsqldb.jdbcDriver");
             pool.setUrl("jdbc:hsqldb:target/db2");
             pool.setUsername("sa");
@@ -266,12 +262,10 @@ public class DataSourceDecoratorAutoConfigurationTests {
     @Configuration
     static class TestScopedDataSourceConfiguration {
 
-        private BasicDataSource pool;
-
         @Bean
         @Scope(value = "prototype", proxyMode = ScopedProxyMode.TARGET_CLASS)
         public DataSource dataSource() {
-            pool = new BasicDataSource();
+            BasicDataSource pool = new BasicDataSource();
             pool.setDriverClassName("org.hsqldb.jdbcDriver");
             pool.setUrl("jdbc:hsqldb:target/overridedb");
             pool.setUsername("sa");
