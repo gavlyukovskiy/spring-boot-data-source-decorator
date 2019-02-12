@@ -3,7 +3,9 @@ package com.github.gavlyukovskiy.cloud.sleuth;
 import brave.Span;
 import brave.Span.Kind;
 import brave.Tracer;
+import brave.Tracer.SpanInScope;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
@@ -15,8 +17,8 @@ class TracingListenerStrategy<CON, STMT, RS> {
     private final Map<STMT, Collection<RS>> nestedResultSetsByStatement = new ConcurrentHashMap<>();
     
     private final Map<CON, Span> connectionSpans = new ConcurrentHashMap<>();
-    private final Map<STMT, Span> statementSpans = new ConcurrentHashMap<>();
-    private final Map<RS, Span> resultSetSpans = new ConcurrentHashMap<>();
+    private final Map<STMT, Map.Entry<Span, SpanInScope>> statementSpans = new ConcurrentHashMap<>();
+    private final Map<RS, Map.Entry<Span, SpanInScope>> resultSetSpans = new ConcurrentHashMap<>();
 
     private final Tracer tracer;
 
@@ -44,22 +46,24 @@ class TracingListenerStrategy<CON, STMT, RS> {
         Span statementSpan = tracer.nextSpan().name("jdbc:/" + dataSourceName + SleuthListenerAutoConfiguration.SPAN_QUERY_POSTFIX);
         statementSpan.kind(Kind.CLIENT);
         statementSpan.start();
-        tracer.withSpanInScope(statementSpan);
-        statementSpans.put(statementKey, statementSpan);
+        SpanInScope spanInScope = tracer.withSpanInScope(statementSpan);
+        statementSpans.put(statementKey, new SimpleEntry<>(statementSpan, spanInScope));
         nestedStatementsByConnection.computeIfAbsent(connectionKey, key -> new HashSet<>()).add(statementKey);
     }
 
     void addQueryRowCount(STMT statementKey, int rowCount) {
-        Span statementSpan = statementSpans.get(statementKey);
-        statementSpan.tag(SleuthListenerAutoConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(rowCount));
+        Map.Entry<Span, SpanInScope> statementEntry = statementSpans.get(statementKey);
+        statementEntry.getKey().tag(SleuthListenerAutoConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(rowCount));
     }
 
     void afterQuery(STMT statementKey, String sql, Throwable t) {
-        Span statementSpan = statementSpans.remove(statementKey);
+        Map.Entry<Span, SpanInScope> statementEntry = statementSpans.remove(statementKey);
+        Span statementSpan = statementEntry.getKey();
         statementSpan.tag(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, sql);
         if (t != null) {
             statementSpan.error(t);
         }
+        statementEntry.getValue().close();
         statementSpan.finish();
     }
 
@@ -71,23 +75,26 @@ class TracingListenerStrategy<CON, STMT, RS> {
         Span resultSetSpan = tracer.nextSpan().name("jdbc:/" + dataSourceName + SleuthListenerAutoConfiguration.SPAN_FETCH_POSTFIX);
         resultSetSpan.kind(Kind.CLIENT);
         resultSetSpan.start();
-        tracer.withSpanInScope(resultSetSpan);
+        SpanInScope spanInScope = tracer.withSpanInScope(resultSetSpan);
         nestedResultSetsByStatement.computeIfAbsent(statementKey, key -> new HashSet<>()).add(resultSetKey);
-        resultSetSpans.put(resultSetKey, resultSetSpan);
+        resultSetSpans.put(resultSetKey, new SimpleEntry<>(resultSetSpan, spanInScope));
     }
 
     void afterResultSetClose(RS resultSetKey, int rowCount, Throwable t) {
-        Span resultSetSpan = resultSetSpans.remove(resultSetKey);
+        Map.Entry<Span, SpanInScope>  resultSetEntry = resultSetSpans.remove(resultSetKey);
         // ResultSet span may be null if Connection or Statement were closed before ResultSet
-        if (resultSetSpan == null) {
+        if (resultSetEntry == null) {
             return;
         }
+        
+        Span resultSetSpan = resultSetEntry.getKey();
         if (rowCount != -1) {
             resultSetSpan.tag(SleuthListenerAutoConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(rowCount));
         }
         if (t != null) {
             resultSetSpan.error(t);
         }
+        resultSetEntry.getValue().close();
         resultSetSpan.finish();
     }
 
@@ -97,7 +104,10 @@ class TracingListenerStrategy<CON, STMT, RS> {
             nestedResultSets.stream()
                     .map(resultSetSpans::remove)
                     .filter(Objects::nonNull)
-                    .forEach(Span::finish);
+                    .forEach(entry -> {
+                        entry.getValue().close();
+                        entry.getKey().finish();
+                    });
         }
     }
 
@@ -145,7 +155,10 @@ class TracingListenerStrategy<CON, STMT, RS> {
                     .flatMap(Collection::stream)
                     .map(resultSetSpans::remove)
                     .filter(Objects::nonNull)
-                    .forEach(Span::finish);
+                    .forEach(entry -> {
+                        entry.getValue().close();
+                        entry.getKey().finish();
+                    });
         }
         connectionSpan.finish();
     }
