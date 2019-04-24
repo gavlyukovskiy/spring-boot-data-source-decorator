@@ -34,8 +34,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Random;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -55,7 +55,7 @@ class TracingJdbcEventListenerTests {
                     PropertyPlaceholderAutoConfiguration.class
             ))
             .withPropertyValues("spring.datasource.initialization-mode=never",
-                    "spring.datasource.url:jdbc:h2:mem:testdb-" + new Random().nextInt(),
+                    "spring.datasource.url:jdbc:h2:mem:testdb-" + ThreadLocalRandom.current().nextInt(),
                     "spring.datasource.hikari.pool-name=test")
             .withClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "net.ttddyy.dsproxy"));
 
@@ -322,10 +322,10 @@ class TracingJdbcEventListenerTests {
             connection2.close();
 
             assertThat(spanReporter.getSpans()).hasSize(2);
-            Span connectionSpan = spanReporter.getSpans().get(0);
-            Span statementSpan = spanReporter.getSpans().get(1);
-            assertThat(connectionSpan.name()).isEqualTo("jdbc:/test/connection");
-            assertThat(statementSpan.name()).isEqualTo("jdbc:/test/connection");
+            Span connection1Span = spanReporter.getSpans().get(0);
+            Span connection2Span = spanReporter.getSpans().get(1);
+            assertThat(connection1Span.name()).isEqualTo("jdbc:/test/connection");
+            assertThat(connection2Span.name()).isEqualTo("jdbc:/test/connection");
         });
     }
 

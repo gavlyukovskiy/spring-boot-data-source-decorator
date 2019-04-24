@@ -39,7 +39,7 @@ import javax.sql.DataSource;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
@@ -52,7 +52,7 @@ public class P6SpyConfigurationTests {
                     PropertyPlaceholderAutoConfiguration.class
             ))
             .withPropertyValues("spring.datasource.initialization-mode=never",
-                    "spring.datasource.url:jdbc:h2:mem:testdb-" + new Random().nextInt())
+                    "spring.datasource.url:jdbc:h2:mem:testdb-" + ThreadLocalRandom.current().nextInt())
             .withClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "net.ttddyy.dsproxy"));
 
     @Test

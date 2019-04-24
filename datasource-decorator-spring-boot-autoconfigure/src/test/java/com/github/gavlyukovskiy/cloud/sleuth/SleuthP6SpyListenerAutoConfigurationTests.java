@@ -28,7 +28,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.cloud.sleuth.log.SleuthLogAutoConfiguration;
 
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -44,7 +44,7 @@ class SleuthP6SpyListenerAutoConfigurationTests {
                     PropertyPlaceholderAutoConfiguration.class
             ))
             .withPropertyValues("spring.datasource.initialization-mode=never",
-                    "spring.datasource.url:jdbc:h2:mem:testdb-" + new Random().nextInt())
+                    "spring.datasource.url:jdbc:h2:mem:testdb-" + ThreadLocalRandom.current().nextInt())
             .withClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "net.ttddyy.dsproxy"));
 
     @Test

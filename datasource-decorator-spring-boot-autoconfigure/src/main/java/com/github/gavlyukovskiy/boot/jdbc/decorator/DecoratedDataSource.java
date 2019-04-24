@@ -50,7 +50,7 @@ public interface DecoratedDataSource extends RawTargetAccess {
     DataSource getRealDataSource();
 
     /**
-     * Returns data source resulted  {@link DataSourceDecoratorInterceptor}.
+     * Returns data source resulted {@link DataSourceDecoratorInterceptor}.
      *
      * @return decorated data source
      */

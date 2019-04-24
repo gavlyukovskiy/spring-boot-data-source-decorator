@@ -31,7 +31,7 @@ import org.springframework.cloud.sleuth.log.SleuthLogAutoConfiguration;
 
 import javax.sql.DataSource;
 
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -47,7 +47,7 @@ class SleuthProxyDataSourceListenerAutoConfigurationTests {
                     PropertyPlaceholderAutoConfiguration.class
             ))
             .withPropertyValues("spring.datasource.initialization-mode=never",
-                    "spring.datasource.url:jdbc:h2:mem:testdb-" + new Random().nextInt())
+                    "spring.datasource.url:jdbc:h2:mem:testdb-" + ThreadLocalRandom.current().nextInt())
             .withClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "com.p6spy"));
 
     @Test

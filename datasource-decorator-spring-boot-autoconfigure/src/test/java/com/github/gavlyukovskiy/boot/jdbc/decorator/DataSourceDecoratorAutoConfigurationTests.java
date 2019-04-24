@@ -40,7 +40,7 @@ import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -54,7 +54,7 @@ public class DataSourceDecoratorAutoConfigurationTests {
                     PropertyPlaceholderAutoConfiguration.class
             ))
             .withPropertyValues("spring.datasource.initialization-mode=never",
-                    "spring.datasource.url:jdbc:h2:mem:testdb-" + new Random().nextInt());
+                    "spring.datasource.url:jdbc:h2:mem:testdb-" + ThreadLocalRandom.current().nextInt());
 
     @Test
     void testDecoratingInDefaultOrder() {
@@ -142,7 +142,8 @@ public class DataSourceDecoratorAutoConfigurationTests {
             DataSource realDataSource = ((DecoratedDataSource) dataSource).getRealDataSource();
             assertThat(realDataSource).isInstanceOf(HikariDataSource.class);
 
-            assertThatDataSourceDecoratingChain(dataSource).containsExactly(CustomDataSourceProxy.class, P6DataSource.class, ProxyDataSource.class, FlexyPoolDataSource.class);
+            assertThatDataSourceDecoratingChain(dataSource).containsExactly(CustomDataSourceProxy.class, P6DataSource.class, ProxyDataSource.class,
+                    FlexyPoolDataSource.class);
         });
     }
 
@@ -222,7 +223,6 @@ public class DataSourceDecoratorAutoConfigurationTests {
             pool.setUsername("sa");
             return pool;
         }
-
     }
 
     @Configuration
@@ -232,7 +232,6 @@ public class DataSourceDecoratorAutoConfigurationTests {
         public DataSourceDecorator customDataSourceDecorator() {
             return (beanName, dataSource) -> new CustomDataSourceProxy(dataSource);
         }
-
     }
 
     @Configuration
@@ -256,7 +255,6 @@ public class DataSourceDecoratorAutoConfigurationTests {
             pool.setUsername("sa");
             return pool;
         }
-
     }
 
     @Configuration
@@ -271,7 +269,6 @@ public class DataSourceDecoratorAutoConfigurationTests {
             pool.setUsername("sa");
             return pool;
         }
-
     }
 
     /**

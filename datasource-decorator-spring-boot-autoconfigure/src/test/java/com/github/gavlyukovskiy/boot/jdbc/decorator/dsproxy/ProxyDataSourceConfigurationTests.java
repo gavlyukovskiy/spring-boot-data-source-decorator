@@ -45,7 +45,7 @@ import org.springframework.context.annotation.Configuration;
 import javax.sql.DataSource;
 
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
@@ -58,7 +58,7 @@ class ProxyDataSourceConfigurationTests {
                     PropertyPlaceholderAutoConfiguration.class
             ))
             .withPropertyValues("spring.datasource.initialization-mode=never",
-                    "spring.datasource.url:jdbc:h2:mem:testdb-" + new Random().nextInt())
+                    "spring.datasource.url:jdbc:h2:mem:testdb-" + ThreadLocalRandom.current().nextInt())
             .withClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "com.p6spy"));
 
     @Test
@@ -71,6 +71,7 @@ class ProxyDataSourceConfigurationTests {
             assertThat(chainListener.getListeners()).extracting("class").contains(SLF4JQueryLoggingListener.class);
         });
     }
+
     @Test
     void testRegisterLogAndSlowQueryLogByUsingSlf4j() {
         ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("decorator.datasource.datasource-proxy.logging:slf4j");

@@ -40,8 +40,8 @@ import javax.sql.DataSource;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
-import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
@@ -54,7 +54,7 @@ class FlexyPoolConfigurationTests {
                     PropertyPlaceholderAutoConfiguration.class
             ))
             .withPropertyValues("spring.datasource.initialization-mode=never",
-                    "spring.datasource.url:jdbc:h2:mem:testdb-" + new Random().nextInt())
+                    "spring.datasource.url:jdbc:h2:mem:testdb-" + ThreadLocalRandom.current().nextInt())
             .withClassLoader(new HidePackagesClassLoader("net.ttddyy.dsproxy", "com.p6spy"));
 
     @Test
@@ -67,7 +67,8 @@ class FlexyPoolConfigurationTests {
 
     @Test
     void testNoDecoratingDefaultDataSourceWithoutAdapterDependency() {
-        ApplicationContextRunner contextRunner = this.contextRunner.withClassLoader(new HidePackagesClassLoader("net.ttddyy.dsproxy", "com.p6spy", "com.vladmihalcea.flexypool.adaptor"));
+        ApplicationContextRunner contextRunner = this.contextRunner.withClassLoader(
+                new HidePackagesClassLoader("net.ttddyy.dsproxy", "com.p6spy", "com.vladmihalcea.flexypool.adaptor"));
 
         contextRunner.run(context -> {
             assertThat(context).doesNotHaveBean(DecoratedDataSource.class);
