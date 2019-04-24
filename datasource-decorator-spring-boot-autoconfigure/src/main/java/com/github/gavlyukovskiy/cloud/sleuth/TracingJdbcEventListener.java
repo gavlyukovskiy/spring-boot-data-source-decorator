@@ -64,35 +64,35 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener implements
 
     @Override
     public void onAfterAnyExecute(StatementInformation statementInformation, long timeElapsedNanos, SQLException e) {
-        strategy.afterQuery(statementInformation, getSql(statementInformation), e);
+        strategy.afterQuery(statementInformation.getConnectionInformation(), statementInformation, getSql(statementInformation), e);
     }
 
     @Override
     public void onBeforeResultSetNext(ResultSetInformation resultSetInformation) {
         String dataSourceName = dataSourceNameResolver.resolveDataSourceName(resultSetInformation.getConnectionInformation().getDataSource());
-        strategy.beforeResultSetNext(resultSetInformation.getStatementInformation(), resultSetInformation, dataSourceName);
+        strategy.beforeResultSetNext(resultSetInformation.getConnectionInformation(), resultSetInformation.getStatementInformation(), resultSetInformation, dataSourceName);
     }
 
     @Override
     public void onAfterExecuteUpdate(PreparedStatementInformation statementInformation, long timeElapsedNanos, int rowCount, SQLException e) {
-        strategy.addQueryRowCount(statementInformation, rowCount);
+        strategy.addQueryRowCount(statementInformation.getConnectionInformation(), statementInformation, rowCount);
         super.onAfterExecuteUpdate(statementInformation, timeElapsedNanos, rowCount, e);
     }
 
     @Override
     public void onAfterExecuteUpdate(StatementInformation statementInformation, long timeElapsedNanos, String sql, int rowCount, SQLException e) {
-        strategy.addQueryRowCount(statementInformation, rowCount);
+        strategy.addQueryRowCount(statementInformation.getConnectionInformation(), statementInformation, rowCount);
         super.onAfterExecuteUpdate(statementInformation, timeElapsedNanos, sql, rowCount, e);
     }
 
     @Override
     public void onAfterStatementClose(StatementInformation statementInformation, SQLException e) {
-        strategy.afterStatementClose(statementInformation);
+        strategy.afterStatementClose(statementInformation.getConnectionInformation(), statementInformation);
     }
 
     @Override
     public void onAfterResultSetClose(ResultSetInformation resultSetInformation, SQLException e) {
-        strategy.afterResultSetClose(resultSetInformation, resultSetInformation.getCurrRow() + 1, e);
+        strategy.afterResultSetClose(resultSetInformation.getConnectionInformation(), resultSetInformation, resultSetInformation.getCurrRow() + 1, e);
     }
 
     @Override

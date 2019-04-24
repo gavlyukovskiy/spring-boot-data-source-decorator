@@ -5,20 +5,11 @@ import brave.Span.Kind;
 import brave.Tracer;
 import brave.Tracer.SpanInScope;
 
-import java.util.AbstractMap.SimpleEntry;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 class TracingListenerStrategy<CON, STMT, RS> {
-    private final Map<CON, Collection<STMT>> nestedStatementsByConnection = new ConcurrentHashMap<>();
-    private final Map<STMT, Collection<RS>> nestedResultSetsByStatement = new ConcurrentHashMap<>();
-    
-    private final Map<CON, Span> connectionSpans = new ConcurrentHashMap<>();
-    private final Map<STMT, Map.Entry<Span, SpanInScope>> statementSpans = new ConcurrentHashMap<>();
-    private final Map<RS, Map.Entry<Span, SpanInScope>> resultSetSpans = new ConcurrentHashMap<>();
+    private final Map<CON, ConnectionInfo> openConnections = new ConcurrentHashMap<>();
 
     private final Tracer tracer;
 
@@ -30,15 +21,14 @@ class TracingListenerStrategy<CON, STMT, RS> {
         Span connectionSpan = tracer.nextSpan().name("jdbc:/" + dataSourceName + SleuthListenerAutoConfiguration.SPAN_CONNECTION_POSTFIX);
         connectionSpan.kind(Kind.CLIENT);
         connectionSpan.start();
-        connectionSpans.put(connectionKey, connectionSpan);
+        ConnectionInfo connectionInfo = new ConnectionInfo(new SpanWithScope(connectionSpan, tracer.withSpanInScope(connectionSpan)));
+        openConnections.put(connectionKey, connectionInfo);
     }
 
     void afterGetConnection(CON connectionKey, Throwable t) {
-        Span connectionSpan = connectionSpans.get(connectionKey);
         if (t != null) {
-            connectionSpans.remove(connectionKey);
-            connectionSpan.kind(Kind.CLIENT);
-            connectionSpan.finish();
+            ConnectionInfo connectionInfo = openConnections.remove(connectionKey);
+            connectionInfo.getSpan().finish();
         }
     }
 
@@ -46,120 +36,188 @@ class TracingListenerStrategy<CON, STMT, RS> {
         Span statementSpan = tracer.nextSpan().name("jdbc:/" + dataSourceName + SleuthListenerAutoConfiguration.SPAN_QUERY_POSTFIX);
         statementSpan.kind(Kind.CLIENT);
         statementSpan.start();
-        SpanInScope spanInScope = tracer.withSpanInScope(statementSpan);
-        statementSpans.put(statementKey, new SimpleEntry<>(statementSpan, spanInScope));
-        nestedStatementsByConnection.computeIfAbsent(connectionKey, key -> new HashSet<>()).add(statementKey);
+        StatementInfo statementInfo = new StatementInfo(new SpanWithScope(statementSpan, tracer.withSpanInScope(statementSpan)));
+        openConnections.get(connectionKey).getNestedStatements().put(statementKey, statementInfo);
     }
 
-    void addQueryRowCount(STMT statementKey, int rowCount) {
-        Map.Entry<Span, SpanInScope> statementEntry = statementSpans.get(statementKey);
-        statementEntry.getKey().tag(SleuthListenerAutoConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(rowCount));
+    void addQueryRowCount(CON connectionKey, STMT statementKey, int rowCount) {
+        ConnectionInfo connectionInfo = openConnections.get(connectionKey);
+        StatementInfo statementInfo = connectionInfo.getNestedStatements().get(statementKey);
+        statementInfo.getSpan().getSpan().tag(SleuthListenerAutoConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(rowCount));
     }
 
-    void afterQuery(STMT statementKey, String sql, Throwable t) {
-        Map.Entry<Span, SpanInScope> statementEntry = statementSpans.remove(statementKey);
-        Span statementSpan = statementEntry.getKey();
-        statementSpan.tag(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, sql);
+    void afterQuery(CON connectionKey, STMT statementKey, String sql, Throwable t) {
+        ConnectionInfo connectionInfo = openConnections.get(connectionKey);
+        StatementInfo statementInfo = connectionInfo.getNestedStatements().get(statementKey);
+        SpanWithScope statementSpan = statementInfo.getSpan();
+        statementSpan.getSpan().tag(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, sql);
         if (t != null) {
-            statementSpan.error(t);
+            statementSpan.getSpan().error(t);
         }
-        statementEntry.getValue().close();
         statementSpan.finish();
     }
 
-    void beforeResultSetNext(STMT statementKey, RS resultSetKey, String dataSourceName) {
-        if (resultSetSpans.containsKey(resultSetKey)) {
+    void beforeResultSetNext(CON connectionKey, STMT statementKey, RS resultSetKey, String dataSourceName) {
+        ConnectionInfo connectionInfo = openConnections.get(connectionKey);
+        // ConnectionInfo may be null if Connection was closed before ResultSet
+        if (connectionInfo == null) {
+            return;
+        }
+        if (connectionInfo.getNestedResultSetSpans().containsKey(resultSetKey)) {
             // ResultSet span is already created
             return;
         }
         Span resultSetSpan = tracer.nextSpan().name("jdbc:/" + dataSourceName + SleuthListenerAutoConfiguration.SPAN_FETCH_POSTFIX);
         resultSetSpan.kind(Kind.CLIENT);
         resultSetSpan.start();
-        SpanInScope spanInScope = tracer.withSpanInScope(resultSetSpan);
-        nestedResultSetsByStatement.computeIfAbsent(statementKey, key -> new HashSet<>()).add(resultSetKey);
-        resultSetSpans.put(resultSetKey, new SimpleEntry<>(resultSetSpan, spanInScope));
+        SpanWithScope spanWithScope = new SpanWithScope(resultSetSpan, tracer.withSpanInScope(resultSetSpan));
+        connectionInfo.getNestedResultSetSpans().put(resultSetKey, spanWithScope);
+
+        StatementInfo statementInfo = connectionInfo.getNestedStatements().get(statementKey);
+        // StatementInfo may be null when Statement is proxied and instance returned from ResultSet is different from instance returned in query method
+        // in this case if Statement is closed before ResultSet span won't be finished immediately, but when Connection is closed
+        if (statementInfo != null) {
+            statementInfo.getNestedResultSetSpans().put(resultSetKey, spanWithScope);
+        }
     }
 
-    void afterResultSetClose(RS resultSetKey, int rowCount, Throwable t) {
-        Map.Entry<Span, SpanInScope>  resultSetEntry = resultSetSpans.remove(resultSetKey);
-        // ResultSet span may be null if Connection or Statement were closed before ResultSet
-        if (resultSetEntry == null) {
+    void afterResultSetClose(CON connectionKey, RS resultSetKey, int rowCount, Throwable t) {
+        ConnectionInfo connectionInfo = openConnections.get(connectionKey);
+        // ConnectionInfo may be null if Connection was closed before ResultSet
+        if (connectionInfo == null) {
             return;
         }
-        
-        Span resultSetSpan = resultSetEntry.getKey();
+        SpanWithScope resultSetSpan = connectionInfo.getNestedResultSetSpans().remove(resultSetKey);
+        // ResultSet span may be null if Statement or ResultSet were already closed
+        if (resultSetSpan == null) {
+            return;
+        }
+
         if (rowCount != -1) {
-            resultSetSpan.tag(SleuthListenerAutoConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(rowCount));
+            resultSetSpan.getSpan().tag(SleuthListenerAutoConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(rowCount));
         }
         if (t != null) {
-            resultSetSpan.error(t);
+            resultSetSpan.getSpan().error(t);
         }
-        resultSetEntry.getValue().close();
         resultSetSpan.finish();
     }
 
-    void afterStatementClose(STMT statementKey) {
-        Collection<RS> nestedResultSets = nestedResultSetsByStatement.remove(statementKey);
-        if (nestedResultSets != null) {
-            nestedResultSets.stream()
-                    .map(resultSetSpans::remove)
-                    .filter(Objects::nonNull)
-                    .forEach(entry -> {
-                        entry.getValue().close();
-                        entry.getKey().finish();
+    void afterStatementClose(CON connectionKey, STMT statementKey) {
+        ConnectionInfo connectionInfo = openConnections.get(connectionKey);
+        // ConnectionInfo may be null if Connection was closed before Statement
+        if (connectionInfo == null) {
+            return;
+        }
+        StatementInfo statementInfo = connectionInfo.getNestedStatements().remove(statementKey);
+        if (statementInfo != null) {
+            statementInfo.getNestedResultSetSpans()
+                    .forEach((resultSetKey, span) -> {
+                        connectionInfo.getNestedResultSetSpans().remove(resultSetKey);
+                        span.finish();
                     });
+            statementInfo.getNestedResultSetSpans().clear();
         }
     }
 
     void afterCommit(CON connectionKey, Throwable t) {
-        Span connectionSpan = connectionSpans.get(connectionKey);
-        if (connectionSpan == null) {
+        ConnectionInfo connectionInfo = openConnections.get(connectionKey);
+        if (connectionInfo == null) {
             // Connection is already closed
             return;
         }
+        SpanWithScope connectionSpan = connectionInfo.getSpan();
         if (t != null) {
-            connectionSpan.error(t);
+            connectionSpan.getSpan().error(t);
         }
-        connectionSpan.annotate("commit");
+        connectionSpan.getSpan().annotate("commit");
     }
 
     void afterRollback(CON connectionKey, Throwable t) {
-        Span connectionSpan = connectionSpans.get(connectionKey);
-        if (connectionSpan == null) {
+        ConnectionInfo connectionInfo = openConnections.get(connectionKey);
+        if (connectionInfo == null) {
             // Connection is already closed
             return;
         }
+        SpanWithScope connectionSpan = connectionInfo.getSpan();
         if (t != null) {
-            connectionSpan.error(t);
+            connectionSpan.getSpan().error(t);
         }
         else {
-            connectionSpan.tag("error", "Transaction rolled back");
+            connectionSpan.getSpan().tag("error", "Transaction rolled back");
         }
-        connectionSpan.annotate("rollback");
+        connectionSpan.getSpan().annotate("rollback");
     }
 
     void afterConnectionClose(CON connectionKey, Throwable t) {
-        Span connectionSpan = connectionSpans.remove(connectionKey);
-        if (connectionSpan == null) {
+        ConnectionInfo connectionInfo = openConnections.remove(connectionKey);
+        if (connectionInfo == null) {
             // connection is already closed
             return;
         }
+        SpanWithScope connectionSpan = connectionInfo.getSpan();
         if (t != null) {
-            connectionSpan.error(t);
+            connectionSpan.getSpan().error(t);
         }
-        Collection<STMT> nestedStatements = nestedStatementsByConnection.remove(connectionKey);
-        if (nestedStatements != null) {
-            nestedStatements.stream()
-                    .map(nestedResultSetsByStatement::remove)
-                    .filter(Objects::nonNull)
-                    .flatMap(Collection::stream)
-                    .map(resultSetSpans::remove)
-                    .filter(Objects::nonNull)
-                    .forEach(entry -> {
-                        entry.getValue().close();
-                        entry.getKey().finish();
-                    });
-        }
+        connectionInfo.getNestedResultSetSpans().values().forEach(SpanWithScope::finish);
+        connectionInfo.getNestedStatements().values().forEach(statementInfo -> statementInfo.getSpan().finish());
         connectionSpan.finish();
+    }
+
+    private class ConnectionInfo {
+        private final SpanWithScope span;
+        private final Map<STMT, StatementInfo> nestedStatements = new ConcurrentHashMap<>();
+        private final Map<RS, SpanWithScope> nestedResultSetSpans = new ConcurrentHashMap<>();
+
+        private ConnectionInfo(SpanWithScope span) {
+            this.span = span;
+        }
+
+        public SpanWithScope getSpan() {
+            return span;
+        }
+
+        public Map<STMT, StatementInfo> getNestedStatements() {
+            return nestedStatements;
+        }
+
+        public Map<RS, SpanWithScope> getNestedResultSetSpans() {
+            return nestedResultSetSpans;
+        }
+    }
+
+    private class StatementInfo {
+        private final SpanWithScope span;
+        private final Map<RS, SpanWithScope> nestedResultSetSpans = new ConcurrentHashMap<>();
+
+        private StatementInfo(SpanWithScope span) {
+            this.span = span;
+        }
+
+        public SpanWithScope getSpan() {
+            return span;
+        }
+
+        public Map<RS, SpanWithScope> getNestedResultSetSpans() {
+            return nestedResultSetSpans;
+        }
+    }
+
+    private static class SpanWithScope {
+        private final Span span;
+        private final SpanInScope spanInScope;
+
+        private SpanWithScope(Span span, SpanInScope spanInScope) {
+            this.span = span;
+            this.spanInScope = spanInScope;
+        }
+
+        public Span getSpan() {
+            return span;
+        }
+
+        void finish() {
+            spanInScope.close();
+            span.finish();
+        }
     }
 }
