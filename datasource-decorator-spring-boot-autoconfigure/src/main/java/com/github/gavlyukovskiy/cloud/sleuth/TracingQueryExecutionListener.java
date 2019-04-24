@@ -55,10 +55,10 @@ public class TracingQueryExecutionListener implements QueryExecutionListener, Me
     @Override
     public void afterQuery(ExecutionInfo execInfo, List<QueryInfo> queryInfoList) {
         if (execInfo.getMethod().getName().equals("executeUpdate") && execInfo.getThrowable() == null) {
-            strategy.addQueryRowCount(execInfo.getStatement(), (int) execInfo.getResult());
+            strategy.addQueryRowCount(execInfo.getConnectionId(), execInfo.getStatement(), (int) execInfo.getResult());
         }
         String sql = queryInfoList.stream().map(QueryInfo::getQuery).collect(Collectors.joining("\n"));
-        strategy.afterQuery(execInfo.getStatement(), sql, execInfo.getThrowable());
+        strategy.afterQuery(execInfo.getConnectionId(), execInfo.getStatement(), sql, execInfo.getThrowable());
     }
 
     @Override
@@ -66,16 +66,17 @@ public class TracingQueryExecutionListener implements QueryExecutionListener, Me
         Object target = executionContext.getTarget();
         String methodName = executionContext.getMethod().getName();
         String dataSourceName = executionContext.getProxyConfig().getDataSourceName();
+        String connectionId = executionContext.getConnectionInfo().getConnectionId();
         if (target instanceof DataSource) {
             if (methodName.equals("getConnection")) {
-                strategy.beforeGetConnection(executionContext.getConnectionInfo().getConnectionId(), dataSourceName);
+                strategy.beforeGetConnection(connectionId, dataSourceName);
             }
         }
         if (target instanceof ResultSet) {
             ResultSet resultSet = (ResultSet) target;
             if (methodName.equals("next")) {
                 try {
-                    strategy.beforeResultSetNext(resultSet.getStatement(), resultSet, dataSourceName);
+                    strategy.beforeResultSetNext(connectionId, resultSet.getStatement(), resultSet, dataSourceName);
                 }
                 catch (SQLException e) {
                     // ignore
@@ -108,13 +109,13 @@ public class TracingQueryExecutionListener implements QueryExecutionListener, Me
         }
         else if (target instanceof Statement) {
             if (methodName.equals("close")) {
-                strategy.afterStatementClose((Statement) target);
+                strategy.afterStatementClose(connectionId, (Statement) target);
             }
         }
         else if (target instanceof ResultSet) {
             if (methodName.equals("close")) {
                 ResultSet resultSet = (ResultSet) target;
-                strategy.afterResultSetClose(resultSet, -1, t);
+                strategy.afterResultSetClose(connectionId, resultSet, -1, t);
             }
         }
     }

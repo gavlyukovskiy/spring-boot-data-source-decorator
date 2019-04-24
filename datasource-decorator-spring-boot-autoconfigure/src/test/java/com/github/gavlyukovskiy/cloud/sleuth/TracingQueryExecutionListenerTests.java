@@ -382,4 +382,28 @@ class TracingQueryExecutionListenerTests {
             assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, "SELECT NOW()");
         });
     }
+
+    @Test
+    void testShouldNotCauseMemoryLeak() {
+        contextRunner.withPropertyValues("spring.datasource.type:org.apache.tomcat.jdbc.pool.DataSource").run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            TracingQueryExecutionListener tracingQueryExecutionListener = context.getBean(TracingQueryExecutionListener.class);
+
+            tracingQueryExecutionListener.getClass();
+            Connection connection = dataSource.getConnection();
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("SELECT 1 FROM dual");
+            resultSet.next();
+            resultSet.close();
+            statement.close();
+            connection.close();
+
+            assertThat(tracingQueryExecutionListener)
+                    .extracting("strategy")
+                    .extracting("openConnections")
+                    .hasSize(1)
+                    .element(0)
+                    .isInstanceOfSatisfying(Map.class, map -> assertThat(map).isEmpty());
+        });
+    }
 }
