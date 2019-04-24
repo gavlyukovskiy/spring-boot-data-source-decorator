@@ -32,11 +32,11 @@ def pomConfig = {
 
 subprojects {
     ext {
-        springBootVersion = '2.1.2.RELEASE'
-        p6SpyVersion = '3.8.1'
-        datasourceProxyVersion = '1.5'
-        flexyPoolVersion = '2.1.1'
-        sleuthVersion = '2.1.0.RELEASE'
+        springBootVersion = '2.1.4.RELEASE'
+        p6SpyVersion = '3.8.2'
+        datasourceProxyVersion = '1.5.1'
+        flexyPoolVersion = '2.1.2'
+        sleuthVersion = '2.1.1.RELEASE'
 
         release = [
                 "datasource-decorator-spring-boot-autoconfigure",
