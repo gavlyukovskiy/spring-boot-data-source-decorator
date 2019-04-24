@@ -28,6 +28,7 @@ class TracingListenerStrategy<CON, STMT, RS> {
     void afterGetConnection(CON connectionKey, Throwable t) {
         if (t != null) {
             ConnectionInfo connectionInfo = openConnections.remove(connectionKey);
+            connectionInfo.getSpan().getSpan().error(t);
             connectionInfo.getSpan().finish();
         }
     }
