@@ -4,61 +4,82 @@ import brave.Span;
 import brave.Span.Kind;
 import brave.Tracer;
 import brave.Tracer.SpanInScope;
+import com.github.gavlyukovskiy.cloud.sleuth.SleuthProperties.TraceType;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 class TracingListenerStrategy<CON, STMT, RS> {
     private final Map<CON, ConnectionInfo> openConnections = new ConcurrentHashMap<>();
 
     private final Tracer tracer;
+    private final List<TraceType> traceTypes;
 
-    TracingListenerStrategy(Tracer tracer) {
+    TracingListenerStrategy(Tracer tracer, List<TraceType> traceTypes) {
         this.tracer = tracer;
+        this.traceTypes = traceTypes;
     }
 
     void beforeGetConnection(CON connectionKey, String dataSourceName) {
-        Span connectionSpan = tracer.nextSpan().name("jdbc:/" + dataSourceName + SleuthListenerAutoConfiguration.SPAN_CONNECTION_POSTFIX);
-        connectionSpan.kind(Kind.CLIENT);
-        connectionSpan.start();
-        ConnectionInfo connectionInfo = new ConnectionInfo(new SpanWithScope(connectionSpan, tracer.withSpanInScope(connectionSpan)));
+        SpanWithScope spanWithScope = null;
+        if (traceTypes.contains(TraceType.CONNECTION)) {
+            Span connectionSpan = tracer.nextSpan().name("jdbc:/" + dataSourceName + SleuthListenerAutoConfiguration.SPAN_CONNECTION_POSTFIX);
+            connectionSpan.kind(Kind.CLIENT);
+            connectionSpan.start();
+            spanWithScope = new SpanWithScope(connectionSpan, tracer.withSpanInScope(connectionSpan));
+        }
+        ConnectionInfo connectionInfo = new ConnectionInfo(spanWithScope);
         openConnections.put(connectionKey, connectionInfo);
     }
 
     void afterGetConnection(CON connectionKey, Throwable t) {
         if (t != null) {
             ConnectionInfo connectionInfo = openConnections.remove(connectionKey);
-            connectionInfo.getSpan().getSpan().error(t);
-            connectionInfo.getSpan().finish();
+            connectionInfo.getSpan().ifPresent(connectionSpan -> {
+                connectionSpan.getSpan().error(t);
+                connectionSpan.finish();
+            });
         }
     }
 
     void beforeQuery(CON connectionKey, STMT statementKey, String dataSourceName) {
-        Span statementSpan = tracer.nextSpan().name("jdbc:/" + dataSourceName + SleuthListenerAutoConfiguration.SPAN_QUERY_POSTFIX);
-        statementSpan.kind(Kind.CLIENT);
-        statementSpan.start();
-        StatementInfo statementInfo = new StatementInfo(new SpanWithScope(statementSpan, tracer.withSpanInScope(statementSpan)));
+        SpanWithScope spanWithScope = null;
+        if (traceTypes.contains(TraceType.QUERY)) {
+            Span statementSpan = tracer.nextSpan().name("jdbc:/" + dataSourceName + SleuthListenerAutoConfiguration.SPAN_QUERY_POSTFIX);
+            statementSpan.kind(Kind.CLIENT);
+            statementSpan.start();
+            spanWithScope = new SpanWithScope(statementSpan, tracer.withSpanInScope(statementSpan));
+        }
+        StatementInfo statementInfo = new StatementInfo(spanWithScope);
         openConnections.get(connectionKey).getNestedStatements().put(statementKey, statementInfo);
     }
 
     void addQueryRowCount(CON connectionKey, STMT statementKey, int rowCount) {
         ConnectionInfo connectionInfo = openConnections.get(connectionKey);
         StatementInfo statementInfo = connectionInfo.getNestedStatements().get(statementKey);
-        statementInfo.getSpan().getSpan().tag(SleuthListenerAutoConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(rowCount));
+        statementInfo.getSpan().ifPresent(statementSpan -> {
+            statementSpan.getSpan().tag(SleuthListenerAutoConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(rowCount));
+        });
     }
 
     void afterQuery(CON connectionKey, STMT statementKey, String sql, Throwable t) {
         ConnectionInfo connectionInfo = openConnections.get(connectionKey);
         StatementInfo statementInfo = connectionInfo.getNestedStatements().get(statementKey);
-        SpanWithScope statementSpan = statementInfo.getSpan();
-        statementSpan.getSpan().tag(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, sql);
-        if (t != null) {
-            statementSpan.getSpan().error(t);
-        }
-        statementSpan.finish();
+        statementInfo.getSpan().ifPresent(statementSpan -> {
+            statementSpan.getSpan().tag(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, sql);
+            if (t != null) {
+                statementSpan.getSpan().error(t);
+            }
+            statementSpan.finish();
+        });
     }
 
     void beforeResultSetNext(CON connectionKey, STMT statementKey, RS resultSetKey, String dataSourceName) {
+        if (!traceTypes.contains(TraceType.FETCH)) {
+            return;
+        }
         ConnectionInfo connectionInfo = openConnections.get(connectionKey);
         // ConnectionInfo may be null if Connection was closed before ResultSet
         if (connectionInfo == null) {
@@ -126,11 +147,12 @@ class TracingListenerStrategy<CON, STMT, RS> {
             // Connection is already closed
             return;
         }
-        SpanWithScope connectionSpan = connectionInfo.getSpan();
-        if (t != null) {
-            connectionSpan.getSpan().error(t);
-        }
-        connectionSpan.getSpan().annotate("commit");
+        connectionInfo.getSpan().ifPresent(connectionSpan -> {
+            if (t != null) {
+                connectionSpan.getSpan().error(t);
+            }
+            connectionSpan.getSpan().annotate("commit");
+        });
     }
 
     void afterRollback(CON connectionKey, Throwable t) {
@@ -139,14 +161,15 @@ class TracingListenerStrategy<CON, STMT, RS> {
             // Connection is already closed
             return;
         }
-        SpanWithScope connectionSpan = connectionInfo.getSpan();
-        if (t != null) {
-            connectionSpan.getSpan().error(t);
-        }
-        else {
-            connectionSpan.getSpan().tag("error", "Transaction rolled back");
-        }
-        connectionSpan.getSpan().annotate("rollback");
+        connectionInfo.getSpan().ifPresent(connectionSpan -> {
+            if (t != null) {
+                connectionSpan.getSpan().error(t);
+            }
+            else {
+                connectionSpan.getSpan().tag("error", "Transaction rolled back");
+            }
+            connectionSpan.getSpan().annotate("rollback");
+        });
     }
 
     void afterConnectionClose(CON connectionKey, Throwable t) {
@@ -155,13 +178,14 @@ class TracingListenerStrategy<CON, STMT, RS> {
             // connection is already closed
             return;
         }
-        SpanWithScope connectionSpan = connectionInfo.getSpan();
-        if (t != null) {
-            connectionSpan.getSpan().error(t);
-        }
         connectionInfo.getNestedResultSetSpans().values().forEach(SpanWithScope::finish);
-        connectionInfo.getNestedStatements().values().forEach(statementInfo -> statementInfo.getSpan().finish());
-        connectionSpan.finish();
+        connectionInfo.getNestedStatements().values().forEach(statementInfo -> statementInfo.getSpan().ifPresent(SpanWithScope::finish));
+        connectionInfo.getSpan().ifPresent(connectionSpan -> {
+            if (t != null) {
+                connectionSpan.getSpan().error(t);
+            }
+            connectionSpan.finish();
+        });
     }
 
     private class ConnectionInfo {
@@ -173,15 +197,15 @@ class TracingListenerStrategy<CON, STMT, RS> {
             this.span = span;
         }
 
-        public SpanWithScope getSpan() {
-            return span;
+        Optional<SpanWithScope> getSpan() {
+            return Optional.ofNullable(span);
         }
 
-        public Map<STMT, StatementInfo> getNestedStatements() {
+        Map<STMT, StatementInfo> getNestedStatements() {
             return nestedStatements;
         }
 
-        public Map<RS, SpanWithScope> getNestedResultSetSpans() {
+        Map<RS, SpanWithScope> getNestedResultSetSpans() {
             return nestedResultSetSpans;
         }
     }
@@ -194,11 +218,11 @@ class TracingListenerStrategy<CON, STMT, RS> {
             this.span = span;
         }
 
-        public SpanWithScope getSpan() {
-            return span;
+        Optional<SpanWithScope> getSpan() {
+            return Optional.ofNullable(span);
         }
 
-        public Map<RS, SpanWithScope> getNestedResultSetSpans() {
+        Map<RS, SpanWithScope> getNestedResultSetSpans() {
             return nestedResultSetSpans;
         }
     }
@@ -212,7 +236,7 @@ class TracingListenerStrategy<CON, STMT, RS> {
             this.spanInScope = spanInScope;
         }
 
-        public Span getSpan() {
+        Span getSpan() {
             return span;
         }
 

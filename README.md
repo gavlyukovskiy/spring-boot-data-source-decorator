@@ -241,6 +241,8 @@ decorator.datasource.flexy-pool.threshold.connection.lease=1000
 
 # Creates span for every connection and query. Works only with p6spy or datasource-proxy.
 decorator.datasource.sleuth.enabled=true
+# Specify traces that will be created in zipkin
+decorator.datasource.sleuth.include=connection, query, fetch
 ```
 
 **Spring Cloud Sleuth**

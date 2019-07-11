@@ -18,11 +18,13 @@ package com.github.gavlyukovskiy.cloud.sleuth;
 
 import brave.Tracer;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorAutoConfiguration;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorProperties;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceNameResolver;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy.ProxyDataSourceDecorator;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy.P6SpyDataSourceDecorator;
 import net.ttddyy.dsproxy.proxy.ResultSetProxyLogicFactory;
 import net.ttddyy.dsproxy.proxy.SimpleResultSetProxyLogicFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -56,9 +58,12 @@ public class SleuthListenerAutoConfiguration {
     @ConditionalOnBean(P6SpyDataSourceDecorator.class)
     static class P6SpyConfiguration {
 
+        @Autowired
+        private DataSourceDecoratorProperties dataSourceDecoratorProperties;
+
         @Bean
         public TracingJdbcEventListener tracingJdbcEventListener(Tracer tracer, DataSourceNameResolver dataSourceNameResolver) {
-            return new TracingJdbcEventListener(tracer, dataSourceNameResolver);
+            return new TracingJdbcEventListener(tracer, dataSourceNameResolver, dataSourceDecoratorProperties.getSleuth().getInclude());
         }
     }
 
@@ -66,6 +71,9 @@ public class SleuthListenerAutoConfiguration {
     @ConditionalOnBean(ProxyDataSourceDecorator.class)
     @ConditionalOnMissingBean(P6SpyConfiguration.class)
     static class ProxyDataSourceConfiguration {
+
+        @Autowired
+        private DataSourceDecoratorProperties dataSourceDecoratorProperties;
 
         @Bean
         @ConditionalOnMissingBean
@@ -75,7 +83,7 @@ public class SleuthListenerAutoConfiguration {
 
         @Bean
         public TracingQueryExecutionListener tracingQueryExecutionListener(Tracer tracer) {
-            return new TracingQueryExecutionListener(tracer);
+            return new TracingQueryExecutionListener(tracer, dataSourceDecoratorProperties.getSleuth().getInclude());
         }
     }
 }

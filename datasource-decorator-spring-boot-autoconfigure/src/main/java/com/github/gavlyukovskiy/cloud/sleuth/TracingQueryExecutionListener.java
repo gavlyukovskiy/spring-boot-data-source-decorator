@@ -17,6 +17,7 @@
 package com.github.gavlyukovskiy.cloud.sleuth;
 
 import brave.Tracer;
+import com.github.gavlyukovskiy.cloud.sleuth.SleuthProperties.TraceType;
 import net.ttddyy.dsproxy.ExecutionInfo;
 import net.ttddyy.dsproxy.QueryInfo;
 import net.ttddyy.dsproxy.listener.MethodExecutionContext;
@@ -43,8 +44,8 @@ public class TracingQueryExecutionListener implements QueryExecutionListener, Me
 
     private final TracingListenerStrategy<String, Statement, ResultSet> strategy;
 
-    TracingQueryExecutionListener(Tracer tracer) {
-        this.strategy = new TracingListenerStrategy<>(tracer);
+    TracingQueryExecutionListener(Tracer tracer, List<TraceType> traceTypes) {
+        this.strategy = new TracingListenerStrategy<>(tracer, traceTypes);
     }
 
     @Override

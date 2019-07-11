@@ -340,7 +340,7 @@ class TracingQueryExecutionListenerTests {
     }
 
     @Test
-    public void testShouldNotFailToCloseSpanForTwoConsecutiveConnections() {
+    void testShouldNotFailToCloseSpanForTwoConsecutiveConnections() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
             ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
@@ -384,12 +384,12 @@ class TracingQueryExecutionListenerTests {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void testShouldNotCauseMemoryLeak() {
         contextRunner.withPropertyValues("spring.datasource.type:org.apache.tomcat.jdbc.pool.DataSource").run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
             TracingQueryExecutionListener tracingQueryExecutionListener = context.getBean(TracingQueryExecutionListener.class);
 
-            tracingQueryExecutionListener.getClass();
             Connection connection = dataSource.getConnection();
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT 1 FROM dual");
@@ -404,6 +404,132 @@ class TracingQueryExecutionListenerTests {
                     .hasSize(1)
                     .element(0)
                     .isInstanceOfSatisfying(Map.class, map -> assertThat(map).isEmpty());
+        });
+    }
+
+    @Test
+    void testShouldIncludeOnlyConnectionTraces() {
+        contextRunner.withPropertyValues("decorator.datasource.sleuth.include: connection").run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+
+            Connection connection = dataSource.getConnection();
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("SELECT 1 FROM dual");
+            resultSet.next();
+            resultSet.close();
+            statement.close();
+            connection.close();
+
+            assertThat(spanReporter.getSpans()).hasSize(1);
+            Span connectionSpan = spanReporter.getSpans().get(0);
+            assertThat(connectionSpan.name()).isEqualTo("jdbc:/test/connection");
+        });
+    }
+
+    @Test
+    void testShouldIncludeOnlyQueryTraces() {
+        contextRunner.withPropertyValues("decorator.datasource.sleuth.include: query").run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+
+            Connection connection = dataSource.getConnection();
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("SELECT 1 FROM dual");
+            resultSet.next();
+            resultSet.close();
+            statement.close();
+            connection.close();
+
+            assertThat(spanReporter.getSpans()).hasSize(1);
+            Span statementSpan = spanReporter.getSpans().get(0);
+            assertThat(statementSpan.name()).isEqualTo("jdbc:/test/query");
+        });
+    }
+
+    @Test
+    void testShouldIncludeOnlyFetchTraces() {
+        contextRunner.withPropertyValues("decorator.datasource.sleuth.include: fetch").run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+
+            Connection connection = dataSource.getConnection();
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("SELECT 1 FROM dual");
+            resultSet.next();
+            resultSet.close();
+            statement.close();
+            connection.close();
+
+            assertThat(spanReporter.getSpans()).hasSize(1);
+            Span resultSetSpan = spanReporter.getSpans().get(0);
+            assertThat(resultSetSpan.name()).isEqualTo("jdbc:/test/fetch");
+        });
+    }
+
+    @Test
+    void testShouldIncludeOnlyConnectionAndQueryTraces() {
+        contextRunner.withPropertyValues("decorator.datasource.sleuth.include: connection, query").run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+
+            Connection connection = dataSource.getConnection();
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("SELECT 1 FROM dual");
+            resultSet.next();
+            resultSet.close();
+            statement.close();
+            connection.close();
+
+            assertThat(spanReporter.getSpans()).hasSize(2);
+            Span connectionSpan = spanReporter.getSpans().get(1);
+            Span statementSpan = spanReporter.getSpans().get(0);
+            assertThat(connectionSpan.name()).isEqualTo("jdbc:/test/connection");
+            assertThat(statementSpan.name()).isEqualTo("jdbc:/test/query");
+        });
+    }
+
+    @Test
+    void testShouldIncludeOnlyConnectionAndFetchTraces() {
+        contextRunner.withPropertyValues("decorator.datasource.sleuth.include: connection, fetch").run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+
+            Connection connection = dataSource.getConnection();
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("SELECT 1 FROM dual");
+            resultSet.next();
+            resultSet.close();
+            statement.close();
+            connection.close();
+
+            assertThat(spanReporter.getSpans()).hasSize(2);
+            Span connectionSpan = spanReporter.getSpans().get(1);
+            Span resultSetSpan = spanReporter.getSpans().get(0);
+            assertThat(connectionSpan.name()).isEqualTo("jdbc:/test/connection");
+            assertThat(resultSetSpan.name()).isEqualTo("jdbc:/test/fetch");
+        });
+    }
+
+    @Test
+    void testShouldIncludeOnlyQueryAndFetchTraces() {
+        contextRunner.withPropertyValues("decorator.datasource.sleuth.include: query, fetch").run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+
+            Connection connection = dataSource.getConnection();
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("SELECT 1 FROM dual");
+            resultSet.next();
+            resultSet.close();
+            statement.close();
+            connection.close();
+
+            assertThat(spanReporter.getSpans()).hasSize(2);
+            Span resultSetSpan = spanReporter.getSpans().get(1);
+            Span statementSpan = spanReporter.getSpans().get(0);
+            assertThat(statementSpan.name()).isEqualTo("jdbc:/test/query");
+            assertThat(resultSetSpan.name()).isEqualTo("jdbc:/test/fetch");
         });
     }
 }

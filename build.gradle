@@ -5,44 +5,23 @@ buildscript {
 }
 
 plugins {
-    id "com.jfrog.bintray" version "1.8.4" apply false
-    id "pl.allegro.tech.build.axion-release" version "1.10.0"
-}
-
-def pomConfig = {
-    licenses {
-        license {
-            name "The Apache Software License, Version 2.0"
-            url "http://www.apache.org/licenses/LICENSE-2.0.txt"
-            distribution "repo"
-        }
-    }
-    developers {
-        developer {
-            id "gavlyukovskiy"
-            name "Arthur Gavlyukovskiy"
-            email "agavlyukovskiy@gmail.com"
-        }
-    }
-
-    scm {
-        url "https://github.com/gavlyukovskiy/spring-boot-data-source-decorator"
-    }
+    id 'com.jfrog.bintray' version '1.8.4' apply false
+    id 'pl.allegro.tech.build.axion-release' version '1.10.1'
 }
 
 subprojects {
     ext {
-        springBootVersion = '2.1.4.RELEASE'
+        springBootVersion = '2.1.6.RELEASE'
         p6SpyVersion = '3.8.2'
         datasourceProxyVersion = '1.5.1'
         flexyPoolVersion = '2.1.2'
-        sleuthVersion = '2.1.1.RELEASE'
+        sleuthVersion = '2.1.2.RELEASE'
 
         release = [
-                "datasource-decorator-spring-boot-autoconfigure",
-                "datasource-proxy-spring-boot-starter",
-                "flexy-pool-spring-boot-starter",
-                "p6spy-spring-boot-starter"
+                'datasource-decorator-spring-boot-autoconfigure',
+                'datasource-proxy-spring-boot-starter',
+                'flexy-pool-spring-boot-starter',
+                'p6spy-spring-boot-starter'
         ].contains(project.name)
     }
 
@@ -85,7 +64,7 @@ subprojects {
                 if (!project.hasProperty('release.customPassword'))
                     errors.add("'-Prelease.customPassword' must be set")
                 if (!errors.isEmpty()) {
-                    throw new IllegalStateException(errors.join("\n"))
+                    throw new IllegalStateException(errors.join('\n'))
                 }
             }
         }
@@ -93,8 +72,8 @@ subprojects {
         task bintrayUploadCheck() {
             doLast {
                 def errors = []
-                if (project.version.contains("SNAPSHOT")) {
-                    errors.add("Cannot release SNAPSHOT version")
+                if (project.version.contains('SNAPSHOT')) {
+                    errors.add('Cannot release SNAPSHOT version')
                 }
                 if (!System.getenv('BINTRAY_USER') && !project.hasProperty('release.bintray_user'))
                     errors.add("'BINTRAY_USER' or '-Prelease.bintray_user' must be set")
@@ -107,7 +86,7 @@ subprojects {
                 if (!System.getenv('SONATYPE_PASSWORD') && !project.hasProperty('release.sonatype_password'))
                     errors.add("'SONATYPE_PASSWORD' or '-Prelease.sonatype_password' must be set")
                 if (!errors.isEmpty()) {
-                    throw new IllegalStateException(errors.join("\n"))
+                    throw new IllegalStateException(errors.join('\n'))
                 }
             }
         }
@@ -121,18 +100,33 @@ subprojects {
                 mavenJava(MavenPublication) {
                     from components.java
                     afterEvaluate {
-                        artifact sourceJar
-                        artifact javadocJar
-                        groupId project.group
-                        artifactId project.name
-                        version scmVersion.version
+                        artifact(sourceJar)
+                        artifact(javadocJar)
+                        groupId = project.group
+                        artifactId = project.name
+                        version = scmVersion.version
                     }
-                    pom.withXml {
-                        def root = asNode()
-                        root.appendNode('description', 'Spring Boot integration with p6spy, datasource-proxy and flexy-pool')
-                        root.appendNode('name', 'spring-boot-data-source-decorator')
-                        root.appendNode('url', 'https://github.com/gavlyukovskiy/spring-boot-data-source-decorator')
-                        root.children().last() + pomConfig
+                    
+                    pom {
+                        name = 'spring-boot-data-source-decorator'
+                        description = 'Spring Boot integration with p6spy, datasource-proxy and flexy-pool'
+                        url = 'https://github.com/gavlyukovskiy/spring-boot-data-source-decorator'
+                        licenses {
+                            license {
+                                name = 'The Apache Software License, Version 2.0'
+                                url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            }
+                        }
+                        developers {
+                            developer {
+                                id = 'gavlyukovskiy'
+                                name = 'Arthur Gavlyukovskiy'
+                                email = 'agavlyukovskiy@gmail.com'
+                            }
+                        }
+                        scm {
+                            url = 'https://github.com/gavlyukovskiy/spring-boot-data-source-decorator'
+                        }
                     }
                 }
             }
@@ -167,12 +161,12 @@ subprojects {
         }
 
         task sourceJar(type: Jar, dependsOn: classes) {
-            classifier 'sources'
+            archiveClassifier = 'sources'
             from sourceSets.main.allSource
         }
 
         task javadocJar(type: Jar, dependsOn: javadoc) {
-            classifier = 'javadoc'
+            archiveClassifier = 'javadoc'
             from javadoc.destinationDir
         }
 

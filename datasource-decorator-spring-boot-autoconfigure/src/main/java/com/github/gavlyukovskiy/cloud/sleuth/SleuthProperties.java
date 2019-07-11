@@ -19,6 +19,9 @@ package com.github.gavlyukovskiy.cloud.sleuth;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Configuration for integration with spring-cloud-sleuth.
  *
@@ -33,4 +36,12 @@ public class SleuthProperties {
      * Creates span for every connection and query. Works only with p6spy or datasource-proxy.
      */
     private boolean enabled = true;
+
+    private List<TraceType> include = Arrays.asList(TraceType.CONNECTION, TraceType.QUERY, TraceType.FETCH);
+
+    public enum TraceType {
+        CONNECTION,
+        QUERY,
+        FETCH
+    }
 }

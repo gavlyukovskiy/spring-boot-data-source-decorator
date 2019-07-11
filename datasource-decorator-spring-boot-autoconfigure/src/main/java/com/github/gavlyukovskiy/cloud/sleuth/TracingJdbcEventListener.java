@@ -18,6 +18,7 @@ package com.github.gavlyukovskiy.cloud.sleuth;
 
 import brave.Tracer;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceNameResolver;
+import com.github.gavlyukovskiy.cloud.sleuth.SleuthProperties.TraceType;
 import com.p6spy.engine.common.ConnectionInformation;
 import com.p6spy.engine.common.PreparedStatementInformation;
 import com.p6spy.engine.common.ResultSetInformation;
@@ -27,6 +28,7 @@ import org.springframework.core.Ordered;
 import org.springframework.util.StringUtils;
 
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Listener to represent each connection and sql query as a span.
@@ -40,9 +42,9 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener implements
 
     private final TracingListenerStrategy<ConnectionInformation, StatementInformation, ResultSetInformation> strategy;
 
-    TracingJdbcEventListener(Tracer tracer, DataSourceNameResolver dataSourceNameResolver) {
+    TracingJdbcEventListener(Tracer tracer, DataSourceNameResolver dataSourceNameResolver, List<TraceType> traceTypes) {
         this.dataSourceNameResolver = dataSourceNameResolver;
-        this.strategy = new TracingListenerStrategy<>(tracer);
+        this.strategy = new TracingListenerStrategy<>(tracer, traceTypes);
     }
 
     @Override

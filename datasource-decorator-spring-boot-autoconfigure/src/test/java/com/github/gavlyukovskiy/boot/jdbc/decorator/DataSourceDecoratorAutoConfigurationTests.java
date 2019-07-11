@@ -45,7 +45,7 @@ import java.util.logging.Logger;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
-public class DataSourceDecoratorAutoConfigurationTests {
+class DataSourceDecoratorAutoConfigurationTests {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withConfiguration(AutoConfigurations.of(
@@ -276,7 +276,7 @@ public class DataSourceDecoratorAutoConfigurationTests {
      *
      * @author Arthur Gavlyukovskiy
      */
-    public static class CustomDataSourceProxy implements DataSource {
+    static class CustomDataSourceProxy implements DataSource {
 
         private DataSource delegate;
 

@@ -1,0 +1,12 @@
+{
+  "properties": [
+    {
+      "name": "decorator.datasource.sleuth.include",
+      "defaultValue": [
+        "connection",
+        "query",
+        "fetch"
+      ]
+    }
+  ]
+}

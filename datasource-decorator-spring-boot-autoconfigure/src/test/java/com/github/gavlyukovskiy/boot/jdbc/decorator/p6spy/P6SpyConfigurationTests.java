@@ -56,7 +56,7 @@ public class P6SpyConfigurationTests {
             .withClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "net.ttddyy.dsproxy"));
 
     @Test
-    public void testCustomListeners() {
+    void testCustomListeners() {
         ApplicationContextRunner contextRunner = this.contextRunner.withUserConfiguration(CustomListenerConfiguration.class);
 
         contextRunner.run(context -> {
@@ -92,7 +92,7 @@ public class P6SpyConfigurationTests {
     }
 
     @Test
-    public void testDoesNotRegisterLoggingListenerIfDisabled() {
+    void testDoesNotRegisterLoggingListenerIfDisabled() {
         ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("decorator.datasource.p6spy.enable-logging:false");
 
         contextRunner.run(context -> {
@@ -104,7 +104,7 @@ public class P6SpyConfigurationTests {
     }
 
     @Test
-    public void testCanSetCustomLoggingFormat() {
+    void testCanSetCustomLoggingFormat() {
         ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("decorator.datasource.p6spy.log-format:test %{connectionId}");
 
         contextRunner.run(context -> {
