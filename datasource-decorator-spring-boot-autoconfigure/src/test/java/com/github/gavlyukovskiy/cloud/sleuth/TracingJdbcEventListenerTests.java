@@ -31,6 +31,7 @@ import zipkin2.Span;
 import javax.sql.DataSource;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -507,6 +508,83 @@ class TracingJdbcEventListenerTests {
             Span statementSpan = spanReporter.getSpans().get(0);
             assertThat(statementSpan.name()).isEqualTo("jdbc:/test/query");
             assertThat(resultSetSpan.name()).isEqualTo("jdbc:/test/fetch");
+        });
+    }
+
+    @Test
+    void testShouldNotOverrideExceptionWhenConnectionWasClosedBeforeExecutingQuery() {
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+
+            Connection connection = dataSource.getConnection();
+            PreparedStatement statement = connection.prepareStatement("SELECT NOW()");
+            connection.close();
+            try {
+                statement.executeQuery();
+                fail("should throw SQLException");
+            }
+            catch (SQLException expected) {
+            }
+
+            assertThat(spanReporter.getSpans()).hasSize(1);
+            Span connectionSpan = spanReporter.getSpans().get(0);
+            assertThat(connectionSpan.name()).isEqualTo("jdbc:/test/connection");
+        });
+    }
+
+    @Test
+    void testShouldNotOverrideExceptionWhenStatementWasClosedBeforeExecutingQuery() {
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+
+            Connection connection = dataSource.getConnection();
+            PreparedStatement statement = connection.prepareStatement("SELECT NOW()");
+            statement.close();
+            try {
+                statement.executeQuery();
+                fail("should throw SQLException");
+            }
+            catch (SQLException expected) {
+            }
+            connection.close();
+
+            assertThat(spanReporter.getSpans()).hasSize(2);
+            Span connectionSpan = spanReporter.getSpans().get(1);
+            Span statementSpan = spanReporter.getSpans().get(0);
+            assertThat(connectionSpan.name()).isEqualTo("jdbc:/test/connection");
+            assertThat(statementSpan.name()).isEqualTo("jdbc:/test/query");
+        });
+    }
+
+    @Test
+    void testShouldNotOverrideExceptionWhenResultSetWasClosedBeforeNext() {
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+
+            Connection connection = dataSource.getConnection();
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("SELECT NOW()");
+            resultSet.close();
+            try {
+                resultSet.next();
+                fail("should throw SQLException");
+            }
+            catch (SQLException expected) {
+            }
+            statement.close();
+            connection.close();
+
+            assertThat(spanReporter.getSpans()).hasSize(3);
+            Span connectionSpan = spanReporter.getSpans().get(2);
+            Span resultSetSpan = spanReporter.getSpans().get(1);
+            Span statementSpan = spanReporter.getSpans().get(0);
+            assertThat(connectionSpan.name()).isEqualTo("jdbc:/test/connection");
+            assertThat(statementSpan.name()).isEqualTo("jdbc:/test/query");
+            assertThat(resultSetSpan.name()).isEqualTo("jdbc:/test/fetch");
+            assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, "SELECT NOW()");
         });
     }
 }

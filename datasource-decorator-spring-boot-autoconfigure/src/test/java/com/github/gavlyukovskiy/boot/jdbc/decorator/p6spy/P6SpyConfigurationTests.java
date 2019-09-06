@@ -38,6 +38,7 @@ import org.springframework.context.annotation.Configuration;
 import javax.sql.DataSource;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -113,6 +114,31 @@ public class P6SpyConfigurationTests {
 
             assertThat(jdbcEventListener.getEventListeners()).extracting("class").contains(LoggingEventListener.class);
             assertThat(P6LogQuery.getLogger()).extracting("strategy").extracting("class").contains(CustomLineFormat.class);
+        });
+    }
+
+    @Test
+    void name() {
+        System.setProperty("p6spy.config.logMessageFormat", "com.p6spy.engine.spy.appender.CustomLineFormat");
+        System.setProperty("p6spy.config.excludecategories", "debug");
+        ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("decorator.datasource.p6spy.multiline:true");
+
+        contextRunner.run(context -> {
+            JdbcEventListenerFactory jdbcEventListenerFactory = context.getBean(JdbcEventListenerFactory.class);
+            CompoundJdbcEventListener jdbcEventListener = (CompoundJdbcEventListener) jdbcEventListenerFactory.createJdbcEventListener();
+
+            DataSource dataSource = context.getBean(DataSource.class);
+
+            Connection connection = dataSource.getConnection();
+            ResultSet resultSet = connection.createStatement().executeQuery("SELECT 1, 2 UNION ALL SELECT 2, 3");
+            while (resultSet.next()) {
+                resultSet.getString(1);
+                resultSet.getString(2);
+            }
+            resultSet.close();
+            connection.close();
+
+            System.out.println();
         });
     }
 

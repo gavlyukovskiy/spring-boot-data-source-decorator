@@ -53,7 +53,12 @@ class TracingListenerStrategy<CON, STMT, RS> {
             spanWithScope = new SpanWithScope(statementSpan, tracer.withSpanInScope(statementSpan));
         }
         StatementInfo statementInfo = new StatementInfo(spanWithScope);
-        openConnections.get(connectionKey).getNestedStatements().put(statementKey, statementInfo);
+        ConnectionInfo connectionInfo = openConnections.get(connectionKey);
+        if (connectionInfo == null) {
+            // Connection may be closed after statement preparation, but before statement execution.
+            return;
+        }
+        connectionInfo.getNestedStatements().put(statementKey, statementInfo);
     }
 
     void addQueryRowCount(CON connectionKey, STMT statementKey, int rowCount) {
@@ -66,6 +71,10 @@ class TracingListenerStrategy<CON, STMT, RS> {
 
     void afterQuery(CON connectionKey, STMT statementKey, String sql, Throwable t) {
         ConnectionInfo connectionInfo = openConnections.get(connectionKey);
+        if (connectionInfo == null) {
+            // Connection may be closed after statement preparation, but before statement execution.
+            return;
+        }
         StatementInfo statementInfo = connectionInfo.getNestedStatements().get(statementKey);
         statementInfo.getSpan().ifPresent(statementSpan -> {
             statementSpan.getSpan().tag(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, sql);
