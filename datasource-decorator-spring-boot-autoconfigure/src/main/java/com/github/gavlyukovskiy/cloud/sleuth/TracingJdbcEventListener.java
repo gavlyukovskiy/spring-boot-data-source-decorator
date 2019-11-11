@@ -77,13 +77,17 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener implements
 
     @Override
     public void onAfterExecuteUpdate(PreparedStatementInformation statementInformation, long timeElapsedNanos, int rowCount, SQLException e) {
-        strategy.addQueryRowCount(statementInformation.getConnectionInformation(), statementInformation, rowCount);
+        if (e == null) {
+            strategy.addQueryRowCount(statementInformation.getConnectionInformation(), statementInformation, rowCount);
+        }
         super.onAfterExecuteUpdate(statementInformation, timeElapsedNanos, rowCount, e);
     }
 
     @Override
     public void onAfterExecuteUpdate(StatementInformation statementInformation, long timeElapsedNanos, String sql, int rowCount, SQLException e) {
-        strategy.addQueryRowCount(statementInformation.getConnectionInformation(), statementInformation, rowCount);
+        if (e == null) {
+            strategy.addQueryRowCount(statementInformation.getConnectionInformation(), statementInformation, rowCount);
+        }
         super.onAfterExecuteUpdate(statementInformation, timeElapsedNanos, sql, rowCount, e);
     }
 

@@ -63,6 +63,10 @@ class TracingListenerStrategy<CON, STMT, RS> {
 
     void addQueryRowCount(CON connectionKey, STMT statementKey, int rowCount) {
         ConnectionInfo connectionInfo = openConnections.get(connectionKey);
+        if (connectionInfo == null) {
+            // Connection is already closed
+            return;
+        }
         StatementInfo statementInfo = connectionInfo.getNestedStatements().get(statementKey);
         statementInfo.getSpan().ifPresent(statementSpan -> {
             statementSpan.getSpan().tag(SleuthListenerAutoConfiguration.SPAN_ROW_COUNT_TAG_NAME, String.valueOf(rowCount));
