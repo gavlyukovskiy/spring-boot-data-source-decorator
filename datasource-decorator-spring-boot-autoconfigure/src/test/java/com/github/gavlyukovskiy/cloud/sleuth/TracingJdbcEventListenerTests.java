@@ -120,6 +120,31 @@ class TracingJdbcEventListenerTests {
     }
 
     @Test
+    void testShouldUsePlaceholderInSqlTagOfSpansForPreparedStatementIfIncludeParameterValuesIsSetToFalse() {
+        contextRunner.withPropertyValues("decorator.datasource.p6spy.include-parameter-values=false")
+                .run(context -> {
+                    DataSource dataSource = context.getBean(DataSource.class);
+                    ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+
+                    Connection connection = dataSource.getConnection();
+                    PreparedStatement preparedStatement = connection.prepareStatement("UPDATE INFORMATION_SCHEMA.TABLES SET table_Name = ? WHERE 0 = ?");
+                    preparedStatement.setString(1, "");
+                    preparedStatement.setInt(2, 1);
+                    preparedStatement.executeUpdate();
+                    connection.close();
+
+                    assertThat(spanReporter.getSpans()).hasSize(2);
+                    Span connectionSpan = spanReporter.getSpans().get(1);
+                    Span statementSpan = spanReporter.getSpans().get(0);
+                    assertThat(connectionSpan.name()).isEqualTo("jdbc:/test/connection");
+                    assertThat(statementSpan.name()).isEqualTo("jdbc:/test/query");
+                    assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME,
+                            "UPDATE INFORMATION_SCHEMA.TABLES SET table_Name = ? WHERE 0 = ?");
+                    assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_ROW_COUNT_TAG_NAME, "0");
+                });
+    }
+
+    @Test
     void testShouldAddSpanForStatementExecuteUpdate() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);

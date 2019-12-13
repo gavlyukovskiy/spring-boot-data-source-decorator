@@ -41,9 +41,12 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener implements
     private final DataSourceNameResolver dataSourceNameResolver;
 
     private final TracingListenerStrategy<ConnectionInformation, StatementInformation, ResultSetInformation> strategy;
+    private final boolean includeParameterValues;
 
-    TracingJdbcEventListener(Tracer tracer, DataSourceNameResolver dataSourceNameResolver, List<TraceType> traceTypes) {
+    TracingJdbcEventListener(Tracer tracer, DataSourceNameResolver dataSourceNameResolver, List<TraceType> traceTypes,
+                             boolean includeParameterValues) {
         this.dataSourceNameResolver = dataSourceNameResolver;
+        this.includeParameterValues = includeParameterValues;
         this.strategy = new TracingListenerStrategy<>(tracer, traceTypes);
     }
 
@@ -117,7 +120,7 @@ public class TracingJdbcEventListener extends SimpleJdbcEventListener implements
     }
 
     private String getSql(StatementInformation statementInformation) {
-        return StringUtils.hasText(statementInformation.getSqlWithValues())
+        return includeParameterValues && StringUtils.hasText(statementInformation.getSqlWithValues())
                 ? statementInformation.getSqlWithValues()
                 : statementInformation.getSql();
     }

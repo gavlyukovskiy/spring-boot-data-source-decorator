@@ -52,6 +52,13 @@ public class P6SpyProperties {
      */
     private String logFormat;
 
+    /**
+     * Report the effective sql string (with '?' replaced with real values) to tracing systems.
+     *
+     * NOTE this setting does not affect the logging message.
+     */
+    private boolean includeParameterValues = true;
+
     public enum P6SpyLogging {
         SYSOUT,
         SLF4J,
