@@ -64,7 +64,8 @@ public class SleuthListenerAutoConfiguration {
         @Bean
         public TracingJdbcEventListener tracingJdbcEventListener(Tracer tracer, DataSourceNameResolver dataSourceNameResolver) {
             return new TracingJdbcEventListener(tracer, dataSourceNameResolver,
-                    dataSourceDecoratorProperties.getSleuth().getInclude(), dataSourceDecoratorProperties.getP6spy().isIncludeParameterValues());
+                    dataSourceDecoratorProperties.getSleuth().getInclude(),
+                    dataSourceDecoratorProperties.getP6spy().getTracing().isIncludeParameterValues());
         }
     }
 

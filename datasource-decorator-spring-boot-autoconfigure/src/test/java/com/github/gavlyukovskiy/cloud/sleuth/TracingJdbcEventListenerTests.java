@@ -121,7 +121,7 @@ class TracingJdbcEventListenerTests {
 
     @Test
     void testShouldUsePlaceholderInSqlTagOfSpansForPreparedStatementIfIncludeParameterValuesIsSetToFalse() {
-        contextRunner.withPropertyValues("decorator.datasource.p6spy.include-parameter-values=false")
+        contextRunner.withPropertyValues("decorator.datasource.p6spy.tracing.include-parameter-values=false")
                 .run(context -> {
                     DataSource dataSource = context.getBean(DataSource.class);
                     ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
