@@ -52,9 +52,25 @@ public class P6SpyProperties {
      */
     private String logFormat;
 
+    /**
+     * Tracing related properties
+     */
+    private P6SpyTracing tracing = new P6SpyTracing();
+
     public enum P6SpyLogging {
         SYSOUT,
         SLF4J,
         FILE
+    }
+
+    @Getter
+    @Setter
+    public static class P6SpyTracing {
+        /**
+         * Report the effective sql string (with '?' replaced with real values) to tracing systems.
+         * <p>
+         * NOTE this setting does not affect the logging message.
+         */
+        private boolean includeParameterValues = true;
     }
 }
