@@ -42,7 +42,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class P6SpyConfigurationTests {
 
@@ -66,7 +66,7 @@ public class P6SpyConfigurationTests {
             GetCountingListener getCountingListener = context.getBean(GetCountingListener.class);
             ClosingCountingListener closingCountingListener = context.getBean(ClosingCountingListener.class);
             P6DataSource p6DataSource = (P6DataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
-            assertThat(p6DataSource).extracting("jdbcEventListenerFactory").containsOnly(jdbcEventListenerFactory);
+            assertThat(p6DataSource).extracting("jdbcEventListenerFactory").isEqualTo(jdbcEventListenerFactory);
 
             CompoundJdbcEventListener jdbcEventListener = (CompoundJdbcEventListener) jdbcEventListenerFactory.createJdbcEventListener();
 
@@ -113,7 +113,7 @@ public class P6SpyConfigurationTests {
             CompoundJdbcEventListener jdbcEventListener = (CompoundJdbcEventListener) jdbcEventListenerFactory.createJdbcEventListener();
 
             assertThat(jdbcEventListener.getEventListeners()).extracting("class").contains(LoggingEventListener.class);
-            assertThat(P6LogQuery.getLogger()).extracting("strategy").extracting("class").contains(CustomLineFormat.class);
+            assertThat(P6LogQuery.getLogger()).extracting("strategy").extracting("class").isEqualTo(CustomLineFormat.class);
         });
     }
 

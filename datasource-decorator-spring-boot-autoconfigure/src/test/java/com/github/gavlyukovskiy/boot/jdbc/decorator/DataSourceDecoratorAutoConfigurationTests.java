@@ -43,7 +43,7 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class DataSourceDecoratorAutoConfigurationTests {
 
@@ -196,7 +196,7 @@ class DataSourceDecoratorAutoConfigurationTests {
             DataSource realDataSource = (DataSource) new DirectFieldAccessor(flexyDataSource)
                     .getPropertyValue("targetDataSource");
             assertThat(realDataSource).isNotNull();
-            assertThat(realDataSource).isInstanceOf((Class<? extends DataSource>) HikariDataSource.class);
+            assertThat(realDataSource).isInstanceOf(HikariDataSource.class);
 
             assertThatDataSourceDecoratingChain(dataSource).containsExactly(P6DataSource.class, ProxyDataSource.class, FlexyPoolDataSource.class);
 

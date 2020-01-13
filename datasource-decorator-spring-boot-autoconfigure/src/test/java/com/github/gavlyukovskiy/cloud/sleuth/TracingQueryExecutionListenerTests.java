@@ -402,8 +402,6 @@ class TracingQueryExecutionListenerTests {
             assertThat(tracingQueryExecutionListener)
                     .extracting("strategy")
                     .extracting("openConnections")
-                    .hasSize(1)
-                    .element(0)
                     .isInstanceOfSatisfying(Map.class, map -> assertThat(map).isEmpty());
         });
     }

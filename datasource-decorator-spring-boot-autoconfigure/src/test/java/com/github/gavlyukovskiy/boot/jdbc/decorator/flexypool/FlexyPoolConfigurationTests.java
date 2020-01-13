@@ -43,7 +43,7 @@ import java.sql.Connection;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class FlexyPoolConfigurationTests {
 

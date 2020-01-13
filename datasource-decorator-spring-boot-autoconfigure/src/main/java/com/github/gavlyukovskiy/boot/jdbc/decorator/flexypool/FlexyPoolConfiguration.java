@@ -28,6 +28,7 @@ import com.vladmihalcea.flexypool.connection.ConnectionProxyFactory;
 import com.vladmihalcea.flexypool.event.Event;
 import com.vladmihalcea.flexypool.event.EventListener;
 import com.vladmihalcea.flexypool.metric.MetricsFactory;
+import com.vladmihalcea.flexypool.metric.micrometer.MicrometerMetrics;
 import com.vladmihalcea.flexypool.strategy.ConnectionAcquiringStrategyFactory;
 import com.vladmihalcea.flexypool.strategy.IncrementPoolOnTimeoutConnectionAcquiringStrategy;
 import com.vladmihalcea.flexypool.strategy.RetryConnectionAcquiringStrategy;
@@ -51,7 +52,6 @@ import org.springframework.core.type.AnnotatedTypeMetadata;
 
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -111,7 +111,7 @@ public class FlexyPoolConfiguration {
 
         @Autowired
         private DataSourceDecoratorProperties dataSourceDecoratorProperties;
-        @Autowired(required = false)
+        @Autowired
         private MetricsFactory metricsFactory;
         @Autowired(required = false)
         private ConnectionProxyFactory connectionProxyFactory;
@@ -127,9 +127,7 @@ public class FlexyPoolConfiguration {
                 builder.setJmxAutoStart(flexyPool.getMetrics().getReporter().getJmx().isAutoStart());
                 builder.setConnectionAcquireTimeThresholdMillis(flexyPool.getThreshold().getConnection().getAcquire());
                 builder.setConnectionLeaseTimeThresholdMillis(flexyPool.getThreshold().getConnection().getLease());
-                if (metricsFactory != null) {
-                    builder.setMetricsFactory(metricsFactory);
-                }
+                builder.setMetricsFactory(metricsFactory);
                 if (connectionProxyFactory != null) {
                     builder.setConnectionProxyFactory(connectionProxyFactory);
                 }
@@ -137,6 +135,13 @@ public class FlexyPoolConfiguration {
                     builder.setEventListenerResolver(() -> eventListeners);
                 }
             };
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        @ConditionalOnClass(MicrometerMetrics.class)
+        public MetricsFactory metricsFactory() {
+            return MicrometerMetrics.FACTORY;
         }
     }
 

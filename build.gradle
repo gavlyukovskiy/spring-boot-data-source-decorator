@@ -11,11 +11,11 @@ plugins {
 
 subprojects {
     ext {
-        springBootVersion = '2.1.6.RELEASE'
-        p6SpyVersion = '3.8.2'
+        springBootVersion = '2.2.2.RELEASE'
+        p6SpyVersion = '3.8.7'
         datasourceProxyVersion = '1.5.1'
-        flexyPoolVersion = '2.1.2'
-        sleuthVersion = '2.1.2.RELEASE'
+        flexyPoolVersion = '2.2.1'
+        sleuthVersion = '2.2.1.RELEASE'
 
         release = [
                 'datasource-decorator-spring-boot-autoconfigure',

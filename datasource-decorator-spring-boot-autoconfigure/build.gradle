@@ -20,6 +20,7 @@ dependencies {
     compileOnly("com.vladmihalcea.flexy-pool:flexy-dbcp2:${flexyPoolVersion}")
     compileOnly("com.vladmihalcea.flexy-pool:flexy-hikaricp:${flexyPoolVersion}")
     compileOnly("com.vladmihalcea.flexy-pool:flexy-tomcatcp:${flexyPoolVersion}")
+    compileOnly("com.vladmihalcea.flexy-pool:flexy-micrometer-metrics:${flexyPoolVersion}")
 
     compileOnly("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}")
     compileOnly("org.springframework.cloud:spring-cloud-sleuth-core:${sleuthVersion}")

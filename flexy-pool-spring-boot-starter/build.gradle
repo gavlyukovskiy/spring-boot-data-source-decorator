@@ -1,5 +1,8 @@
 dependencies {
     compile(project(":datasource-decorator-spring-boot-autoconfigure"))
     compile("com.vladmihalcea.flexy-pool:flexy-pool-core:${flexyPoolVersion}")
-    compile("com.vladmihalcea.flexy-pool:flexy-hikaricp:${flexyPoolVersion}")
+    compile("com.vladmihalcea.flexy-pool:flexy-hikaricp:${flexyPoolVersion}") {
+        exclude(group: "com.vladmihalcea.flexy-pool", module: "flexy-dropwizard-metrics")
+    }
+    compile("com.vladmihalcea.flexy-pool:flexy-micrometer-metrics:${flexyPoolVersion}")
 }
