@@ -31,6 +31,8 @@ import net.ttddyy.dsproxy.listener.logging.SLF4JQueryLoggingListener;
 import net.ttddyy.dsproxy.listener.logging.SLF4JSlowQueryListener;
 import net.ttddyy.dsproxy.listener.logging.SystemOutQueryLoggingListener;
 import net.ttddyy.dsproxy.listener.logging.SystemOutSlowQueryListener;
+import net.ttddyy.dsproxy.proxy.DefaultConnectionIdManager;
+import net.ttddyy.dsproxy.proxy.GlobalConnectionIdManager;
 import net.ttddyy.dsproxy.support.ProxyDataSource;
 import net.ttddyy.dsproxy.transform.ParameterTransformer;
 import net.ttddyy.dsproxy.transform.QueryTransformer;
@@ -43,7 +45,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
-
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -126,7 +127,7 @@ class ProxyDataSourceConfigurationTests {
 
     @Test
     void testCustomParameterAndQueryTransformer() {
-        ApplicationContextRunner contextRunner = this.contextRunner.withUserConfiguration(CustomParameterAndQueryTransformerConfiguration.class);
+        ApplicationContextRunner contextRunner = this.contextRunner.withUserConfiguration(CustomDataSourceProxyConfiguration.class);
 
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
@@ -152,8 +153,30 @@ class ProxyDataSourceConfigurationTests {
         });
     }
 
+    @Test
+    void testGlobalConnectionIdManagerByDefault() {
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
+
+            assertThat(proxyDataSource.getConnectionIdManager()).isInstanceOf(GlobalConnectionIdManager.class);
+        });
+    }
+
+    @Test
+    void testCustomConnectionIdManager() {
+        ApplicationContextRunner contextRunner = this.contextRunner.withUserConfiguration(CustomDataSourceProxyConfiguration.class);
+
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
+
+            assertThat(proxyDataSource.getConnectionIdManager()).isInstanceOf(DefaultConnectionIdManager.class);
+        });
+    }
+
     @Configuration
-    static class CustomParameterAndQueryTransformerConfiguration {
+    static class CustomDataSourceProxyConfiguration {
 
         @Bean
         public ParameterTransformer parameterTransformer() {
@@ -163,6 +186,11 @@ class ProxyDataSourceConfigurationTests {
         @Bean
         public QueryTransformer queryTransformer() {
             return (transformInfo) -> "TestQuery";
+        }
+
+        @Bean
+        public ConnectionIdManagerProvider connectionIdManagerProvider() {
+            return DefaultConnectionIdManager::new;
         }
     }
 

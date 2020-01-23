@@ -17,6 +17,7 @@
 package com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy;
 
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecorator;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorProperties;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceNameResolver;
 import net.ttddyy.dsproxy.support.ProxyDataSource;
 import net.ttddyy.dsproxy.support.ProxyDataSourceBuilder;
@@ -31,16 +32,25 @@ import javax.sql.DataSource;
  */
 public class ProxyDataSourceDecorator implements DataSourceDecorator, Ordered {
 
-    private final ProxyDataSourceBuilder proxyDataSourceBuilder;
+    private final DataSourceDecoratorProperties dataSourceDecoratorProperties;
+    private final ProxyDataSourceBuilderConfigurer proxyDataSourceBuilderConfigurer;
     private final DataSourceNameResolver dataSourceNameResolver;
 
-    ProxyDataSourceDecorator(ProxyDataSourceBuilder proxyDataSourceBuilder, DataSourceNameResolver dataSourceNameResolver) {
-        this.proxyDataSourceBuilder = proxyDataSourceBuilder;
+    ProxyDataSourceDecorator(
+            DataSourceDecoratorProperties dataSourceDecoratorProperties,
+            ProxyDataSourceBuilderConfigurer proxyDataSourceBuilderConfigurer,
+            DataSourceNameResolver dataSourceNameResolver
+    ) {
+        this.dataSourceDecoratorProperties = dataSourceDecoratorProperties;
+        this.proxyDataSourceBuilderConfigurer = proxyDataSourceBuilderConfigurer;
         this.dataSourceNameResolver = dataSourceNameResolver;
     }
 
     @Override
     public DataSource decorate(String beanName, DataSource dataSource) {
+        ProxyDataSourceBuilder proxyDataSourceBuilder = ProxyDataSourceBuilder.create();
+        DataSourceProxyProperties datasourceProxy = dataSourceDecoratorProperties.getDatasourceProxy();
+        proxyDataSourceBuilderConfigurer.configure(proxyDataSourceBuilder, datasourceProxy);
         String dataSourceName = dataSourceNameResolver.resolveDataSourceName(dataSource);
         return proxyDataSourceBuilder.dataSource(dataSource).name(dataSourceName).build();
     }

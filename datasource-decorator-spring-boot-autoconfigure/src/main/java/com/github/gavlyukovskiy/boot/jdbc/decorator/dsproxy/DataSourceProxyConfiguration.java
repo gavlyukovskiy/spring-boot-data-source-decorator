@@ -21,8 +21,8 @@ import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceNameResolver;
 import net.ttddyy.dsproxy.listener.QueryCountStrategy;
 import net.ttddyy.dsproxy.listener.QueryExecutionListener;
 import net.ttddyy.dsproxy.listener.SingleQueryCountHolder;
+import net.ttddyy.dsproxy.proxy.GlobalConnectionIdManager;
 import net.ttddyy.dsproxy.support.ProxyDataSource;
-import net.ttddyy.dsproxy.support.ProxyDataSourceBuilder;
 import net.ttddyy.dsproxy.transform.ParameterTransformer;
 import net.ttddyy.dsproxy.transform.QueryTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,11 +45,8 @@ public class DataSourceProxyConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public ProxyDataSourceBuilder proxyDataSourceBuilder(ProxyDataSourceBuilderConfigurer proxyDataSourceBuilderConfigurer) {
-        ProxyDataSourceBuilder proxyDataSourceBuilder = ProxyDataSourceBuilder.create();
-        DataSourceProxyProperties datasourceProxy = dataSourceDecoratorProperties.getDatasourceProxy();
-        proxyDataSourceBuilderConfigurer.configure(proxyDataSourceBuilder, datasourceProxy);
-        return proxyDataSourceBuilder;
+    public ConnectionIdManagerProvider connectionIdManagerProvider() {
+        return GlobalConnectionIdManager::new;
     }
 
     @Bean
@@ -58,8 +55,8 @@ public class DataSourceProxyConfiguration {
     }
 
     @Bean
-    public ProxyDataSourceDecorator proxyDataSourceDecorator(ProxyDataSourceBuilder proxyDataSourceBuilder, DataSourceNameResolver dataSourceNameResolver) {
-        return new ProxyDataSourceDecorator(proxyDataSourceBuilder, dataSourceNameResolver);
+    public ProxyDataSourceDecorator proxyDataSourceDecorator(ProxyDataSourceBuilderConfigurer proxyDataSourceBuilderConfigurer, DataSourceNameResolver dataSourceNameResolver) {
+        return new ProxyDataSourceDecorator(dataSourceDecoratorProperties, proxyDataSourceBuilderConfigurer, dataSourceNameResolver);
     }
 
     @Bean

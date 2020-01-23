@@ -65,6 +65,9 @@ public class ProxyDataSourceBuilderConfigurer {
     @Autowired(required = false)
     private ResultSetProxyLogicFactory resultSetProxyLogicFactory;
 
+    @Autowired(required = false)
+    private ConnectionIdManagerProvider connectionIdManagerProvider;
+
     public void configure(ProxyDataSourceBuilder proxyDataSourceBuilder, DataSourceProxyProperties datasourceProxy) {
         switch (datasourceProxy.getLogging()) {
             case SLF4J: {
@@ -133,6 +136,9 @@ public class ProxyDataSourceBuilderConfigurer {
         }
         if (resultSetProxyLogicFactory != null) {
             proxyDataSourceBuilder.proxyResultSet(resultSetProxyLogicFactory);
+        }
+        if (connectionIdManagerProvider != null) {
+            proxyDataSourceBuilder.connectionIdManager(connectionIdManagerProvider.get());
         }
     }
 

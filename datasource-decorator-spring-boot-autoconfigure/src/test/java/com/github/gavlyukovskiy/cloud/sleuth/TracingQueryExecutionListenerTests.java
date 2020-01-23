@@ -19,6 +19,10 @@ package com.github.gavlyukovskiy.cloud.sleuth;
 
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorAutoConfiguration;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.HidePackagesClassLoader;
+import com.zaxxer.hikari.HikariDataSource;
+import net.ttddyy.dsproxy.ExecutionInfo;
+import net.ttddyy.dsproxy.QueryInfo;
+import net.ttddyy.dsproxy.listener.QueryExecutionListener;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
@@ -27,6 +31,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.cloud.sleuth.log.SleuthLogAutoConfiguration;
 import org.springframework.cloud.sleuth.util.ArrayListSpanReporter;
+import org.springframework.context.annotation.Bean;
 import zipkin2.Span;
 
 import javax.sql.DataSource;
@@ -36,7 +41,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -607,5 +614,82 @@ class TracingQueryExecutionListenerTests {
             assertThat(resultSetSpan.name()).isEqualTo("jdbc:/test/fetch");
             assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, "SELECT NOW()");
         });
+    }
+
+    @Test
+    void testShouldNotFailWhenClosingConnectionFromDifferentDataSource() {
+        ApplicationContextRunner contextRunner = this.contextRunner.withUserConfiguration(MultiDataSourceConfiguration.class);
+
+        contextRunner.run(context -> {
+            DataSource dataSource1 = context.getBean("test1", DataSource.class);
+            DataSource dataSource2 = context.getBean("test2", DataSource.class);
+            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+
+            dataSource1.getConnection().close();
+            dataSource2.getConnection().close();
+
+            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                try {
+                    Connection connection1 = dataSource1.getConnection();
+                    PreparedStatement statement = connection1.prepareStatement("SELECT NOW()");
+                    statement.executeQuery().close();
+                    statement.close();
+                    connection1.close();
+                } catch (SQLException e) {
+                    throw new IllegalStateException(e);
+                }
+            });
+            Thread.sleep(100);
+            Connection connection2 = dataSource2.getConnection();
+            Thread.sleep(300);
+            connection2.close();
+
+            future.join();
+
+            /*assertThat(spanReporter.getSpans()).hasSize(3);
+            Span connection2Span = spanReporter.getSpans().get(0);
+            Span connection1Span = spanReporter.getSpans().get(1);
+            assertThat(connection2Span.name()).isEqualTo("jdbc:/test2/connection");
+            assertThat(connection1Span.name()).isEqualTo("jdbc:/test1/connection");*/
+        });
+    }
+
+    private static class MultiDataSourceConfiguration {
+        @Bean
+        public HikariDataSource test1() {
+            HikariDataSource dataSource = new HikariDataSource();
+            dataSource.setJdbcUrl("jdbc:h2:mem:testdb-1-" + ThreadLocalRandom.current().nextInt());
+            dataSource.setPoolName("test1");
+            return dataSource;
+        }
+
+        @Bean
+        public HikariDataSource test2() {
+            HikariDataSource dataSource = new HikariDataSource();
+            dataSource.setJdbcUrl("jdbc:h2:mem:testdb-2-" + ThreadLocalRandom.current().nextInt());
+            dataSource.setPoolName("test2");
+            return dataSource;
+        }
+
+        @Bean
+        public QueryExecutionListener slowListener() {
+            return new QueryExecutionListener() {
+                @Override
+                public void beforeQuery(ExecutionInfo execInfo, List<QueryInfo> queryInfoList) {
+                    // emulating long query
+                    if (execInfo.getDataSourceName().equals("test1")) {
+                        try {
+                            Thread.sleep(200);
+                        } catch (InterruptedException e) {
+                            throw new IllegalStateException();
+                        }
+                    }
+                }
+
+                @Override
+                public void afterQuery(ExecutionInfo execInfo, List<QueryInfo> queryInfoList) {
+                }
+            };
+        }
     }
 }

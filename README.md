@@ -143,7 +143,7 @@ Query:["SELECT SLEEP(301000)"]
 Params:[]
 ```
 
-All beans of type `QueryExecutionListener` are registered in `ProxyDataSourceBuilder`, as well you can use Spring Context for `ParameterTransformer` and `QueryTransformer`.:
+You can add custom `QueryExecutionListener` by registering them in the context, as well you can override `ParameterTransformer`, `QueryTransformer` and `ConnectionIdManager`:
 ```java
 @Bean
 public QueryExecutionListener queryExecutionListener() {
@@ -168,6 +168,11 @@ public ParameterTransformer parameterTransformer() {
 @Bean
 public QueryTransformer queryTransformer() {
     return new MyQueryTransformer();
+}
+
+@Bean
+public ConnectionIdManagerProvider connectionIdManagerProvider() {
+    return MyConnectionIdManager::new;
 }
 ```
 You can configure logging, query/slow query listeners and more using your `application.properties`:
