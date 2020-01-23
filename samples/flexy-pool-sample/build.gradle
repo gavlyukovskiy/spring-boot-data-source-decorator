@@ -35,3 +35,7 @@ bootRun {
         project.findProperty('args').split(" ").each { args += it }
     }
 }
+
+test {
+    useJUnitPlatform()
+}

@@ -97,6 +97,7 @@ public class FlexyPoolConfiguration {
 
     @ConditionalOnClass(FlexyPoolDataSource.class)
     @Import({
+            MicrometerConfiguration.class,
             PropertyFlexyConfiguration.class,
             HikariFlexyConfiguration.class,
             TomcatFlexyConfiguration.class,
@@ -111,7 +112,7 @@ public class FlexyPoolConfiguration {
 
         @Autowired
         private DataSourceDecoratorProperties dataSourceDecoratorProperties;
-        @Autowired
+        @Autowired(required = false)
         private MetricsFactory metricsFactory;
         @Autowired(required = false)
         private ConnectionProxyFactory connectionProxyFactory;
@@ -127,7 +128,9 @@ public class FlexyPoolConfiguration {
                 builder.setJmxAutoStart(flexyPool.getMetrics().getReporter().getJmx().isAutoStart());
                 builder.setConnectionAcquireTimeThresholdMillis(flexyPool.getThreshold().getConnection().getAcquire());
                 builder.setConnectionLeaseTimeThresholdMillis(flexyPool.getThreshold().getConnection().getLease());
-                builder.setMetricsFactory(metricsFactory);
+                if (metricsFactory != null) {
+                    builder.setMetricsFactory(metricsFactory);
+                }
                 if (connectionProxyFactory != null) {
                     builder.setConnectionProxyFactory(connectionProxyFactory);
                 }
@@ -135,13 +138,6 @@ public class FlexyPoolConfiguration {
                     builder.setEventListenerResolver(() -> eventListeners);
                 }
             };
-        }
-
-        @Bean
-        @ConditionalOnMissingBean
-        @ConditionalOnClass(MicrometerMetrics.class)
-        public MetricsFactory metricsFactory() {
-            return MicrometerMetrics.FACTORY;
         }
     }
 
@@ -223,6 +219,17 @@ public class FlexyPoolConfiguration {
         @Bean
         public FlexyPoolDataSourceDecorator flexyPoolDataSourceDecorator() {
             return new FlexyPoolDataSourceDecorator();
+        }
+    }
+
+    @Configuration
+    @ConditionalOnClass(MicrometerMetrics.class)
+    static class MicrometerConfiguration {
+
+        @Bean
+        @ConditionalOnMissingBean
+        public MetricsFactory metricsFactory() {
+            return MicrometerMetrics.FACTORY;
         }
     }
 

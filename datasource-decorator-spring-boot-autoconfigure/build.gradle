@@ -39,6 +39,7 @@ dependencies {
     testCompile("com.vladmihalcea.flexy-pool:flexy-dbcp2:${flexyPoolVersion}")
     testCompile("com.vladmihalcea.flexy-pool:flexy-hikaricp:${flexyPoolVersion}")
     testCompile("com.vladmihalcea.flexy-pool:flexy-tomcatcp:${flexyPoolVersion}")
+    testCompile("com.vladmihalcea.flexy-pool:flexy-micrometer-metrics:${flexyPoolVersion}")
 
     testCompile("org.springframework.cloud:spring-cloud-sleuth-core:${sleuthVersion}")
 
@@ -58,3 +59,7 @@ gradle.projectsEvaluated {
 }
 
 compileJava.dependsOn(processResources)
+
+test {
+    useJUnitPlatform()
+}

@@ -40,6 +40,7 @@ import javax.sql.DataSource;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -86,6 +87,7 @@ class FlexyPoolConfigurationTests {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void testDecoratingHikariDataSourceWithDefaultStrategies() {
         ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("spring.datasource.type:" + HikariDataSource.class.getName());
 
@@ -93,13 +95,13 @@ class FlexyPoolConfigurationTests {
             DataSource dataSource = context.getBean(DataSource.class);
             assertDataSourceOfType(dataSource, HikariDataSource.class);
             FlexyPoolDataSource<HikariDataSource> flexyPoolDataSource = assertDataSourceOfType(dataSource, HikariDataSource.class);
-            IncrementPoolOnTimeoutConnectionAcquiringStrategy strategy1 =
+            IncrementPoolOnTimeoutConnectionAcquiringStrategy<HikariDataSource> strategy1 =
                     findStrategy(flexyPoolDataSource, IncrementPoolOnTimeoutConnectionAcquiringStrategy.class);
             assertThat(strategy1).isNotNull();
             assertThat(strategy1).hasFieldOrPropertyWithValue("maxOverflowPoolSize", 15);
             assertThat(strategy1).hasFieldOrPropertyWithValue("timeoutMillis", 500);
 
-            RetryConnectionAcquiringStrategy strategy2 =
+            RetryConnectionAcquiringStrategy<HikariDataSource> strategy2 =
                     findStrategy(flexyPoolDataSource, RetryConnectionAcquiringStrategy.class);
             assertThat(strategy2).isNotNull();
             assertThat(strategy2).hasFieldOrPropertyWithValue("retryAttempts", 2);
@@ -107,6 +109,7 @@ class FlexyPoolConfigurationTests {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void testDecoratingHikariDataSourceWithCustomPropertyStrategies() {
         ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("spring.datasource.type:" + HikariDataSource.class.getName(),
                 "decorator.datasource.flexy-pool.acquiring-strategy.increment-pool.max-overflow-pool-size:15",
@@ -117,13 +120,13 @@ class FlexyPoolConfigurationTests {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
             FlexyPoolDataSource<HikariDataSource> flexyPoolDataSource = assertDataSourceOfType(dataSource, HikariDataSource.class);
-            IncrementPoolOnTimeoutConnectionAcquiringStrategy strategy1 =
+            IncrementPoolOnTimeoutConnectionAcquiringStrategy<HikariDataSource> strategy1 =
                     findStrategy(flexyPoolDataSource, IncrementPoolOnTimeoutConnectionAcquiringStrategy.class);
             assertThat(strategy1).isNotNull();
             assertThat(strategy1).hasFieldOrPropertyWithValue("maxOverflowPoolSize", 35);
             assertThat(strategy1).hasFieldOrPropertyWithValue("timeoutMillis", 10000);
 
-            RetryConnectionAcquiringStrategy strategy2 =
+            RetryConnectionAcquiringStrategy<HikariDataSource> strategy2 =
                     findStrategy(flexyPoolDataSource, RetryConnectionAcquiringStrategy.class);
             assertThat(strategy2).isNotNull();
             assertThat(strategy2).hasFieldOrPropertyWithValue("retryAttempts", 5);
@@ -131,6 +134,7 @@ class FlexyPoolConfigurationTests {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void testDecoratingHikariDataSourceWithCustomBeanStrategies() {
         ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("spring.datasource.type:" + HikariDataSource.class.getName())
                 .withConfiguration(AutoConfigurations.of(HikariConfiguration.class));
@@ -138,13 +142,13 @@ class FlexyPoolConfigurationTests {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
             FlexyPoolDataSource<HikariDataSource> flexyPoolDataSource = assertDataSourceOfType(dataSource, HikariDataSource.class);
-            IncrementPoolOnTimeoutConnectionAcquiringStrategy strategy1 =
+            IncrementPoolOnTimeoutConnectionAcquiringStrategy<HikariDataSource> strategy1 =
                     findStrategy(flexyPoolDataSource, IncrementPoolOnTimeoutConnectionAcquiringStrategy.class);
             assertThat(strategy1).isNotNull();
             assertThat(strategy1).hasFieldOrPropertyWithValue("maxOverflowPoolSize", 35);
             assertThat(strategy1).hasFieldOrPropertyWithValue("timeoutMillis", 10000);
 
-            RetryConnectionAcquiringStrategy strategy2 =
+            RetryConnectionAcquiringStrategy<HikariDataSource> strategy2 =
                     findStrategy(flexyPoolDataSource, RetryConnectionAcquiringStrategy.class);
             assertThat(strategy2).isNotNull();
             assertThat(strategy2).hasFieldOrPropertyWithValue("retryAttempts", 5);
@@ -164,10 +168,7 @@ class FlexyPoolConfigurationTests {
         assertThat(dataSource).isInstanceOf(DecoratedDataSource.class);
         DataSource decoratedDataSource = ((DecoratedDataSource) dataSource).getDecoratedDataSource();
         assertThat(decoratedDataSource).isInstanceOf(FlexyPoolDataSource.class);
-        Field field = ReflectionUtils.findField(FlexyPoolDataSource.class, "targetDataSource");
-        ReflectionUtils.makeAccessible(field);
-        Object targetDataSource = ReflectionUtils.getField(field, decoratedDataSource);
-        assertThat(targetDataSource).isInstanceOf(realDataSourceClass);
+        assertThat(decoratedDataSource).extracting("targetDataSource").isInstanceOf(realDataSourceClass);
         return (FlexyPoolDataSource<T>) decoratedDataSource;
     }
 
@@ -175,9 +176,11 @@ class FlexyPoolConfigurationTests {
     private <T extends ConnectionAcquiringStrategy> T findStrategy(FlexyPoolDataSource<?> flexyPoolDataSource,
             Class<T> factoryClass) {
         Field field = ReflectionUtils.findField(FlexyPoolDataSource.class, "connectionAcquiringStrategies");
+        Objects.requireNonNull(field);
         ReflectionUtils.makeAccessible(field);
         Set<ConnectionAcquiringStrategy> strategies =
                 (Set<ConnectionAcquiringStrategy>) ReflectionUtils.getField(field, flexyPoolDataSource);
+        Objects.requireNonNull(strategies);
         return (T) strategies.stream().filter(factoryClass::isInstance).findFirst().orElse(null);
     }
 
