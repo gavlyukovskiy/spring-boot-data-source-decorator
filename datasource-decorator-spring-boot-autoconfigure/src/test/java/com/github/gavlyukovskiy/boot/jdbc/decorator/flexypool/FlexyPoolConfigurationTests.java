@@ -21,6 +21,7 @@ import com.github.gavlyukovskiy.boot.jdbc.decorator.DecoratedDataSource;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.HidePackagesClassLoader;
 import com.vladmihalcea.flexypool.FlexyPoolDataSource;
 import com.vladmihalcea.flexypool.connection.ConnectionRequestContext;
+import com.vladmihalcea.flexypool.metric.micrometer.MicrometerMetrics;
 import com.vladmihalcea.flexypool.strategy.ConnectionAcquiringStrategy;
 import com.vladmihalcea.flexypool.strategy.ConnectionAcquiringStrategyFactory;
 import com.vladmihalcea.flexypool.strategy.IncrementPoolOnTimeoutConnectionAcquiringStrategy;
@@ -160,6 +161,14 @@ class FlexyPoolConfigurationTests {
             Dbcp2ConnectionAcquiringFactory strategy4 =
                     findStrategy(flexyPoolDataSource, Dbcp2ConnectionAcquiringFactory.class);
             assertThat(strategy4).isNull();
+        });
+    }
+    @Test
+    void testSettingMicrometerMetricsFactoryByDefault() {
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            FlexyPoolDataSource<HikariDataSource> flexyPoolDataSource = assertDataSourceOfType(dataSource, HikariDataSource.class);
+            assertThat(flexyPoolDataSource).extracting("metrics").isInstanceOf(MicrometerMetrics.class);
         });
     }
 
