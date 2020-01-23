@@ -19,10 +19,12 @@ package com.github.gavlyukovskiy.cloud.sleuth;
 
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorAutoConfiguration;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.HidePackagesClassLoader;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy.ConnectionIdManagerProvider;
 import com.zaxxer.hikari.HikariDataSource;
 import net.ttddyy.dsproxy.ExecutionInfo;
 import net.ttddyy.dsproxy.QueryInfo;
 import net.ttddyy.dsproxy.listener.QueryExecutionListener;
+import net.ttddyy.dsproxy.proxy.DefaultConnectionIdManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
@@ -35,7 +37,6 @@ import org.springframework.context.annotation.Bean;
 import zipkin2.Span;
 
 import javax.sql.DataSource;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -645,12 +646,6 @@ class TracingQueryExecutionListenerTests {
             connection2.close();
 
             future.join();
-
-            /*assertThat(spanReporter.getSpans()).hasSize(3);
-            Span connection2Span = spanReporter.getSpans().get(0);
-            Span connection1Span = spanReporter.getSpans().get(1);
-            assertThat(connection2Span.name()).isEqualTo("jdbc:/test2/connection");
-            assertThat(connection1Span.name()).isEqualTo("jdbc:/test1/connection");*/
         });
     }
 
