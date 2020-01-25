@@ -11,9 +11,39 @@ plugins {
     id("pl.allegro.tech.build.axion-release").version("1.10.3")
 }
 
-allprojects {
+scmVersion {
+    with(tag) {
+        prefix = ""
+        versionSeparator = ""
+    }
+}
+
+group = "com.github.gavlyukovskiy"
+version = scmVersion.version
+
+tasks {
+    val releaseCheck by registering {
+        doLast {
+            val errors = ArrayList<String>()
+            if (!project.hasProperty("release.version"))
+                errors.add("'-Prelease.version' must be set")
+            if (!project.hasProperty("release.customUsername"))
+                errors.add("'-Prelease.customUsername' must be set")
+            if (!project.hasProperty("release.customPassword"))
+                errors.add("'-Prelease.customPassword' must be set")
+            if (!errors.isEmpty()) {
+                throw IllegalStateException(errors.joinToString("\n"))
+            }
+        }
+    }
+
+    verifyRelease {
+        dependsOn(releaseCheck)
+    }
+}
+
+subprojects {
     apply(plugin = "java")
-    apply(plugin = "pl.allegro.tech.build.axion-release")
 
     extra["springBootVersion"] = "2.2.2.RELEASE"
     extra["p6SpyVersion"] = "3.8.7"
@@ -28,42 +58,13 @@ allprojects {
             "p6spy-spring-boot-starter"
     ).contains(project.name)
 
-    scmVersion {
-        with(tag) {
-            prefix = ""
-            versionSeparator = ""
-        }
-    }
-
     java.sourceCompatibility = JavaVersion.VERSION_1_8
 
-    group = "com.github.gavlyukovskiy"
-    version = scmVersion.version
+    group = rootProject.group
+    version = rootProject.version
 
     repositories {
         mavenCentral()
-    }
-
-    tasks {
-        val releaseCheck by registering {
-            doLast {
-                val errors = ArrayList<String>()
-                if (!project.hasProperty("release.version"))
-                    errors.add("'-Prelease.version' must be set")
-                if (!project.hasProperty("release.customUsername"))
-                    errors.add("'-Prelease.customUsername' must be set")
-                if (!project.hasProperty("release.customPassword"))
-                    errors.add("'-Prelease.customPassword' must be set")
-                if (!errors.isEmpty()) {
-                    throw IllegalStateException(errors.joinToString("\n"))
-                }
-            }
-        }
-
-        verifyRelease {
-            dependsOn(build)
-            finalizedBy(releaseCheck)
-        }
     }
 
     if (extra["release"] as Boolean) {
@@ -158,8 +159,8 @@ allprojects {
                 setLicenses("Apache-2.0")
                 publicDownloadNumbers = true
                 with(version) {
-                    name = scmVersion.version
-                    vcsTag = scmVersion.tag.prefix + scmVersion.tag.versionSeparator + scmVersion.version
+                    name = project.version.toString()
+                    vcsTag = project.version.toString()
                     with(gpg) {
                         sign = true
                         passphrase = (project.properties["release.gpg_passphrase"] ?: System.getenv("GPG_PASSPHRASE"))?.toString()
