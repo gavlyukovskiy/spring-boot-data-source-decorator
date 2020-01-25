@@ -5,10 +5,10 @@ buildscript {
 }
 
 plugins {
-    id("com.jfrog.bintray").version("1.8.4")
-    id("pl.allegro.tech.build.axion-release").version("1.10.2")
     java
     `maven-publish`
+    id("com.jfrog.bintray").version("1.8.4")
+    id("pl.allegro.tech.build.axion-release").version("1.11.0")
 }
 
 subprojects {
@@ -50,35 +50,39 @@ subprojects {
 
         tasks {
             val releaseCheck by registering {
-                val errors = ArrayList<String>()
-                if (!project.hasProperty("release.version"))
-                    errors.add("'-Prelease.version' must be set")
-                if (!project.hasProperty("release.customUsername"))
-                    errors.add("'-Prelease.customUsername' must be set")
-                if (!project.hasProperty("release.customPassword"))
-                    errors.add("'-Prelease.customPassword' must be set")
-                if (!errors.isEmpty()) {
-                    throw IllegalStateException(errors.joinToString("\n"))
+                doLast {
+                    val errors = ArrayList<String>()
+                    if (!project.hasProperty("release.version"))
+                        errors.add("'-Prelease.version' must be set")
+                    if (!project.hasProperty("release.customUsername"))
+                        errors.add("'-Prelease.customUsername' must be set")
+                    if (!project.hasProperty("release.customPassword"))
+                        errors.add("'-Prelease.customPassword' must be set")
+                    if (!errors.isEmpty()) {
+                        throw IllegalStateException(errors.joinToString("\n"))
+                    }
                 }
             }
 
             val bintrayUploadCheck by registering {
-                val errors = ArrayList<String>()
-                if ((project.version as String).contains("SNAPSHOT")) {
-                    errors.add("Cannot release SNAPSHOT version")
-                }
-                if (System.getenv("BINTRAY_USER") == null && !project.hasProperty("release.bintray_user"))
-                    errors.add("'BINTRAY_USER' or '-Prelease.bintray_user' must be set")
-                if (System.getenv("BINTRAY_KEY") == null && !project.hasProperty("release.bintray_key"))
-                    errors.add("'BINTRAY_KEY' or '-Prelease.bintray_key' must be set")
-                if (System.getenv("GPG_PASSPHRASE") == null && !project.hasProperty("release.gpg_passphrase"))
-                    errors.add("'GPG_PASSPHRASE' or '-Prelease.gpg_passphrase' must be set")
-                if (System.getenv("SONATYPE_USER") == null && !project.hasProperty("release.sonatype_user"))
-                    errors.add("'SONATYPE_USER' or '-Prelease.sonatype_user' must be set")
-                if (System.getenv("SONATYPE_PASSWORD") == null && !project.hasProperty("release.sonatype_password"))
-                    errors.add("'SONATYPE_PASSWORD' or '-Prelease.sonatype_password' must be set")
-                if (!errors.isEmpty()) {
-                    throw IllegalStateException(errors.joinToString("\n"))
+                doLast {
+                    val errors = ArrayList<String>()
+                    if ((project.version as String).contains("SNAPSHOT")) {
+                        errors.add("Cannot release SNAPSHOT version")
+                    }
+                    if (System.getenv("BINTRAY_USER") == null && !project.hasProperty("release.bintray_user"))
+                        errors.add("'BINTRAY_USER' or '-Prelease.bintray_user' must be set")
+                    if (System.getenv("BINTRAY_KEY") == null && !project.hasProperty("release.bintray_key"))
+                        errors.add("'BINTRAY_KEY' or '-Prelease.bintray_key' must be set")
+                    if (System.getenv("GPG_PASSPHRASE") == null && !project.hasProperty("release.gpg_passphrase"))
+                        errors.add("'GPG_PASSPHRASE' or '-Prelease.gpg_passphrase' must be set")
+                    if (System.getenv("SONATYPE_USER") == null && !project.hasProperty("release.sonatype_user"))
+                        errors.add("'SONATYPE_USER' or '-Prelease.sonatype_user' must be set")
+                    if (System.getenv("SONATYPE_PASSWORD") == null && !project.hasProperty("release.sonatype_password"))
+                        errors.add("'SONATYPE_PASSWORD' or '-Prelease.sonatype_password' must be set")
+                    if (!errors.isEmpty()) {
+                        throw IllegalStateException(errors.joinToString("\n"))
+                    }
                 }
             }
 

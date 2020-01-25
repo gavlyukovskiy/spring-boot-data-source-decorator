@@ -25,7 +25,7 @@ Then add one of the starters to the classpath of a Spring Boot application and y
 
 If you want to use [P6Spy](https://github.com/p6spy/p6spy)
 ```groovy
-compile('com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.5.8')
+implementation('com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.5.8')
 ```
 ```xml
 <dependency>
@@ -37,7 +37,7 @@ compile('com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.5.8')
 
 or [Datasource Proxy](https://github.com/ttddyy/datasource-proxy):
 ```groovy
-compile('com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.5.8')
+implementation('com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.5.8')
 ```
 ```xml
 <dependency>
@@ -49,7 +49,7 @@ compile('com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.5.8')
 
 or [FlexyPool](https://github.com/vladmihalcea/flexy-pool)
 ```groovy
-compile('com.github.gavlyukovskiy:flexy-pool-spring-boot-starter:1.5.8')
+implementation('com.github.gavlyukovskiy:flexy-pool-spring-boot-starter:1.5.8')
 ```
 ```xml
 <dependency>
