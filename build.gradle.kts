@@ -11,7 +11,7 @@ plugins {
     id("pl.allegro.tech.build.axion-release").version("1.10.3")
 }
 
-subprojects {
+allprojects {
     apply(plugin = "java")
     apply(plugin = "pl.allegro.tech.build.axion-release")
 
@@ -44,26 +44,32 @@ subprojects {
         mavenCentral()
     }
 
+    tasks {
+        val releaseCheck by registering {
+            doLast {
+                val errors = ArrayList<String>()
+                if (!project.hasProperty("release.version"))
+                    errors.add("'-Prelease.version' must be set")
+                if (!project.hasProperty("release.customUsername"))
+                    errors.add("'-Prelease.customUsername' must be set")
+                if (!project.hasProperty("release.customPassword"))
+                    errors.add("'-Prelease.customPassword' must be set")
+                if (!errors.isEmpty()) {
+                    throw IllegalStateException(errors.joinToString("\n"))
+                }
+            }
+        }
+
+        verifyRelease {
+            finalizedBy(releaseCheck)
+        }
+    }
+
     if (extra["release"] as Boolean) {
         apply(plugin = "maven-publish")
         apply(plugin = "com.jfrog.bintray")
 
         tasks {
-            val releaseCheck by registering {
-                doLast {
-                    val errors = ArrayList<String>()
-                    if (!project.hasProperty("release.version"))
-                        errors.add("'-Prelease.version' must be set")
-                    if (!project.hasProperty("release.customUsername"))
-                        errors.add("'-Prelease.customUsername' must be set")
-                    if (!project.hasProperty("release.customPassword"))
-                        errors.add("'-Prelease.customPassword' must be set")
-                    if (!errors.isEmpty()) {
-                        throw IllegalStateException(errors.joinToString("\n"))
-                    }
-                }
-            }
-
             val bintrayUploadCheck by registering {
                 doLast {
                     val errors = ArrayList<String>()
@@ -84,10 +90,6 @@ subprojects {
                         throw IllegalStateException(errors.joinToString("\n"))
                     }
                 }
-            }
-
-            verifyRelease {
-                finalizedBy(releaseCheck)
             }
 
             bintrayUpload {
