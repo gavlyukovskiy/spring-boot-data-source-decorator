@@ -21,27 +21,6 @@ scmVersion {
 group = "com.github.gavlyukovskiy"
 version = scmVersion.version
 
-tasks {
-    val releaseCheck by registering {
-        doLast {
-            val errors = ArrayList<String>()
-            if (!project.hasProperty("release.version"))
-                errors.add("'-Prelease.version' must be set")
-            if (!project.hasProperty("release.customUsername"))
-                errors.add("'-Prelease.customUsername' must be set")
-            if (!project.hasProperty("release.customPassword"))
-                errors.add("'-Prelease.customPassword' must be set")
-            if (!errors.isEmpty()) {
-                throw IllegalStateException(errors.joinToString("\n"))
-            }
-        }
-    }
-
-    verifyRelease {
-        dependsOn(releaseCheck)
-    }
-}
-
 subprojects {
     apply(plugin = "java")
 
@@ -173,6 +152,30 @@ subprojects {
                     }
                 }
             }
+        }
+    }
+}
+
+tasks {
+    val releaseCheck by registering {
+        doLast {
+            val errors = ArrayList<String>()
+            if (!project.hasProperty("release.version"))
+                errors.add("'-Prelease.version' must be set")
+            if (!project.hasProperty("release.customUsername"))
+                errors.add("'-Prelease.customUsername' must be set")
+            if (!project.hasProperty("release.customPassword"))
+                errors.add("'-Prelease.customPassword' must be set")
+            if (!errors.isEmpty()) {
+                throw IllegalStateException(errors.joinToString("\n"))
+            }
+        }
+    }
+
+    verifyRelease {
+        dependsOn(releaseCheck)
+        subprojects.forEach {
+            dependsOn(it.tasks.build)
         }
     }
 }
