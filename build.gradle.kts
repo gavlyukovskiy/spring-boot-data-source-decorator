@@ -61,6 +61,7 @@ allprojects {
         }
 
         verifyRelease {
+            dependsOn(build)
             finalizedBy(releaseCheck)
         }
     }
@@ -94,10 +95,6 @@ allprojects {
 
             bintrayUpload {
                 dependsOn(bintrayUploadCheck)
-            }
-
-            verifyRelease {
-                dependsOn(build)
             }
 
             withType<Jar> {
