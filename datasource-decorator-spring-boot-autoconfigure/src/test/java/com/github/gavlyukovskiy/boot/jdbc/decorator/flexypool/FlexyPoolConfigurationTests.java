@@ -163,6 +163,7 @@ class FlexyPoolConfigurationTests {
             assertThat(strategy4).isNull();
         });
     }
+
     @Test
     void testSettingMicrometerMetricsFactoryByDefault() {
         contextRunner.run(context -> {
