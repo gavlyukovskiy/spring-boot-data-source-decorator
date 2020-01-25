@@ -1,5 +1,7 @@
 **Spring Boot DataSource Decorator**
 
+![Build status](https://github.com/gavlyukovskiy/spring-boot-data-source-decorator/workflows/Build/badge.svg)
+
 Spring Boot auto-configuration for integration with
 * [P6Spy](https://github.com/p6spy/p6spy) - adds ability to intercept and log sql queries, including interception of a most `Connection`, `Statement` and `ResultSet` methods invocations
 * [Datasource Proxy](https://github.com/ttddyy/datasource-proxy) - adds ability to intercept all queries and `Connection`, `Statement` and `ResultSet` method calls
@@ -18,44 +20,44 @@ Instead of using the library you can manually wrap your datasource, but using my
 **Quick Start**
 
 First you need to chose correct version:
-* to use with Spring Boot 2.x.x - 1.6.0
+* to use with Spring Boot 2.x.x - 1.6.1
 * to use with Spring Boot 1.x.x - 1.3.5
 
 Then add one of the starters to the classpath of a Spring Boot application and your datasources (auto-configured or custom) will be wrapped into one of a datasource proxy providers below.
 
 If you want to use [P6Spy](https://github.com/p6spy/p6spy)
 ```groovy
-implementation('com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.6.0')
+implementation("com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.6.1")
 ```
 ```xml
 <dependency>
     <groupId>com.github.gavlyukovskiy</groupId>
     <artifactId>p6spy-spring-boot-starter</artifactId>
-    <version>1.6.0</version>
+    <version>1.6.1</version>
 </dependency>
 ```
 
 or [Datasource Proxy](https://github.com/ttddyy/datasource-proxy):
 ```groovy
-implementation('com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.6.0')
+implementation("com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.6.1")
 ```
 ```xml
 <dependency>
     <groupId>com.github.gavlyukovskiy</groupId>
     <artifactId>datasource-proxy-spring-boot-starter</artifactId>
-    <version>1.6.0</version>
+    <version>1.6.1</version>
 </dependency>
 ```
 
 or [FlexyPool](https://github.com/vladmihalcea/flexy-pool)
 ```groovy
-implementation('com.github.gavlyukovskiy:flexy-pool-spring-boot-starter:1.6.0')
+implementation("com.github.gavlyukovskiy:flexy-pool-spring-boot-starter:1.6.1")
 ```
 ```xml
 <dependency>
     <groupId>com.github.gavlyukovskiy</groupId>
     <artifactId>flexy-pool-spring-boot-starter</artifactId>
-    <version>1.6.0</version>
+    <version>1.6.1</version>
 </dependency>
 ```
 
@@ -259,15 +261,15 @@ P6Spy or Datasource Proxy allows to create spans on various jdbc events:
  * `jdbc:/<dataSource>/fetch` - fetching result set data including number of rows in the tags
 
 Example request:
-![alt text](images/zipkin.png)
+![Zipkin traces](images/zipkin.png)
 
 Details of connection span:
-![alt text](images/connection-span.png)
+![Connection span details](images/connection-span.png)
 
 Details of query span:
-![alt text](images/query-span.png)
+![Query span details](images/query-span.png)
 
-![alt text](images/query-span-error.png)
+![Error query span details](images/query-span-error.png)
 
 **Custom Decorators**
 
