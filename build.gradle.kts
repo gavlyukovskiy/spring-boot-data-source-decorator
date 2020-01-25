@@ -178,4 +178,8 @@ tasks {
             dependsOn(it.tasks.build)
         }
     }
+
+    bintrayUpload {
+        enabled = false
+    }
 }
