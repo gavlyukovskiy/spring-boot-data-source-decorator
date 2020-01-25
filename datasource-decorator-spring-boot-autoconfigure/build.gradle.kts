@@ -1,13 +1,15 @@
+plugins {
+    `java-library`
+}
+
 dependencies {
-    compileOnly("org.springframework.boot:spring-boot:${project.extra["springBootVersion"]}")
-    compileOnly("org.springframework.boot:spring-boot-autoconfigure:${project.extra["springBootVersion"]}")
-    compileOnly("org.springframework.boot:spring-boot-starter-jdbc:${project.extra["springBootVersion"]}")
+    implementation("org.springframework.boot:spring-boot:${project.extra["springBootVersion"]}")
+    implementation("org.springframework.boot:spring-boot-autoconfigure:${project.extra["springBootVersion"]}")
+    implementation("org.springframework.boot:spring-boot-starter-jdbc:${project.extra["springBootVersion"]}")
 
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:${project.extra["springBootVersion"]}")
     annotationProcessor("org.projectlombok:lombok:1.18.8")
     compileOnly("org.projectlombok:lombok:1.18.8")
-
-    compileOnly("org.springframework.boot:spring-boot-actuator:${project.extra["springBootVersion"]}")
 
     compileOnly("org.apache.commons:commons-dbcp2:2.6.0")
     compileOnly("org.apache.tomcat:tomcat-jdbc:9.0.22")
@@ -24,9 +26,6 @@ dependencies {
     compileOnly("org.springframework.boot:spring-boot-starter-actuator:${project.extra["springBootVersion"]}")
     compileOnly("org.springframework.cloud:spring-cloud-sleuth-core:${project.extra["sleuthVersion"]}")
 
-    testImplementation("org.springframework.boot:spring-boot:${project.extra["springBootVersion"]}")
-    testImplementation("org.springframework.boot:spring-boot-autoconfigure:${project.extra["springBootVersion"]}")
-    testImplementation("org.springframework.boot:spring-boot-starter-jdbc:${project.extra["springBootVersion"]}")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.5.0")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.5.0")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.5.0")

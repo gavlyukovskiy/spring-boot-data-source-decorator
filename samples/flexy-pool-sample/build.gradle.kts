@@ -9,7 +9,7 @@ repositories {
 apply(plugin = "io.spring.dependency-management")
 
 dependencies {
-    implementation("com.github.gavlyukovskiy:flexy-pool-spring-boot-starter:1.6.0")
+    implementation("com.github.gavlyukovskiy:flexy-pool-spring-boot-starter:1.5.8")
 
     implementation("org.springframework.boot:spring-boot")
     implementation("org.springframework.boot:spring-boot-starter")

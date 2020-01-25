@@ -1,4 +1,8 @@
+plugins {
+    `java-library`
+}
+
 dependencies {
-    implementation(project(":datasource-decorator-spring-boot-autoconfigure"))
-    implementation("p6spy:p6spy:${project.extra["p6SpyVersion"]}")
+    api(project(":datasource-decorator-spring-boot-autoconfigure"))
+    api("p6spy:p6spy:${project.extra["p6SpyVersion"]}")
 }
