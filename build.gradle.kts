@@ -8,7 +8,7 @@ plugins {
     java
     `maven-publish`
     id("com.jfrog.bintray").version("1.8.4")
-    id("pl.allegro.tech.build.axion-release").version("1.11.0")
+    id("pl.allegro.tech.build.axion-release").version("1.10.3")
 }
 
 subprojects {
