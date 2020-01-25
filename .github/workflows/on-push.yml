@@ -28,4 +28,4 @@ jobs:
             ${{ runner.os }}-gradle-cache-
 
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./gradlew build --stacktrace
