@@ -11,7 +11,7 @@ Spring Boot auto-configuration for integration with
 **Why need this?**
 
 Instead of using the library you can manually wrap your datasource, but using my library also provides
-* ability to use `@ConfiguationProperties` - custom or provided by Spring Boot (`spring.datasource.hikari.*`, `spring.datasource.dbcp2.*`)
+* ability to use `@ConfigurationProperties` - custom or provided by Spring Boot (`spring.datasource.hikari.*`, `spring.datasource.dbcp2.*`)
 * ability to disable decorating by deployment property `decorator.datasource.enabled=true/false`
 * just like with other auto-configurations you can configure any supported proxy provider library using `application.properties/yml` or define custom modules in the spring context
 * integration with [Spring Cloud Sleuth](https://github.com/spring-cloud/spring-cloud-sleuth)
