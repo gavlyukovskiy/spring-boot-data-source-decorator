@@ -108,10 +108,12 @@ You can configure small set of parameters in your `application.properties`:
 decorator.datasource.p6spy.enable-logging=true
 # Use com.p6spy.engine.spy.appender.MultiLineFormat instead of com.p6spy.engine.spy.appender.SingleLineFormat
 decorator.datasource.p6spy.multiline=true
-# Use logging for default listeners [slf4j, sysout, file]
+# Use logging for default listeners [slf4j, sysout, file, custom]
 decorator.datasource.p6spy.logging=slf4j
 # Log file to use (only with logging=file)
 decorator.datasource.p6spy.log-file=spy.log
+# Class file to use (only with logging=custom). The class must implement com.p6spy.engine.spy.appender.FormattedLogger
+decorator.datasource.p6spy.custom-appender-class=my.custom.LoggerClass
 # Custom log format, if specified com.p6spy.engine.spy.appender.CustomLineFormat will be used with this log format
 decorator.datasource.p6spy.log-format=
 decorator.datasource.p6spy.tracing.include-parameter-values=true

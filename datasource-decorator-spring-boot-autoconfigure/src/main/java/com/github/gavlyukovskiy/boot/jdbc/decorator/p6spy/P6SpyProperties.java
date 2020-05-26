@@ -60,7 +60,8 @@ public class P6SpyProperties {
     public enum P6SpyLogging {
         SYSOUT,
         SLF4J,
-        FILE
+        FILE,
+        CUSTOM
     }
 
     @Getter
@@ -73,4 +74,6 @@ public class P6SpyProperties {
          */
         private boolean includeParameterValues = true;
     }
+    
+    private String customAppenderClass;
 }
