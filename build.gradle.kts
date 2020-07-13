@@ -114,7 +114,7 @@ subprojects {
                     artifact(javadocJar.get())
 
                     pom {
-                        name.set("spring-boot-data-source-decorator")
+                        name.set(project.name)
                         description.set("Spring Boot integration with p6spy, datasource-proxy and flexy-pool")
                         url.set("https://github.com/gavlyukovskiy/spring-boot-data-source-decorator")
                         licenses {
