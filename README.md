@@ -1,7 +1,7 @@
 **Spring Boot DataSource Decorator**
 
 ![Build status](https://github.com/gavlyukovskiy/spring-boot-data-source-decorator/workflows/Build/badge.svg)
-![Latest release](https://img.shields.io/github/v/release/gavlyukovskiy/spring-boot-data-source-decorator?label=version)
+![Latest release](https://img.shields.io/badge/dynamic/xml.svg?label=Release&color=green&query=%2F%2Fmetadata%2Fversioning%2Flatest&url=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Fcom%2Fgithub%2Fgavlyukovskiy%2Fdatasource-decorator-spring-boot-autoconfigure%2Fmaven-metadata.xml)
 
 Spring Boot auto-configuration for integration with
 * [P6Spy](https://github.com/p6spy/p6spy) - adds ability to intercept and log sql queries, including interception of a most `Connection`, `Statement` and `ResultSet` methods invocations
@@ -22,7 +22,7 @@ Instead of using the library you can manually wrap your datasource, but using my
 
 Add one of the starters to the classpath of a Spring Boot application and your datasources (auto-configured or custom) will be wrapped into one of a datasource proxy providers below.
 
-The latest release version is ![Latest release](https://img.shields.io/github/v/release/gavlyukovskiy/spring-boot-data-source-decorator?label=)
+The latest release version is ![Latest release](https://img.shields.io/badge/dynamic/xml.svg?label=&color=green&query=%2F%2Fmetadata%2Fversioning%2Flatest&url=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Fcom%2Fgithub%2Fgavlyukovskiy%2Fdatasource-decorator-spring-boot-autoconfigure%2Fmaven-metadata.xml)
 
 If you want to use [P6Spy](https://github.com/p6spy/p6spy)
 ```groovy

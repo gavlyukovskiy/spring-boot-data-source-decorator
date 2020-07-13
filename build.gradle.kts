@@ -159,6 +159,15 @@ subprojects {
             }
         }
     }
+
+    if (project.name.contains("sample")) {
+        tasks.build {
+            dependsOn(":datasource-decorator-spring-boot-autoconfigure:publishToMavenLocal")
+            dependsOn(":datasource-proxy-spring-boot-starter:publishToMavenLocal")
+            dependsOn(":flexy-pool-spring-boot-starter:publishToMavenLocal")
+            dependsOn(":p6spy-spring-boot-starter:publishToMavenLocal")
+        }
+    }
 }
 
 tasks {
