@@ -1,4 +1,4 @@
-**Spring Boot DataSource Decorator**
+### Spring Boot DataSource Decorator
 
 ![Build status](https://github.com/gavlyukovskiy/spring-boot-data-source-decorator/workflows/Build/badge.svg)
 ![Latest release](https://img.shields.io/badge/dynamic/xml.svg?label=Release&color=green&query=%2F%2Fmetadata%2Fversioning%2Flatest&url=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Fcom%2Fgithub%2Fgavlyukovskiy%2Fdatasource-decorator-spring-boot-autoconfigure%2Fmaven-metadata.xml)
@@ -9,16 +9,15 @@ Spring Boot auto-configuration for integration with
 * [FlexyPool](https://github.com/vladmihalcea/flexy-pool) - adds connection pool metrics (jmx, codahale, dropwizard) and flexible strategies for adjusting pool size on demand
 * [Spring Cloud Sleuth](https://github.com/spring-cloud/spring-cloud-sleuth) - library for distributed tracing, if found in classpath enables jdbc connections and queries tracing (only with p6spy or datasource-proxy)
 
-**Why need this?**
+#### Why not wrap DataSource in a configuration?
 
-Instead of using the library you can manually wrap your datasource, but using my library also provides
-* ability to use `@ConfigurationProperties` - custom or provided by Spring Boot (`spring.datasource.hikari.*`, `spring.datasource.dbcp2.*`)
-* ability to disable decorating by deployment property `decorator.datasource.enabled=true/false`
-* just like with other auto-configurations you can configure any supported proxy provider library using `application.properties/yml` or define custom modules in the spring context
+Instead of using the library you can manually wrap your `DataSource`, but this library also provides
+* ability to use `@ConfigurationProperties` provided by Spring Boot (`spring.datasource.hikari.*`, `spring.datasource.dbcp2.*`)
+* disabling decorating by deployment property `decorator.datasource.enabled=true/false`
+* configure proxies through spring properties `application.properties/yml` and customize proxies by defining beans in the spring context
 * integration with [Spring Cloud Sleuth](https://github.com/spring-cloud/spring-cloud-sleuth)
 
-
-**Quick Start**
+#### Quick Start
 
 Add one of the starters to the classpath of a Spring Boot application and your datasources (auto-configured or custom) will be wrapped into one of a datasource proxy providers below.
 
@@ -61,11 +60,13 @@ implementation("com.github.gavlyukovskiy:flexy-pool-spring-boot-starter:${versio
 </dependency>
 ```
 
-> You can use all decorators at the same time if you need, if so decorating order will be:
->
-> ```P6DataSource -> ProxyDataSource -> FlexyPoolDataSource -> DataSource```
+##### What if I add multiple decorators?
 
-**P6Spy**
+You can use all decorators at the same time if you need, if so decorating order will be:
+
+```P6DataSource -> ProxyDataSource -> FlexyPoolDataSource -> DataSource```
+
+#### P6Spy
 
 After adding p6spy starter you'll start getting all sql queries in the logs:
 ```text
@@ -118,7 +119,7 @@ decorator.datasource.p6spy.tracing.include-parameter-values=true
 
 Also you can configure P6Spy manually using one of available configuration methods. For more information please refer to the [P6Spy Configuration Guide](http://p6spy.readthedocs.io/en/latest/configandusage.html)
 
-**Datasource Proxy**
+#### Datasource Proxy
 
 After adding datasource-proxy starter you'll start getting all sql queries in the logs with level `DEBUG` and slow sql queries with level `WARN`:
 ```text
@@ -198,7 +199,7 @@ decorator.datasource.datasource-proxy.json-format=false
 decorator.datasource.datasource-proxy.count-query=false
 ```
 
-**Flexy Pool**
+#### Flexy Pool
 
 If the `flexy-pool-spring-boot-starter` is added to the classpath your datasource will be wrapped to the `FlexyPoolDataSource`.
 With default setting you will start getting messages about acquiring and leasing connections:
@@ -252,7 +253,7 @@ decorator.datasource.sleuth.enabled=true
 decorator.datasource.sleuth.include=connection, query, fetch
 ```
 
-**Spring Cloud Sleuth**
+#### Spring Cloud Sleuth
 
 P6Spy or Datasource Proxy allows to create spans on various jdbc events:
  * `jdbc:/<dataSource>/connection` - opening connection including events for commits and rollbacks
@@ -270,7 +271,7 @@ Details of query span:
 
 ![Error query span details](images/query-span-error.png)
 
-**Custom Decorators**
+#### Custom Decorators
 
 Custom data source decorators are supported through declaring beans of type `DataSourceDecorator`
 ```java
@@ -280,6 +281,6 @@ public DataSourceDecorator customDecorator() {
 }
 ```
 
-**Disable Decorating**
+#### Disable Decorating
 
 If you want to disable decorating set `decorator.datasource.excludeBeans` with bean names you want to exclude or set `decorator.datasource.enabled` to `false` if you want to disable all decorators for all datasources.
