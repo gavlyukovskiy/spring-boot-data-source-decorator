@@ -16,6 +16,11 @@ scmVersion {
         prefix = ""
         versionSeparator = ""
     }
+    if (System.getenv("GITHUB_ACTIONS") == "true") {
+        with(repository) {
+            customPassword = System.getenv("GITHUB_TOKEN");
+        }
+    }
 }
 
 group = "com.github.gavlyukovskiy"
