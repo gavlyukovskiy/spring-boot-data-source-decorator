@@ -1,9 +1,10 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - '*'
+  workflow_dispatch:
+    inputs:
+      releaseVersion:
+        description: 'New version to be released'
 
 jobs:
   release:
@@ -34,6 +35,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-cache-
 
+      - name: Release new version
+        id: release
+        run: ./gradlew release -Prelease.version=${{ github.event.inputs.releaseVersion }}
+
       - name: Upload artifact to Bintray / Maven Central
         id: upload_artifact
         env:
@@ -42,7 +47,7 @@ jobs:
           SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-        run: ./gradlew build bintrayUpload
+        run: ./gradlew bintrayUpload
 
       - name: Create Release
         id: create_release
@@ -50,7 +55,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
+          tag_name: ${{ github.event.inputs.releaseVersion }}
+          release_name: ${{ github.event.inputs.releaseVersion }}
           draft: false
           prerelease: false
