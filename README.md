@@ -49,6 +49,7 @@ implementation("com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:${
 ```
 
 or [FlexyPool](https://github.com/vladmihalcea/flexy-pool)
+> To use FlexyPool with connection pool different than HikariCP you must add `PoolAdapter` for your [particular connection pool](https://github.com/vladmihalcea/flexy-pool/wiki/Installation-Guide#connection-pool-settings).
 ```groovy
 implementation("com.github.gavlyukovskiy:flexy-pool-spring-boot-starter:${version}")
 ```
@@ -60,12 +61,9 @@ implementation("com.github.gavlyukovskiy:flexy-pool-spring-boot-starter:${versio
 </dependency>
 ```
 
-NOTE: To use FlexyPool with connection pool different than HikariCP you must add `PoolAdapter` for your [particular connection pool](https://github.com/vladmihalcea/flexy-pool/wiki/Installation-Guide#connection-pool-settings).
-
-NOTE 2: You can use all of them if you want, if so decorating order is next:
-```
-P6DataSource -> ProxyDataSource -> FlexyPoolDataSource -> DataSource
-```
+> You can use all decorators at the same time if you need, if so decorating order will be:
+>
+> ```P6DataSource -> ProxyDataSource -> FlexyPoolDataSource -> DataSource```
 
 **P6Spy**
 
