@@ -37,6 +37,8 @@ jobs:
 
       - name: Release new version
         id: release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./gradlew release -Prelease.version=${{ github.event.inputs.releaseVersion }}
 
       - name: Upload artifact to Bintray / Maven Central
