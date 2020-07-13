@@ -18,7 +18,8 @@ scmVersion {
     }
     if (System.getenv("GITHUB_ACTIONS") == "true") {
         with(repository) {
-            customPassword = System.getenv("GITHUB_TOKEN");
+            val githubToken = System.getenv("GITHUB_TOKEN")
+            remote = "https://$githubToken@github.com/gavlyukovskiy/spring-boot-data-source-decorator.git"
         }
     }
 }
@@ -182,7 +183,11 @@ tasks {
             if (!project.hasProperty("release.version")) {
                 errors.add("'-Prelease.version' must be set")
             }
-            if (System.getenv("GITHUB_ACTIONS") != "true") {
+            if (System.getenv("GITHUB_ACTIONS") == "true") {
+                if (System.getenv("GITHUB_TOKEN") == null) {
+                    errors.add("'GITHUB_TOKEN' must be passed intp Github Actions workflow")
+                }
+            } else {
                 if (!project.hasProperty("release.customUsername")) {
                     errors.add("'-Prelease.customUsername' must be set")
                 }
