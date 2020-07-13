@@ -9,7 +9,7 @@ repositories {
 apply(plugin = "io.spring.dependency-management")
 
 dependencies {
-    implementation("com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.6.1")
+    implementation("com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:${project.version}")
 
     implementation("org.springframework.boot:spring-boot")
     implementation("org.springframework.boot:spring-boot-starter")
