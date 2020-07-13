@@ -1,5 +1,5 @@
 plugins {
-    id("org.springframework.boot").version("2.2.2.RELEASE")
+    id("org.springframework.boot").version("2.3.1.RELEASE")
 }
 
 repositories {
@@ -21,16 +21,14 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-aop")
 
-    implementation("org.springframework.cloud:spring-cloud-sleuth-core:2.1.2.RELEASE")
-    implementation("org.springframework.cloud:spring-cloud-sleuth-zipkin:2.1.2.RELEASE")
+    implementation("org.springframework.cloud:spring-cloud-sleuth-core:2.2.3.RELEASE")
+    implementation("org.springframework.cloud:spring-cloud-sleuth-zipkin:2.2.3.RELEASE")
 
     implementation("com.h2database:h2")
     implementation("org.apache.commons:commons-io:1.3.2")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.5.0")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.5.0")
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.5.0")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.6.2")
 }
 
 tasks {

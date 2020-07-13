@@ -26,9 +26,7 @@ dependencies {
     compileOnly("org.springframework.boot:spring-boot-starter-actuator:${project.extra["springBootVersion"]}")
     compileOnly("org.springframework.cloud:spring-cloud-sleuth-core:${project.extra["sleuthVersion"]}")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.5.0")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.5.0")
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.5.0")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.6.2")
     testImplementation("com.h2database:h2:1.4.199")
     testImplementation("org.assertj:assertj-core:3.12.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test:${project.extra["springBootVersion"]}")

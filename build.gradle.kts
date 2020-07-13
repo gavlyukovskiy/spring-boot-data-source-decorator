@@ -24,9 +24,9 @@ version = scmVersion.version
 subprojects {
     apply(plugin = "java")
 
-    extra["springBootVersion"] = "2.2.2.RELEASE"
-    extra["p6SpyVersion"] = "3.8.7"
-    extra["datasourceProxyVersion"] = "1.6"
+    extra["springBootVersion"] = "2.3.1.RELEASE"
+    extra["p6SpyVersion"] = "3.9.0"
+    extra["datasourceProxyVersion"] = "1.7"
     extra["flexyPoolVersion"] = "2.2.1"
     extra["sleuthVersion"] = "2.2.1.RELEASE"
 
