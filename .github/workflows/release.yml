@@ -38,7 +38,7 @@ jobs:
         run: |
           ./gradlew release \
             -Prelease.version=${{ github.event.inputs.releaseVersion }} \
-            -Prelease.remote=https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git
+            -Prelease.attachRemote=https://${{ github.token }}@github.com/${{ github.repository }}.git
 
       - name: Upload artifact to Bintray / Maven Central
         id: upload_artifact
