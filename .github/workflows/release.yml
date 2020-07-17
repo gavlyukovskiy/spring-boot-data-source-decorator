@@ -19,26 +19,22 @@ jobs:
         with:
           java-version: 1.8
 
-      - name: Cache Gradle wrapper
-        uses: actions/cache@v1
+      - name: Gradle cache
+        uses: actions/cache@v2
         with:
-          path: ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('**/gradle-wrapper.properties') }}
-
-      - name: Cache Gradle dependencies
-        uses: actions/cache@v1
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-cache-${{ hashFiles('**/*.gradle.kts') }}
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
           restore-keys: |
-            ${{ runner.os }}-gradle-cache-
+            ${{ runner.os }}-gradle-
 
       - name: Release new version
         id: release
         run: |
           ./gradlew release \
-            -Prelease.version=${{ github.event.inputs.releaseVersion }} \
-            -Prelease.attachRemote=https://${{ github.token }}@github.com/${{ github.repository }}.git
+            -Prelease.customUsername=${{ github.actor }} \
+            -Prelease.customPassword=${{ github.token }}
 
       - name: Upload artifact to Bintray / Maven Central
         id: upload_artifact
@@ -54,7 +50,7 @@ jobs:
         id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
         with:
           tag_name: ${{ github.event.inputs.releaseVersion }}
           release_name: ${{ github.event.inputs.releaseVersion }}
