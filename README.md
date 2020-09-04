@@ -283,4 +283,4 @@ public DataSourceDecorator customDecorator() {
 
 #### Disable Decorating
 
-If you want to disable decorating set `decorator.datasource.excludeBeans` with bean names you want to exclude or set `decorator.datasource.enabled` to `false` if you want to disable all decorators for all datasources.
+If you want to disable decorating set `decorator.datasource.exclude-beans` with bean names you want to exclude or set `decorator.datasource.enabled` to `false` if you want to disable all decorators for all datasources.
