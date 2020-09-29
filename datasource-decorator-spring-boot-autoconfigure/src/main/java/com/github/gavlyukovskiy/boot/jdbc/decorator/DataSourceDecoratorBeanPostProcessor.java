@@ -26,13 +26,9 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 
 import javax.sql.DataSource;
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * {@link BeanPostProcessor} that wraps all data source beans in {@link DataSource}
@@ -55,36 +51,57 @@ public class DataSourceDecoratorBeanPostProcessor implements BeanPostProcessor, 
         if (bean instanceof DataSource
                 && !ScopedProxyUtils.isScopedTarget(beanName)
                 && !getDataSourceDecoratorProperties().getExcludeBeans().contains(beanName)) {
-            DataSource dataSource = (DataSource) bean;
-            DataSource decoratedDataSource = dataSource;
-            Map<String, DataSourceDecorator> decorators = new LinkedHashMap<>();
-            applicationContext.getBeansOfType(DataSourceDecorator.class)
-                    .entrySet()
-                    .stream()
-                    .sorted(Entry.comparingByValue(AnnotationAwareOrderComparator.INSTANCE))
-                    .forEach(entry -> decorators.put(entry.getKey(), entry.getValue()));
-            List<DataSourceDecorationStage> decoratedDataSourceChainEntries = new ArrayList<>();
-            for (Entry<String, DataSourceDecorator> decoratorEntry : decorators.entrySet()) {
-                String decoratorBeanName = decoratorEntry.getKey();
-                DataSourceDecorator decorator = decoratorEntry.getValue();
+            return decorateDataSource((DataSource) bean,beanName);
+        }
+        else if (bean instanceof Map ) {
+            Map<?,?> dsMap = (Map<?,?>)bean;
+            boolean isDatasource = dsMap.values().stream().anyMatch(v -> v instanceof DataSource);
+            if(isDatasource) {
+                Map<Object, DataSource> dataSourceMap = new HashMap<>();
+                dsMap.forEach((key, value) -> {
+                    DataSource ds = (DataSource) value;
+                    if (!ScopedProxyUtils.isScopedTarget(beanName)
+                            && !getDataSourceDecoratorProperties().getExcludeBeans().contains(beanName)) {
+                        dataSourceMap.put(key, (DataSource) decorateDataSource(ds, beanName));
+                    }
 
-                DataSource dataSourceBeforeDecorating = decoratedDataSource;
-                decoratedDataSource = Objects.requireNonNull(decorator.decorate(beanName, decoratedDataSource),
-                        "DataSourceDecorator (" + decoratorBeanName + ", " + decorator + ") should not return null");
-
-                if (dataSourceBeforeDecorating != decoratedDataSource) {
-                    decoratedDataSourceChainEntries.add(0, new DataSourceDecorationStage(decoratorBeanName, decorator, decoratedDataSource));
-                }
-            }
-            if (dataSource != decoratedDataSource) {
-                ProxyFactory factory = new ProxyFactory(bean);
-                factory.setProxyTargetClass(true);
-                factory.addInterface(DecoratedDataSource.class);
-                factory.addAdvice(new DataSourceDecoratorInterceptor(beanName, dataSource, decoratedDataSource, decoratedDataSourceChainEntries));
-                return factory.getProxy();
+                });
+                return dataSourceMap;
             }
         }
         return bean;
+    }
+
+    private Object decorateDataSource(DataSource dataSource, String beanName) throws BeansException {
+        DataSource decoratedDataSource = dataSource;
+        Map<String, DataSourceDecorator> decorators = new LinkedHashMap<>();
+        applicationContext.getBeansOfType(DataSourceDecorator.class)
+                .entrySet()
+                .stream()
+                .sorted(Entry.comparingByValue(AnnotationAwareOrderComparator.INSTANCE))
+                .forEach(entry -> decorators.put(entry.getKey(), entry.getValue()));
+        List<DataSourceDecorationStage> decoratedDataSourceChainEntries = new ArrayList<>();
+        for (Entry<String, DataSourceDecorator> decoratorEntry : decorators.entrySet()) {
+            String decoratorBeanName = decoratorEntry.getKey();
+            DataSourceDecorator decorator = decoratorEntry.getValue();
+
+            DataSource dataSourceBeforeDecorating = decoratedDataSource;
+            decoratedDataSource = Objects.requireNonNull(decorator.decorate(beanName, decoratedDataSource),
+                    "DataSourceDecorator (" + decoratorBeanName + ", " + decorator + ") should not return null");
+
+            if (dataSourceBeforeDecorating != decoratedDataSource) {
+                decoratedDataSourceChainEntries.add(0, new DataSourceDecorationStage(decoratorBeanName, decorator, decoratedDataSource));
+            }
+        }
+        if (dataSource != decoratedDataSource) {
+            ProxyFactory factory = new ProxyFactory(dataSource);
+            factory.setProxyTargetClass(true);
+            factory.addInterface(DecoratedDataSource.class);
+            factory.addAdvice(new DataSourceDecoratorInterceptor(beanName, dataSource, decoratedDataSource, decoratedDataSourceChainEntries));
+            return factory.getProxy();
+        }
+
+        return dataSource;
     }
 
     private DataSourceDecoratorProperties getDataSourceDecoratorProperties() {
