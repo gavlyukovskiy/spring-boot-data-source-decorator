@@ -246,11 +246,6 @@ decorator.datasource.flexy-pool.metrics.reporter.log.millis=300000
 decorator.datasource.flexy-pool.threshold.connection.acquire=50
 # Enable logging and publishing ConnectionLeaseTimeThresholdExceededEvent when a connection lease has exceeded the given time threshold
 decorator.datasource.flexy-pool.threshold.connection.lease=1000
-
-# Creates span for every connection and query. Works only with p6spy or datasource-proxy.
-decorator.datasource.sleuth.enabled=true
-# Specify traces that will be created in zipkin
-decorator.datasource.sleuth.include=connection, query, fetch
 ```
 
 #### Spring Cloud Sleuth
@@ -259,6 +254,14 @@ P6Spy or Datasource Proxy allows to create spans on various jdbc events:
  * `jdbc:/<dataSource>/connection` - opening connection including events for commits and rollbacks
  * `jdbc:/<dataSource>/query` - executing query including sql text and number of affected rows in the tags
  * `jdbc:/<dataSource>/fetch` - fetching result set data including number of rows in the tags
+
+You can configure the tracing with the following properties:
+```properties
+# Creates span for every connection and query. Works only with p6spy or datasource-proxy.
+decorator.datasource.sleuth.enabled=true
+# Specify traces that will be created in zipkin
+decorator.datasource.sleuth.include=connection, query, fetch
+```
 
 Example request:
 ![Zipkin traces](images/zipkin.png)
