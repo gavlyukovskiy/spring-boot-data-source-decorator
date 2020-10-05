@@ -80,7 +80,7 @@ public class P6SpyConfiguration {
             if (p6spy.isEnableLogging()) {
                 moduleList.add(P6LogFactory.class.getName());
             }
-            System.setProperty("p6spy.config.modulelist", moduleList.stream().collect(Collectors.joining(",")));
+            System.setProperty("p6spy.config.modulelist", String.join(",", moduleList));
         }
         if (!initialP6SpyOptions.containsKey("logMessageFormat")) {
             if (p6spy.getLogFormat() != null) {
@@ -103,12 +103,16 @@ public class P6SpyConfiguration {
                     System.setProperty("p6spy.config.appender", "com.p6spy.engine.spy.appender.FileLogger");
                     break;
                 case CUSTOM:
-                    System.setProperty("p6spy.config.appender", p6spy.getCustomAppenderClass());
+                    System.setProperty("p6spy.config.appender", p6spy.getCustomAppenderClass().getName());
                     break;
             }
         }
         if (!initialP6SpyOptions.containsKey("logfile")) {
             System.setProperty("p6spy.config.logfile", p6spy.getLogFile());
+        }
+        if (p6spy.getLogFilter().getPattern() != null) {
+            System.setProperty("p6spy.config.filter", "true");
+            System.setProperty("p6spy.config.sqlexpression", p6spy.getLogFilter().getPattern().pattern());
         }
         // If factories were loaded before this method is initialized changing properties will not be applied
         // Changes done in this method could not override anything user specified, therefore it is safe to call reload

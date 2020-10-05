@@ -114,6 +114,10 @@ decorator.datasource.p6spy.log-file=spy.log
 decorator.datasource.p6spy.custom-appender-class=my.custom.LoggerClass
 # Custom log format, if specified com.p6spy.engine.spy.appender.CustomLineFormat will be used with this log format
 decorator.datasource.p6spy.log-format=
+# Use regex pattern to filter log messages. If specified only matched messages will be logged.
+decorator.datasource.p6spy.log-filter.pattern=
+# Report the effective sql string (with '?' replaced with real values) to tracing systems.
+# NOTE this setting does not affect the logging message.
 decorator.datasource.p6spy.tracing.include-parameter-values=true
 ```
 

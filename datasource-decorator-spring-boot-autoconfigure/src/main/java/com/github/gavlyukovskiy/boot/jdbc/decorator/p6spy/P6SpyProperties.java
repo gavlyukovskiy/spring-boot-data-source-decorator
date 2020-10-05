@@ -17,8 +17,11 @@
 package com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy;
 
 import com.p6spy.engine.logging.P6LogFactory;
+import com.p6spy.engine.spy.appender.FormattedLogger;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.regex.Pattern;
 
 /**
  * Properties for configuring p6spy.
@@ -44,7 +47,7 @@ public class P6SpyProperties {
      */
     private P6SpyLogging logging = P6SpyLogging.SLF4J;
     /**
-     * Name of log file to use (only for logging=file).
+     * Name of log file to use (only with logging=file).
      */
     private String logFile = "spy.log";
     /**
@@ -56,6 +59,17 @@ public class P6SpyProperties {
      * Tracing related properties
      */
     private P6SpyTracing tracing = new P6SpyTracing();
+
+    /**
+     * Class file to use (only with logging=custom).
+     * The class must implement {@link com.p6spy.engine.spy.appender.FormattedLogger}
+     */
+    private Class<? extends FormattedLogger> customAppenderClass;
+
+    /**
+     * Log filtering related properties.
+     */
+    private P6SpyLogFilter logFilter = new P6SpyLogFilter();
 
     public enum P6SpyLogging {
         SYSOUT,
@@ -74,6 +88,13 @@ public class P6SpyProperties {
          */
         private boolean includeParameterValues = true;
     }
-    
-    private String customAppenderClass;
+
+    @Getter
+    @Setter
+    public static class P6SpyLogFilter {
+        /**
+         * Use regex pattern to filter log messages. Only matched messages will be logged.
+         */
+        private Pattern pattern;
+    }
 }

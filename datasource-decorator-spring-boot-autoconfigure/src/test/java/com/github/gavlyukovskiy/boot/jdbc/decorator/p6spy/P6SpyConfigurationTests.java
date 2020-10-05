@@ -23,10 +23,12 @@ import com.p6spy.engine.common.ConnectionInformation;
 import com.p6spy.engine.common.P6LogQuery;
 import com.p6spy.engine.event.CompoundJdbcEventListener;
 import com.p6spy.engine.event.JdbcEventListener;
+import com.p6spy.engine.logging.Category;
 import com.p6spy.engine.logging.LoggingEventListener;
 import com.p6spy.engine.spy.JdbcEventListenerFactory;
 import com.p6spy.engine.spy.P6DataSource;
 import com.p6spy.engine.spy.appender.CustomLineFormat;
+import com.p6spy.engine.spy.appender.FormattedLogger;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
@@ -37,7 +39,10 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -130,6 +135,66 @@ public class P6SpyConfigurationTests {
         });
     }
 
+    @Test
+    void testUseCustomLogger() {
+        ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues(
+                "decorator.datasource.p6spy.logging:custom",
+                "decorator.datasource.p6spy.custom-appender-class:" + LogAccumulator.class.getName()
+        );
+
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            dataSource.getConnection().close();
+
+            assertThat(P6LogQuery.getLogger()).isInstanceOf(LogAccumulator.class);
+        });
+    }
+
+    @Test
+    void testLogFilterPattern() {
+        ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues(
+                "decorator.datasource.p6spy.logging:custom",
+                "decorator.datasource.p6spy.custom-appender-class:" + LogAccumulator.class.getName(),
+                "decorator.datasource.p6spy.log-filter.pattern:.*table1.*"
+        );
+
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            try (Connection connection = dataSource.getConnection();
+                 PreparedStatement ps1 = connection.prepareStatement("select 1 /* from table1 */");
+                 PreparedStatement ps2 = connection.prepareStatement("select 1 /* from table2 */")
+            ) {
+                ps1.execute();
+                ps2.execute();
+            }
+
+            assertThat(LogAccumulator.MESSAGES).hasSize(1);
+            assertThat(LogAccumulator.MESSAGES).allMatch(message -> message.contains("table1"));
+        });
+    }
+
+    @Test
+    void testLogFilterPatternMatchAll() {
+        ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues(
+                "decorator.datasource.p6spy.logging:custom",
+                "decorator.datasource.p6spy.custom-appender-class:" + LogAccumulator.class.getName(),
+                "decorator.datasource.p6spy.log-filter.pattern:.*"
+        );
+
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            try (Connection connection = dataSource.getConnection();
+                 PreparedStatement ps1 = connection.prepareStatement("select 1 /* from table1 */");
+                 PreparedStatement ps2 = connection.prepareStatement("select 1 /* from table2 */")
+            ) {
+                ps1.execute();
+                ps2.execute();
+            }
+
+            assertThat(LogAccumulator.MESSAGES).hasSize(2);
+        });
+    }
+
     @Configuration
     static class CustomListenerConfiguration {
 
@@ -161,6 +226,27 @@ public class P6SpyConfigurationTests {
         @Override
         public void onAfterConnectionClose(ConnectionInformation connectionInformation, SQLException e) {
             connectionCount++;
+        }
+    }
+
+    public static class LogAccumulator extends FormattedLogger {
+
+        static final List<String> MESSAGES = new ArrayList<>();
+        static final List<Exception> EXCEPTIONS = new ArrayList<>();
+
+        @Override
+        public void logException(Exception e) {
+            EXCEPTIONS.add(e);
+        }
+
+        @Override
+        public void logText(String text) {
+            MESSAGES.add(text);
+        }
+
+        @Override
+        public boolean isCategoryEnabled(Category category) {
+            return true;
         }
     }
 }
