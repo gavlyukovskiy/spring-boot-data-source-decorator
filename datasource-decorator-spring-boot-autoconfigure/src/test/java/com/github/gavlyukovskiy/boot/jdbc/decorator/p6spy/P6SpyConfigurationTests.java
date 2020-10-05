@@ -29,6 +29,8 @@ import com.p6spy.engine.spy.JdbcEventListenerFactory;
 import com.p6spy.engine.spy.P6DataSource;
 import com.p6spy.engine.spy.appender.CustomLineFormat;
 import com.p6spy.engine.spy.appender.FormattedLogger;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
@@ -58,6 +60,12 @@ public class P6SpyConfigurationTests {
             .withPropertyValues("spring.datasource.initialization-mode=never",
                     "spring.datasource.url:jdbc:h2:mem:testdb-" + ThreadLocalRandom.current().nextInt())
             .withClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "net.ttddyy.dsproxy"));
+
+    @BeforeEach
+    @AfterEach
+    void resetLogAccumulator() {
+        LogAccumulator.reset();
+    }
 
     @Test
     void testCustomListeners() {
@@ -233,6 +241,11 @@ public class P6SpyConfigurationTests {
 
         static final List<String> MESSAGES = new ArrayList<>();
         static final List<Exception> EXCEPTIONS = new ArrayList<>();
+
+        public static void reset() {
+            MESSAGES.clear();
+            EXCEPTIONS.clear();
+        }
 
         @Override
         public void logException(Exception e) {
