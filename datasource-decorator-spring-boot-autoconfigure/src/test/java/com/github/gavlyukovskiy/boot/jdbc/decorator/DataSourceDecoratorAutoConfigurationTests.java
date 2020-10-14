@@ -34,9 +34,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.context.support.GenericApplicationContext;
 
 import javax.sql.DataSource;
-
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.util.List;
@@ -205,6 +205,25 @@ class DataSourceDecoratorAutoConfigurationTests {
                             "proxyDataSourceDecorator [net.ttddyy.dsproxy.support.ProxyDataSource] -> " +
                             "flexyPoolDataSourceDecorator [com.vladmihalcea.flexypool.FlexyPoolDataSource] -> " +
                             "dataSource [com.zaxxer.hikari.HikariDataSource]");
+        });
+    }
+
+    @Test
+    void testDecorateDynamicallyRegisteredBeans() {
+        ApplicationContextRunner contextRunner = this.contextRunner.withInitializer(context -> {
+            GenericApplicationContext gac = (GenericApplicationContext) context;
+            gac.registerBean("ds1", DataSource.class, () -> new HikariDataSource());
+            gac.registerBean("ds2", DataSource.class, () -> new HikariDataSource());
+        });
+
+        contextRunner.run(context -> {
+            DataSource dataSource1 = context.getBean("ds1", DataSource.class);
+            assertThat(dataSource1).isNotNull();
+            assertThat(dataSource1).isInstanceOf(DecoratedDataSource.class);
+
+            DataSource dataSource2 = context.getBean("ds2", DataSource.class);
+            assertThat(dataSource2).isNotNull();
+            assertThat(dataSource2).isInstanceOf(DecoratedDataSource.class);
         });
     }
 
