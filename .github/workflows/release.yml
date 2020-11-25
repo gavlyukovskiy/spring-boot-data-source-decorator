@@ -33,6 +33,7 @@ jobs:
         id: release
         run: |
           ./gradlew release \
+            -Prelease.version=${{ github.event.inputs.releaseVersion }} \
             -Prelease.customUsername=${{ github.actor }} \
             -Prelease.customPassword=${{ github.token }}
 
