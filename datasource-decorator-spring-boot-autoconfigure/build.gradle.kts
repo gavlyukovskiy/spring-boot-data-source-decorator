@@ -24,11 +24,9 @@ dependencies {
     compileOnly("com.vladmihalcea.flexy-pool:flexy-micrometer-metrics:${project.extra["flexyPoolVersion"]}")
 
     compileOnly("org.springframework.boot:spring-boot-starter-actuator:${project.extra["springBootVersion"]}")
-    compileOnly("org.springframework.cloud:spring-cloud-sleuth-core:${project.extra["sleuthVersion"]}")
+    compileOnly("org.springframework.cloud:spring-cloud-starter-sleuth:${project.extra["sleuthVersion"]}")
 
-    testImplementation("org.junit.jupiter:junit-jupiter:5.6.2")
     testImplementation("com.h2database:h2:1.4.199")
-    testImplementation("org.assertj:assertj-core:3.12.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test:${project.extra["springBootVersion"]}")
 
     testImplementation("p6spy:p6spy:${project.extra["p6SpyVersion"]}")
@@ -39,7 +37,8 @@ dependencies {
     testImplementation("com.vladmihalcea.flexy-pool:flexy-tomcatcp:${project.extra["flexyPoolVersion"]}")
     testImplementation("com.vladmihalcea.flexy-pool:flexy-micrometer-metrics:${project.extra["flexyPoolVersion"]}")
 
-    testImplementation("org.springframework.cloud:spring-cloud-sleuth-core:${project.extra["sleuthVersion"]}")
+    testImplementation("org.springframework.cloud:spring-cloud-starter-sleuth:${project.extra["sleuthVersion"]}")
+    testImplementation("io.zipkin.brave:brave-tests:5.13.3")
 
     testImplementation("commons-dbcp:commons-dbcp:1.4")
     testImplementation("org.apache.commons:commons-dbcp2:2.6.0")

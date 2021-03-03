@@ -17,16 +17,16 @@
 package com.github.gavlyukovskiy.cloud.sleuth;
 
 import brave.sampler.Sampler;
-import org.springframework.cloud.sleuth.util.ArrayListSpanReporter;
+import brave.test.TestSpanHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-class SavingSpanReporterConfiguration {
+class TestSpanHandlerConfiguration {
 
     @Bean
-    public ArrayListSpanReporter spanReporter() {
-        return new ArrayListSpanReporter();
+    public TestSpanHandler spanHandler() {
+        return new TestSpanHandler();
     }
 
     @Bean
