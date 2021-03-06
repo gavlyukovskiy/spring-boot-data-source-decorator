@@ -10,7 +10,7 @@ Run sample application on port 8081 with next endpoints:
 
 **P6Spy**
 ```
-gradlew :samples:p6spy-sample:bootRun
+./gradlew :samples:p6spy-sample:bootRun
 ```
 
 add `-Pzipkin` if you have [Zipkin](https://github.com/openzipkin/zipkin) running on port 9411
@@ -18,13 +18,13 @@ add `-Pzipkin` if you have [Zipkin](https://github.com/openzipkin/zipkin) runnin
 
 **Datasource Proxy**
 ```
-gradlew :samples:datasource-proxy-sample:bootRun
+./gradlew :samples:datasource-proxy-sample:bootRun
 ```
 
 add `-Pzipkin` if you have [Zipkin](https://github.com/openzipkin/zipkin) running on port 9411
 
 **FlexyPool**
 ```
-gradlew :samples:flexy-pool-sample:bootRun
+./gradlew :samples:flexy-pool-sample:bootRun
 ```
 

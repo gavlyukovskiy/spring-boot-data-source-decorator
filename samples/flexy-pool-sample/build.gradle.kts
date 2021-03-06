@@ -28,14 +28,6 @@ dependencies {
 }
 
 tasks {
-    bootRun {
-        val args = args!!
-        if (project.hasProperty("args")) {
-            val userArgs = project.findProperty("args") as String
-            userArgs.split(" ").forEach { args.add(it) }
-        }
-    }
-
     test {
         useJUnitPlatform()
     }
