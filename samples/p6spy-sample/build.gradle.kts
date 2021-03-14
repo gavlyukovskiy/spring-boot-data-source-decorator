@@ -31,21 +31,6 @@ dependencies {
 }
 
 tasks {
-    bootRun {
-        doFirst {
-            val args = args!!
-            if (project.hasProperty("zipkin")) {
-                args.add("--spring.zipkin.enabled=true")
-                args.add("--spring.sleuth.enabled=true")
-            }
-            if (project.hasProperty("args")) {
-                val userArgs = project.findProperty("args") as String
-                userArgs.split(" ").forEach { args.add(it) }
-            }
-            setArgs(args)
-        }
-    }
-
     test {
         useJUnitPlatform()
     }
