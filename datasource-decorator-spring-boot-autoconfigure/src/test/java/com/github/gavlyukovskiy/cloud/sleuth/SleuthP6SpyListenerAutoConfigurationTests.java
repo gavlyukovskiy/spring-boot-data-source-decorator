@@ -25,8 +25,7 @@ import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
-import org.springframework.cloud.sleuth.log.SleuthLogAutoConfiguration;
+import org.springframework.cloud.sleuth.autoconfig.brave.BraveAutoConfiguration;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -38,8 +37,7 @@ class SleuthP6SpyListenerAutoConfigurationTests {
             .withConfiguration(AutoConfigurations.of(
                     DataSourceAutoConfiguration.class,
                     DataSourceDecoratorAutoConfiguration.class,
-                    TraceAutoConfiguration.class,
-                    SleuthLogAutoConfiguration.class,
+                    BraveAutoConfiguration.class,
                     SleuthListenerAutoConfiguration.class,
                     PropertyPlaceholderAutoConfiguration.class
             ))

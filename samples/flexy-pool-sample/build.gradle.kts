@@ -1,5 +1,5 @@
 plugins {
-    id("org.springframework.boot").version("2.3.1.RELEASE")
+    id("org.springframework.boot").version("2.4.3")
 }
 
 repositories {
@@ -25,18 +25,9 @@ dependencies {
     implementation("org.apache.commons:commons-io:1.3.2")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.6.2")
 }
 
 tasks {
-    bootRun {
-        val args = args!!
-        if (project.hasProperty("args")) {
-            val userArgs = project.findProperty("args") as String
-            userArgs.split(" ").forEach { args.add(it) }
-        }
-    }
-
     test {
         useJUnitPlatform()
     }

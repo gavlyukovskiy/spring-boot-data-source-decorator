@@ -16,6 +16,8 @@
 
 package com.github.gavlyukovskiy.cloud.sleuth;
 
+import brave.handler.MutableSpan;
+import brave.test.TestSpanHandler;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorAutoConfiguration;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.HidePackagesClassLoader;
 import org.junit.jupiter.api.Test;
@@ -23,10 +25,7 @@ import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
-import org.springframework.cloud.sleuth.log.SleuthLogAutoConfiguration;
-import org.springframework.cloud.sleuth.util.ArrayListSpanReporter;
-import zipkin2.Span;
+import org.springframework.cloud.sleuth.autoconfig.brave.BraveAutoConfiguration;
 
 import javax.sql.DataSource;
 
@@ -49,10 +48,9 @@ class TracingJdbcEventListenerTests {
             .withConfiguration(AutoConfigurations.of(
                     DataSourceAutoConfiguration.class,
                     DataSourceDecoratorAutoConfiguration.class,
-                    TraceAutoConfiguration.class,
-                    SleuthLogAutoConfiguration.class,
+                    BraveAutoConfiguration.class,
                     SleuthListenerAutoConfiguration.class,
-                    SavingSpanReporterConfiguration.class,
+                    TestSpanHandlerConfiguration.class,
                     PropertyPlaceholderAutoConfiguration.class
             ))
             .withPropertyValues("spring.datasource.initialization-mode=never",
@@ -64,15 +62,15 @@ class TracingJdbcEventListenerTests {
     void testShouldAddSpanForConnection() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
-            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+            TestSpanHandler spanReporter = context.getBean(TestSpanHandler.class);
 
             Connection connection = dataSource.getConnection();
             connection.commit();
             connection.rollback();
             connection.close();
 
-            assertThat(spanReporter.getSpans()).hasSize(1);
-            Span connectionSpan = spanReporter.getSpans().get(0);
+            assertThat(spanReporter.spans()).hasSize(1);
+            MutableSpan connectionSpan = spanReporter.spans().get(0);
             assertThat(connectionSpan.name()).isEqualTo("jdbc:/test/connection");
             assertThat(connectionSpan.annotations()).extracting("value").contains("commit");
             assertThat(connectionSpan.annotations()).extracting("value").contains("rollback");
@@ -83,15 +81,15 @@ class TracingJdbcEventListenerTests {
     void testShouldAddSpanForPreparedStatementExecute() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
-            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+            TestSpanHandler spanReporter = context.getBean(TestSpanHandler.class);
 
             Connection connection = dataSource.getConnection();
             connection.prepareStatement("SELECT NOW()").execute();
             connection.close();
 
-            assertThat(spanReporter.getSpans()).hasSize(2);
-            Span connectionSpan = spanReporter.getSpans().get(1);
-            Span statementSpan = spanReporter.getSpans().get(0);
+            assertThat(spanReporter.spans()).hasSize(2);
+            MutableSpan connectionSpan = spanReporter.spans().get(1);
+            MutableSpan statementSpan = spanReporter.spans().get(0);
             assertThat(connectionSpan.name()).isEqualTo("jdbc:/test/connection");
             assertThat(statementSpan.name()).isEqualTo("jdbc:/test/query");
             assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME, "SELECT NOW()");
@@ -102,15 +100,15 @@ class TracingJdbcEventListenerTests {
     void testShouldAddSpanForPreparedStatementExecuteUpdate() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
-            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+            TestSpanHandler spanReporter = context.getBean(TestSpanHandler.class);
 
             Connection connection = dataSource.getConnection();
             connection.prepareStatement("UPDATE INFORMATION_SCHEMA.TABLES SET table_Name = '' WHERE 0 = 1").executeUpdate();
             connection.close();
 
-            assertThat(spanReporter.getSpans()).hasSize(2);
-            Span connectionSpan = spanReporter.getSpans().get(1);
-            Span statementSpan = spanReporter.getSpans().get(0);
+            assertThat(spanReporter.spans()).hasSize(2);
+            MutableSpan connectionSpan = spanReporter.spans().get(1);
+            MutableSpan statementSpan = spanReporter.spans().get(0);
             assertThat(connectionSpan.name()).isEqualTo("jdbc:/test/connection");
             assertThat(statementSpan.name()).isEqualTo("jdbc:/test/query");
             assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME,
@@ -124,7 +122,7 @@ class TracingJdbcEventListenerTests {
         contextRunner.withPropertyValues("decorator.datasource.p6spy.tracing.include-parameter-values=false")
                 .run(context -> {
                     DataSource dataSource = context.getBean(DataSource.class);
-                    ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+                    TestSpanHandler spanReporter = context.getBean(TestSpanHandler.class);
 
                     Connection connection = dataSource.getConnection();
                     PreparedStatement preparedStatement = connection.prepareStatement("UPDATE INFORMATION_SCHEMA.TABLES SET table_Name = ? WHERE 0 = ?");
@@ -133,9 +131,9 @@ class TracingJdbcEventListenerTests {
                     preparedStatement.executeUpdate();
                     connection.close();
 
-                    assertThat(spanReporter.getSpans()).hasSize(2);
-                    Span connectionSpan = spanReporter.getSpans().get(1);
-                    Span statementSpan = spanReporter.getSpans().get(0);
+                    assertThat(spanReporter.spans()).hasSize(2);
+                    MutableSpan connectionSpan = spanReporter.spans().get(1);
+                    MutableSpan statementSpan = spanReporter.spans().get(0);
                     assertThat(connectionSpan.name()).isEqualTo("jdbc:/test/connection");
                     assertThat(statementSpan.name()).isEqualTo("jdbc:/test/query");
                     assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME,
@@ -148,15 +146,15 @@ class TracingJdbcEventListenerTests {
     void testShouldAddSpanForStatementExecuteUpdate() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
-            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+            TestSpanHandler spanReporter = context.getBean(TestSpanHandler.class);
 
             Connection connection = dataSource.getConnection();
             connection.createStatement().executeUpdate("UPDATE INFORMATION_SCHEMA.TABLES SET table_Name = '' WHERE 0 = 1");
             connection.close();
 
-            assertThat(spanReporter.getSpans()).hasSize(2);
-            Span connectionSpan = spanReporter.getSpans().get(1);
-            Span statementSpan = spanReporter.getSpans().get(0);
+            assertThat(spanReporter.spans()).hasSize(2);
+            MutableSpan connectionSpan = spanReporter.spans().get(1);
+            MutableSpan statementSpan = spanReporter.spans().get(0);
             assertThat(connectionSpan.name()).isEqualTo("jdbc:/test/connection");
             assertThat(statementSpan.name()).isEqualTo("jdbc:/test/query");
             assertThat(statementSpan.tags()).containsEntry(SleuthListenerAutoConfiguration.SPAN_SQL_QUERY_TAG_NAME,
@@ -169,7 +167,7 @@ class TracingJdbcEventListenerTests {
     void testShouldAddSpanForPreparedStatementExecuteQueryIncludingTimeToCloseResultSet() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
-            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+            TestSpanHandler spanReporter = context.getBean(TestSpanHandler.class);
 
             Connection connection = dataSource.getConnection();
             ResultSet resultSet = connection.prepareStatement("SELECT NOW() UNION ALL SELECT NOW()").executeQuery();
@@ -178,10 +176,10 @@ class TracingJdbcEventListenerTests {
             resultSet.close();
             connection.close();
 
-            assertThat(spanReporter.getSpans()).hasSize(3);
-            Span connectionSpan = spanReporter.getSpans().get(2);
-            Span resultSetSpan = spanReporter.getSpans().get(1);
-            Span statementSpan = spanReporter.getSpans().get(0);
+            assertThat(spanReporter.spans()).hasSize(3);
+            MutableSpan connectionSpan = spanReporter.spans().get(2);
+            MutableSpan resultSetSpan = spanReporter.spans().get(1);
+            MutableSpan statementSpan = spanReporter.spans().get(0);
             assertThat(connectionSpan.name()).isEqualTo("jdbc:/test/connection");
             assertThat(statementSpan.name()).isEqualTo("jdbc:/test/query");
             assertThat(resultSetSpan.name()).isEqualTo("jdbc:/test/fetch");
@@ -194,7 +192,7 @@ class TracingJdbcEventListenerTests {
     void testShouldAddSpanForStatementAndResultSet() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
-            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+            TestSpanHandler spanReporter = context.getBean(TestSpanHandler.class);
 
             Connection connection = dataSource.getConnection();
             ResultSet resultSet = connection.createStatement().executeQuery("SELECT NOW()");
@@ -203,10 +201,10 @@ class TracingJdbcEventListenerTests {
             resultSet.close();
             connection.close();
 
-            assertThat(spanReporter.getSpans()).hasSize(3);
-            Span connectionSpan = spanReporter.getSpans().get(2);
-            Span resultSetSpan = spanReporter.getSpans().get(1);
-            Span statementSpan = spanReporter.getSpans().get(0);
+            assertThat(spanReporter.spans()).hasSize(3);
+            MutableSpan connectionSpan = spanReporter.spans().get(2);
+            MutableSpan resultSetSpan = spanReporter.spans().get(1);
+            MutableSpan statementSpan = spanReporter.spans().get(0);
             assertThat(connectionSpan.name()).isEqualTo("jdbc:/test/connection");
             assertThat(statementSpan.name()).isEqualTo("jdbc:/test/query");
             assertThat(resultSetSpan.name()).isEqualTo("jdbc:/test/fetch");
@@ -219,7 +217,7 @@ class TracingJdbcEventListenerTests {
     void testShouldNotFailWhenStatementIsClosedWihoutResultSet() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
-            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+            TestSpanHandler spanReporter = context.getBean(TestSpanHandler.class);
 
             Connection connection = dataSource.getConnection();
             Statement statement = connection.createStatement();
@@ -228,10 +226,10 @@ class TracingJdbcEventListenerTests {
             statement.close();
             connection.close();
 
-            assertThat(spanReporter.getSpans()).hasSize(3);
-            Span connectionSpan = spanReporter.getSpans().get(2);
-            Span resultSetSpan = spanReporter.getSpans().get(1);
-            Span statementSpan = spanReporter.getSpans().get(0);
+            assertThat(spanReporter.spans()).hasSize(3);
+            MutableSpan connectionSpan = spanReporter.spans().get(2);
+            MutableSpan resultSetSpan = spanReporter.spans().get(1);
+            MutableSpan statementSpan = spanReporter.spans().get(0);
             assertThat(connectionSpan.name()).isEqualTo("jdbc:/test/connection");
             assertThat(statementSpan.name()).isEqualTo("jdbc:/test/query");
             assertThat(resultSetSpan.name()).isEqualTo("jdbc:/test/fetch");
@@ -243,7 +241,7 @@ class TracingJdbcEventListenerTests {
     void testShouldNotFailWhenConnectionIsClosedWihoutResultSet() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
-            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+            TestSpanHandler spanReporter = context.getBean(TestSpanHandler.class);
 
             Connection connection = dataSource.getConnection();
             Statement statement = connection.createStatement();
@@ -251,10 +249,10 @@ class TracingJdbcEventListenerTests {
             resultSet.next();
             connection.close();
 
-            assertThat(spanReporter.getSpans()).hasSize(3);
-            Span connectionSpan = spanReporter.getSpans().get(2);
-            Span resultSetSpan = spanReporter.getSpans().get(1);
-            Span statementSpan = spanReporter.getSpans().get(0);
+            assertThat(spanReporter.spans()).hasSize(3);
+            MutableSpan connectionSpan = spanReporter.spans().get(2);
+            MutableSpan resultSetSpan = spanReporter.spans().get(1);
+            MutableSpan statementSpan = spanReporter.spans().get(0);
             assertThat(connectionSpan.name()).isEqualTo("jdbc:/test/connection");
             assertThat(statementSpan.name()).isEqualTo("jdbc:/test/query");
             assertThat(resultSetSpan.name()).isEqualTo("jdbc:/test/fetch");
@@ -266,7 +264,7 @@ class TracingJdbcEventListenerTests {
     void testShouldNotFailWhenResultSetNextWasNotCalled() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
-            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+            TestSpanHandler spanReporter = context.getBean(TestSpanHandler.class);
 
             Connection connection = dataSource.getConnection();
             Statement statement = connection.createStatement();
@@ -276,10 +274,10 @@ class TracingJdbcEventListenerTests {
             statement.close();
             connection.close();
 
-            assertThat(spanReporter.getSpans()).hasSize(3);
-            Span connectionSpan = spanReporter.getSpans().get(2);
-            Span resultSetSpan = spanReporter.getSpans().get(1);
-            Span statementSpan = spanReporter.getSpans().get(0);
+            assertThat(spanReporter.spans()).hasSize(3);
+            MutableSpan connectionSpan = spanReporter.spans().get(2);
+            MutableSpan resultSetSpan = spanReporter.spans().get(1);
+            MutableSpan statementSpan = spanReporter.spans().get(0);
             assertThat(connectionSpan.name()).isEqualTo("jdbc:/test/connection");
             assertThat(statementSpan.name()).isEqualTo("jdbc:/test/query");
             assertThat(resultSetSpan.name()).isEqualTo("jdbc:/test/fetch");
@@ -291,7 +289,7 @@ class TracingJdbcEventListenerTests {
     void testShouldNotFailWhenResourceIsAlreadyClosed() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
-            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+            TestSpanHandler spanReporter = context.getBean(TestSpanHandler.class);
 
             Connection connection = dataSource.getConnection();
             Statement statement = connection.createStatement();
@@ -304,10 +302,10 @@ class TracingJdbcEventListenerTests {
             connection.close();
             connection.close();
 
-            assertThat(spanReporter.getSpans()).hasSize(3);
-            Span connectionSpan = spanReporter.getSpans().get(2);
-            Span resultSetSpan = spanReporter.getSpans().get(1);
-            Span statementSpan = spanReporter.getSpans().get(0);
+            assertThat(spanReporter.spans()).hasSize(3);
+            MutableSpan connectionSpan = spanReporter.spans().get(2);
+            MutableSpan resultSetSpan = spanReporter.spans().get(1);
+            MutableSpan statementSpan = spanReporter.spans().get(0);
             assertThat(connectionSpan.name()).isEqualTo("jdbc:/test/connection");
             assertThat(statementSpan.name()).isEqualTo("jdbc:/test/query");
             assertThat(resultSetSpan.name()).isEqualTo("jdbc:/test/fetch");
@@ -319,7 +317,7 @@ class TracingJdbcEventListenerTests {
     void testShouldNotFailWhenResourceIsAlreadyClosed2() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
-            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+            TestSpanHandler spanReporter = context.getBean(TestSpanHandler.class);
 
             Connection connection = dataSource.getConnection();
             try {
@@ -330,8 +328,8 @@ class TracingJdbcEventListenerTests {
             catch (SQLException expected) {
             }
 
-            assertThat(spanReporter.getSpans()).hasSize(1);
-            Span connectionSpan = spanReporter.getSpans().get(0);
+            assertThat(spanReporter.spans()).hasSize(1);
+            MutableSpan connectionSpan = spanReporter.spans().get(0);
             assertThat(connectionSpan.name()).isEqualTo("jdbc:/test/connection");
         });
     }
@@ -340,16 +338,16 @@ class TracingJdbcEventListenerTests {
     void testShouldNotFailToCloseSpanForTwoConsecutiveConnections() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
-            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+            TestSpanHandler spanReporter = context.getBean(TestSpanHandler.class);
 
             Connection connection1 = dataSource.getConnection();
             Connection connection2 = dataSource.getConnection();
             connection1.close();
             connection2.close();
 
-            assertThat(spanReporter.getSpans()).hasSize(2);
-            Span connection1Span = spanReporter.getSpans().get(0);
-            Span connection2Span = spanReporter.getSpans().get(1);
+            assertThat(spanReporter.spans()).hasSize(2);
+            MutableSpan connection1Span = spanReporter.spans().get(0);
+            MutableSpan connection2Span = spanReporter.spans().get(1);
             assertThat(connection1Span.name()).isEqualTo("jdbc:/test/connection");
             assertThat(connection2Span.name()).isEqualTo("jdbc:/test/connection");
         });
@@ -359,7 +357,7 @@ class TracingJdbcEventListenerTests {
     void testShouldNotFailWhenClosedInReversedOrder() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
-            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+            TestSpanHandler spanReporter = context.getBean(TestSpanHandler.class);
 
             Connection connection = dataSource.getConnection();
             Statement statement = connection.createStatement();
@@ -369,10 +367,10 @@ class TracingJdbcEventListenerTests {
             statement.close();
             resultSet.close();
 
-            assertThat(spanReporter.getSpans()).hasSize(3);
-            Span connectionSpan = spanReporter.getSpans().get(2);
-            Span resultSetSpan = spanReporter.getSpans().get(1);
-            Span statementSpan = spanReporter.getSpans().get(0);
+            assertThat(spanReporter.spans()).hasSize(3);
+            MutableSpan connectionSpan = spanReporter.spans().get(2);
+            MutableSpan resultSetSpan = spanReporter.spans().get(1);
+            MutableSpan statementSpan = spanReporter.spans().get(0);
             assertThat(connectionSpan.name()).isEqualTo("jdbc:/test/connection");
             assertThat(statementSpan.name()).isEqualTo("jdbc:/test/query");
             assertThat(resultSetSpan.name()).isEqualTo("jdbc:/test/fetch");
@@ -384,7 +382,7 @@ class TracingJdbcEventListenerTests {
     void testSingleConnectionAcrossMultipleThreads() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
-            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+            TestSpanHandler spanReporter = context.getBean(TestSpanHandler.class);
 
             Connection connection = dataSource.getConnection();
             IntStream.range(0, 5)
@@ -404,8 +402,8 @@ class TracingJdbcEventListenerTests {
                     .forEach(CompletableFuture::join);
             connection.close();
 
-            assertThat(spanReporter.getSpans()).hasSize(1 + 2 * 5);
-            assertThat(spanReporter.getSpans()).extracting("name")
+            assertThat(spanReporter.spans()).hasSize(1 + 2 * 5);
+            assertThat(spanReporter.spans()).extracting("name")
                     .contains("jdbc:/test/query", "jdbc:/test/fetch", "jdbc:/test/connection");
         });
     }
@@ -414,7 +412,7 @@ class TracingJdbcEventListenerTests {
     void testShouldIncludeOnlyConnectionTraces() {
         contextRunner.withPropertyValues("decorator.datasource.sleuth.include: connection").run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
-            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+            TestSpanHandler spanReporter = context.getBean(TestSpanHandler.class);
 
             Connection connection = dataSource.getConnection();
             Statement statement = connection.createStatement();
@@ -424,8 +422,8 @@ class TracingJdbcEventListenerTests {
             statement.close();
             connection.close();
 
-            assertThat(spanReporter.getSpans()).hasSize(1);
-            Span connectionSpan = spanReporter.getSpans().get(0);
+            assertThat(spanReporter.spans()).hasSize(1);
+            MutableSpan connectionSpan = spanReporter.spans().get(0);
             assertThat(connectionSpan.name()).isEqualTo("jdbc:/test/connection");
         });
     }
@@ -434,7 +432,7 @@ class TracingJdbcEventListenerTests {
     void testShouldIncludeOnlyQueryTraces() {
         contextRunner.withPropertyValues("decorator.datasource.sleuth.include: query").run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
-            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+            TestSpanHandler spanReporter = context.getBean(TestSpanHandler.class);
 
             Connection connection = dataSource.getConnection();
             Statement statement = connection.createStatement();
@@ -444,8 +442,8 @@ class TracingJdbcEventListenerTests {
             statement.close();
             connection.close();
 
-            assertThat(spanReporter.getSpans()).hasSize(1);
-            Span statementSpan = spanReporter.getSpans().get(0);
+            assertThat(spanReporter.spans()).hasSize(1);
+            MutableSpan statementSpan = spanReporter.spans().get(0);
             assertThat(statementSpan.name()).isEqualTo("jdbc:/test/query");
         });
     }
@@ -454,7 +452,7 @@ class TracingJdbcEventListenerTests {
     void testShouldIncludeOnlyFetchTraces() {
         contextRunner.withPropertyValues("decorator.datasource.sleuth.include: fetch").run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
-            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+            TestSpanHandler spanReporter = context.getBean(TestSpanHandler.class);
 
             Connection connection = dataSource.getConnection();
             Statement statement = connection.createStatement();
@@ -464,8 +462,8 @@ class TracingJdbcEventListenerTests {
             statement.close();
             connection.close();
 
-            assertThat(spanReporter.getSpans()).hasSize(1);
-            Span resultSetSpan = spanReporter.getSpans().get(0);
+            assertThat(spanReporter.spans()).hasSize(1);
+            MutableSpan resultSetSpan = spanReporter.spans().get(0);
             assertThat(resultSetSpan.name()).isEqualTo("jdbc:/test/fetch");
         });
     }
@@ -474,7 +472,7 @@ class TracingJdbcEventListenerTests {
     void testShouldIncludeOnlyConnectionAndQueryTraces() {
         contextRunner.withPropertyValues("decorator.datasource.sleuth.include: connection, query").run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
-            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+            TestSpanHandler spanReporter = context.getBean(TestSpanHandler.class);
 
             Connection connection = dataSource.getConnection();
             Statement statement = connection.createStatement();
@@ -484,9 +482,9 @@ class TracingJdbcEventListenerTests {
             statement.close();
             connection.close();
 
-            assertThat(spanReporter.getSpans()).hasSize(2);
-            Span connectionSpan = spanReporter.getSpans().get(1);
-            Span statementSpan = spanReporter.getSpans().get(0);
+            assertThat(spanReporter.spans()).hasSize(2);
+            MutableSpan connectionSpan = spanReporter.spans().get(1);
+            MutableSpan statementSpan = spanReporter.spans().get(0);
             assertThat(connectionSpan.name()).isEqualTo("jdbc:/test/connection");
             assertThat(statementSpan.name()).isEqualTo("jdbc:/test/query");
         });
@@ -496,7 +494,7 @@ class TracingJdbcEventListenerTests {
     void testShouldIncludeOnlyConnectionAndFetchTraces() {
         contextRunner.withPropertyValues("decorator.datasource.sleuth.include: connection, fetch").run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
-            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+            TestSpanHandler spanReporter = context.getBean(TestSpanHandler.class);
 
             Connection connection = dataSource.getConnection();
             Statement statement = connection.createStatement();
@@ -506,9 +504,9 @@ class TracingJdbcEventListenerTests {
             statement.close();
             connection.close();
 
-            assertThat(spanReporter.getSpans()).hasSize(2);
-            Span connectionSpan = spanReporter.getSpans().get(1);
-            Span resultSetSpan = spanReporter.getSpans().get(0);
+            assertThat(spanReporter.spans()).hasSize(2);
+            MutableSpan connectionSpan = spanReporter.spans().get(1);
+            MutableSpan resultSetSpan = spanReporter.spans().get(0);
             assertThat(connectionSpan.name()).isEqualTo("jdbc:/test/connection");
             assertThat(resultSetSpan.name()).isEqualTo("jdbc:/test/fetch");
         });
@@ -518,7 +516,7 @@ class TracingJdbcEventListenerTests {
     void testShouldIncludeOnlyQueryAndFetchTraces() {
         contextRunner.withPropertyValues("decorator.datasource.sleuth.include: query, fetch").run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
-            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+            TestSpanHandler spanReporter = context.getBean(TestSpanHandler.class);
 
             Connection connection = dataSource.getConnection();
             Statement statement = connection.createStatement();
@@ -528,9 +526,9 @@ class TracingJdbcEventListenerTests {
             statement.close();
             connection.close();
 
-            assertThat(spanReporter.getSpans()).hasSize(2);
-            Span resultSetSpan = spanReporter.getSpans().get(1);
-            Span statementSpan = spanReporter.getSpans().get(0);
+            assertThat(spanReporter.spans()).hasSize(2);
+            MutableSpan resultSetSpan = spanReporter.spans().get(1);
+            MutableSpan statementSpan = spanReporter.spans().get(0);
             assertThat(statementSpan.name()).isEqualTo("jdbc:/test/query");
             assertThat(resultSetSpan.name()).isEqualTo("jdbc:/test/fetch");
         });
@@ -540,7 +538,7 @@ class TracingJdbcEventListenerTests {
     void testShouldNotOverrideExceptionWhenConnectionWasClosedBeforeExecutingQuery() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
-            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+            TestSpanHandler spanReporter = context.getBean(TestSpanHandler.class);
 
             Connection connection = dataSource.getConnection();
             PreparedStatement statement = connection.prepareStatement("SELECT NOW()");
@@ -552,8 +550,8 @@ class TracingJdbcEventListenerTests {
             catch (SQLException expected) {
             }
 
-            assertThat(spanReporter.getSpans()).hasSize(1);
-            Span connectionSpan = spanReporter.getSpans().get(0);
+            assertThat(spanReporter.spans()).hasSize(1);
+            MutableSpan connectionSpan = spanReporter.spans().get(0);
             assertThat(connectionSpan.name()).isEqualTo("jdbc:/test/connection");
         });
     }
@@ -562,7 +560,7 @@ class TracingJdbcEventListenerTests {
     void testShouldNotOverrideExceptionWhenStatementWasClosedBeforeExecutingQuery() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
-            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+            TestSpanHandler spanReporter = context.getBean(TestSpanHandler.class);
 
             Connection connection = dataSource.getConnection();
             PreparedStatement statement = connection.prepareStatement("SELECT NOW()");
@@ -575,9 +573,9 @@ class TracingJdbcEventListenerTests {
             }
             connection.close();
 
-            assertThat(spanReporter.getSpans()).hasSize(2);
-            Span connectionSpan = spanReporter.getSpans().get(1);
-            Span statementSpan = spanReporter.getSpans().get(0);
+            assertThat(spanReporter.spans()).hasSize(2);
+            MutableSpan connectionSpan = spanReporter.spans().get(1);
+            MutableSpan statementSpan = spanReporter.spans().get(0);
             assertThat(connectionSpan.name()).isEqualTo("jdbc:/test/connection");
             assertThat(statementSpan.name()).isEqualTo("jdbc:/test/query");
         });
@@ -587,7 +585,7 @@ class TracingJdbcEventListenerTests {
     void testShouldNotOverrideExceptionWhenResultSetWasClosedBeforeNext() {
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
-            ArrayListSpanReporter spanReporter = context.getBean(ArrayListSpanReporter.class);
+            TestSpanHandler spanReporter = context.getBean(TestSpanHandler.class);
 
             Connection connection = dataSource.getConnection();
             Statement statement = connection.createStatement();
@@ -602,10 +600,10 @@ class TracingJdbcEventListenerTests {
             statement.close();
             connection.close();
 
-            assertThat(spanReporter.getSpans()).hasSize(3);
-            Span connectionSpan = spanReporter.getSpans().get(2);
-            Span resultSetSpan = spanReporter.getSpans().get(1);
-            Span statementSpan = spanReporter.getSpans().get(0);
+            assertThat(spanReporter.spans()).hasSize(3);
+            MutableSpan connectionSpan = spanReporter.spans().get(2);
+            MutableSpan resultSetSpan = spanReporter.spans().get(1);
+            MutableSpan statementSpan = spanReporter.spans().get(0);
             assertThat(connectionSpan.name()).isEqualTo("jdbc:/test/connection");
             assertThat(statementSpan.name()).isEqualTo("jdbc:/test/query");
             assertThat(resultSetSpan.name()).isEqualTo("jdbc:/test/fetch");

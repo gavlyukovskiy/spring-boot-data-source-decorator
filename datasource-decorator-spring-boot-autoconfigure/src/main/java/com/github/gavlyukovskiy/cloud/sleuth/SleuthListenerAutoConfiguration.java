@@ -31,7 +31,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -45,7 +44,12 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnClass(Tracer.class)
 @ConditionalOnBean(Tracer.class)
 @ConditionalOnProperty(name = "decorator.datasource.sleuth.enabled", havingValue = "true", matchIfMissing = true)
-@AutoConfigureAfter({ TraceAutoConfiguration.class, DataSourceDecoratorAutoConfiguration.class })
+@AutoConfigureAfter(
+        value = DataSourceDecoratorAutoConfiguration.class,
+        name = {
+                "org.springframework.cloud.sleuth.autoconfig.brave.BraveAutoConfiguration",
+                "org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration"
+        })
 public class SleuthListenerAutoConfiguration {
 
     public static final String SPAN_SQL_QUERY_TAG_NAME = "sql";

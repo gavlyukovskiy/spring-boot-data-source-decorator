@@ -24,11 +24,11 @@ version = scmVersion.version
 subprojects {
     apply(plugin = "java")
 
-    extra["springBootVersion"] = "2.3.1.RELEASE"
+    extra["springBootVersion"] = "2.4.3"
     extra["p6SpyVersion"] = "3.9.0"
     extra["datasourceProxyVersion"] = "1.7"
     extra["flexyPoolVersion"] = "2.2.1"
-    extra["sleuthVersion"] = "2.2.1.RELEASE"
+    extra["sleuthVersion"] = "3.0.1"
 
     extra["release"] = listOf(
             "datasource-decorator-spring-boot-autoconfigure",
