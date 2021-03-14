@@ -64,7 +64,7 @@ public class P6SpyProperties {
      * Class file to use (only with logging=custom).
      * The class must implement {@link com.p6spy.engine.spy.appender.FormattedLogger}
      */
-    private Class<? extends FormattedLogger> customAppenderClass;
+    private String customAppenderClass;
 
     /**
      * Log filtering related properties.

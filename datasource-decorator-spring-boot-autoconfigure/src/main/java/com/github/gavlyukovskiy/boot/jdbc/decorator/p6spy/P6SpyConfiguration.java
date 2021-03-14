@@ -103,7 +103,7 @@ public class P6SpyConfiguration {
                     System.setProperty("p6spy.config.appender", "com.p6spy.engine.spy.appender.FileLogger");
                     break;
                 case CUSTOM:
-                    System.setProperty("p6spy.config.appender", p6spy.getCustomAppenderClass().getName());
+                    System.setProperty("p6spy.config.appender", p6spy.getCustomAppenderClass());
                     break;
             }
         }
