@@ -3,7 +3,7 @@
 ![Build status](https://github.com/gavlyukovskiy/spring-boot-data-source-decorator/workflows/Build/badge.svg)
 [![Latest release](https://img.shields.io/badge/dynamic/xml.svg?label=Maven%20Central&color=green&query=%2F%2Fmetadata%2Fversioning%2Flatest&url=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Fcom%2Fgithub%2Fgavlyukovskiy%2Fdatasource-decorator-spring-boot-autoconfigure%2Fmaven-metadata.xml)](https://mvnrepository.com/artifact/com.github.gavlyukovskiy/datasource-decorator-spring-boot-autoconfigure/)
 
-Spring Boot auto-configuration for integration with
+[Spring Boot](https://github.com/spring-projects/spring-boot) auto-configuration for integration with
 * [P6Spy](https://github.com/p6spy/p6spy) - adds ability to intercept and log sql queries, including interception of a most `Connection`, `Statement` and `ResultSet` methods invocations
 * [Datasource Proxy](https://github.com/ttddyy/datasource-proxy) - adds ability to intercept all queries and `Connection`, `Statement` and `ResultSet` method calls
 * [FlexyPool](https://github.com/vladmihalcea/flexy-pool) - adds connection pool metrics (jmx, codahale, dropwizard) and flexible strategies for adjusting pool size on demand
@@ -254,7 +254,7 @@ decorator.datasource.flexy-pool.threshold.connection.lease=1000
 
 #### Spring Cloud Sleuth
 
-P6Spy or Datasource Proxy allows to create spans on various jdbc events:
+P6Spy and Datasource Proxy allow to create spans on various jdbc events:
  * `jdbc:/<dataSource>/connection` - opening connection including events for commits and rollbacks
  * `jdbc:/<dataSource>/query` - executing query including sql text and number of affected rows in the tags
  * `jdbc:/<dataSource>/fetch` - fetching result set data including number of rows in the tags
@@ -263,20 +263,32 @@ You can configure the tracing with the following properties:
 ```properties
 # Creates span for every connection and query. Works only with p6spy or datasource-proxy.
 decorator.datasource.sleuth.enabled=true
-# Specify traces that will be created in zipkin
+# Specify traces that will be created in tracing system (see screenshots)
 decorator.datasource.sleuth.include=connection, query, fetch
 ```
+##### ~~Pizza~~ Demo time
+All screenshots were taken using  [Spring PetClinic](https://github.com/spring-petclinic/spring-petclinic-rest) with [Zipkin](https://github.com/openzipkin/zipkin) backend, but other tracing systems are supported through Spring Cloud Sleuth/Brave.
 
-Example request:
-![Zipkin traces](images/zipkin.png)
+Request span with jdbc tracing:
+![Request trace with jdbc screenshot](images/zipkin.png)
 
-Details of connection span:
-![Connection span details](images/connection-span.png)
+Connection:
+![Connection screenshot](images/connection-span.png)
 
-Details of query span:
-![Query span details](images/query-span.png)
+Connection that was rolled back:
+![Connection that was rolled back screenshot](images/connection-span-rollback.png)
 
-![Error query span details](images/query-span-error.png)
+Connection that was closed on database side:
+![Connection that was closed on database side screenshot](images/connection-span-error.png)
+
+Query:
+![Query screenshot](images/query-span.png)
+
+Query with error:
+![Query with error screenshot](images/query-span-error.png)
+
+Fetch:
+![Fetch screenshot](images/fetch-span.png)
 
 #### Custom Decorators
 

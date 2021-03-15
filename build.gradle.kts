@@ -161,7 +161,7 @@ subprojects {
     }
 
     if (project.name.contains("sample")) {
-        tasks.build {
+        tasks.compileJava {
             dependsOn(":datasource-decorator-spring-boot-autoconfigure:publishToMavenLocal")
             dependsOn(":datasource-proxy-spring-boot-starter:publishToMavenLocal")
             dependsOn(":flexy-pool-spring-boot-starter:publishToMavenLocal")
