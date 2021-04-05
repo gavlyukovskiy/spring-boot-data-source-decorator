@@ -55,7 +55,7 @@ subprojects {
                 doLast {
                     val errors = ArrayList<String>()
                     if ((project.version as String).contains("SNAPSHOT")) {
-                        errors.add("Cannot release SNAPSHOT version")
+                        // errors.add("Cannot release SNAPSHOT version")
                     }
                     if (System.getenv("BINTRAY_USER") == null && !project.hasProperty("release.bintray_user")) {
                         errors.add("'BINTRAY_USER' or '-Prelease.bintray_user' must be set")
@@ -66,11 +66,13 @@ subprojects {
                     if (System.getenv("GPG_PASSPHRASE") == null && !project.hasProperty("release.gpg_passphrase")) {
                         errors.add("'GPG_PASSPHRASE' or '-Prelease.gpg_passphrase' must be set")
                     }
-                    if (System.getenv("SONATYPE_USER") == null && !project.hasProperty("release.sonatype_user")) {
-                        errors.add("'SONATYPE_USER' or '-Prelease.sonatype_user' must be set")
-                    }
-                    if (System.getenv("SONATYPE_PASSWORD") == null && !project.hasProperty("release.sonatype_password")) {
-                        errors.add("'SONATYPE_PASSWORD' or '-Prelease.sonatype_password' must be set")
+                    if (project.hasProperty("release.maven_central_sync")) {
+                        if (System.getenv("SONATYPE_USER") == null && !project.hasProperty("release.sonatype_user")) {
+                            errors.add("'SONATYPE_USER' or '-Prelease.sonatype_user' must be set")
+                        }
+                        if (System.getenv("SONATYPE_PASSWORD") == null && !project.hasProperty("release.sonatype_password")) {
+                            errors.add("'SONATYPE_PASSWORD' or '-Prelease.sonatype_password' must be set")
+                        }
                     }
                     if (errors.isNotEmpty()) {
                         throw IllegalStateException(errors.joinToString("\n"))
@@ -150,7 +152,7 @@ subprojects {
                         passphrase = (project.properties["release.gpg_passphrase"] ?: System.getenv("GPG_PASSPHRASE"))?.toString()
                     }
                     with(mavenCentralSync) {
-                        sync = true
+                        sync = project.hasProperty("release.maven_central_sync")
                         user = (project.properties["release.sonatype_user"] ?: System.getenv("SONATYPE_USER"))?.toString()
                         password = (project.properties["release.sonatype_password"] ?: System.getenv("SONATYPE_PASSWORD"))?.toString()
                         close = "1"

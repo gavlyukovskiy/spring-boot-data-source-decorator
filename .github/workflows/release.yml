@@ -37,15 +37,23 @@ jobs:
             -Prelease.customUsername=${{ github.actor }} \
             -Prelease.customPassword=${{ github.token }}
 
-      - name: Upload artifact to Bintray / Maven Central
+      - name: Upload artifact to Bintray
         id: upload_artifact
+        env:
+          BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
+          BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: ./gradlew bintrayUpload
+
+      - name: Sync artifact to Maven Central
+        id: sync_artifact
         env:
           BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
           BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
           SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-        run: ./gradlew bintrayUpload
+        run: ./gradlew bintrayUpload -Prelease.maven_central_sync
 
       - name: Create Release
         id: create_release
