@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 the original author or authors.
+ * Copyright 2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 
 package com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy;
 
-import com.p6spy.engine.logging.P6LogFactory;
-import com.p6spy.engine.spy.appender.FormattedLogger;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -35,7 +33,7 @@ public class P6SpyProperties {
     /**
      * Enables logging JDBC events.
      *
-     * @see P6LogFactory
+     * @see com.p6spy.engine.logging.P6LogFactory
      */
     private boolean enableLogging = true;
     /**

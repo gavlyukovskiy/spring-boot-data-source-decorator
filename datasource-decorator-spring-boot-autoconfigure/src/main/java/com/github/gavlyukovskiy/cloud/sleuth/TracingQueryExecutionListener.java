@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 the original author or authors.
+ * Copyright 2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,15 +72,12 @@ public class TracingQueryExecutionListener implements QueryExecutionListener, Me
             if (methodName.equals("getConnection")) {
                 strategy.beforeGetConnection(connectionId, dataSourceName);
             }
-        }
-        if (target instanceof ResultSet) {
+        } else if (target instanceof ResultSet) {
             ResultSet resultSet = (ResultSet) target;
             if (methodName.equals("next")) {
                 try {
                     strategy.beforeResultSetNext(connectionId, resultSet.getStatement(), resultSet, dataSourceName);
-                }
-                catch (SQLException e) {
-                    // ignore
+                } catch (SQLException ignore) {
                 }
             }
         }
@@ -96,24 +93,19 @@ public class TracingQueryExecutionListener implements QueryExecutionListener, Me
             if (methodName.equals("getConnection")) {
                 strategy.afterGetConnection(connectionId, t);
             }
-        }
-        else if (target instanceof Connection) {
+        } else if (target instanceof Connection) {
             if (methodName.equals("commit")) {
                 strategy.afterCommit(connectionId, t);
-            }
-            if (methodName.equals("rollback")) {
+            } else if (methodName.equals("rollback")) {
                 strategy.afterRollback(connectionId, t);
-            }
-            if (methodName.equals("close")) {
+            } else if (methodName.equals("close")) {
                 strategy.afterConnectionClose(connectionId, t);
             }
-        }
-        else if (target instanceof Statement) {
+        } else if (target instanceof Statement) {
             if (methodName.equals("close")) {
                 strategy.afterStatementClose(connectionId, (Statement) target);
             }
-        }
-        else if (target instanceof ResultSet) {
+        } else if (target instanceof ResultSet) {
             if (methodName.equals("close")) {
                 ResultSet resultSet = (ResultSet) target;
                 strategy.afterResultSetClose(connectionId, resultSet, -1, t);
