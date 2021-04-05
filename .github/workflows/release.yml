@@ -63,5 +63,10 @@ jobs:
         with:
           tag_name: ${{ github.event.inputs.releaseVersion }}
           release_name: ${{ github.event.inputs.releaseVersion }}
-          draft: false
+          body: |
+            ### ⭐ New Features
+             - none
+            ### 🐞 Bug fixes
+             - none
+          draft: true
           prerelease: false
