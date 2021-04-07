@@ -47,18 +47,38 @@ public class DecoratedDataSource extends DelegatingDataSource {
         this.decoratingChain = decoratingChain;
     }
 
+    /**
+     * Returns data source bean name.
+     *
+     * @return data source bean name
+     */
     public String getBeanName() {
         return beanName;
     }
 
+    /**
+     * Returns initial data source, before applying any decorator.
+     *
+     * @return initial data source
+     */
     public DataSource getRealDataSource() {
         return realDataSource;
     }
 
+    /**
+     * Returns wrapped data source with all decorators applied.
+     *
+     * @return decorated data source
+     */
     public DataSource getDecoratedDataSource() {
         return decoratedDataSource;
     }
 
+    /**
+     * Returns list with all decorators applied on a {@link DataSource} reverse ordered with applying order.
+     *
+     * @return decorating information chain
+     */
     public List<DataSourceDecorationStage> getDecoratingChain() {
         return decoratingChain;
     }
