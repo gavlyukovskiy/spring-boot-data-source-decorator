@@ -16,11 +16,12 @@
 
 package com.github.gavlyukovskiy.boot.jdbc.decorator;
 
-import org.springframework.aop.RawTargetAccess;
+import org.springframework.jdbc.datasource.DelegatingDataSource;
 
 import javax.sql.DataSource;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Interface that implicitly added to the CGLIB proxy of {@link DataSource}.
@@ -28,38 +29,64 @@ import java.util.List;
  * Returns link of both real {@link DataSource}, decorated {@link DataSource}
  * and all decorating chain including decorator bean name, instance and result of decorating.
  *
- * @see DataSourceDecoratorInterceptor
- *
  * @author Arthur Gavlyukovskiy
  * @since 1.2.2
  */
-public interface DecoratedDataSource extends RawTargetAccess {
+public class DecoratedDataSource extends DelegatingDataSource {
+
+    private final String beanName;
+    private final DataSource realDataSource;
+    private final DataSource decoratedDataSource;
+    private final List<DataSourceDecorationStage> decoratingChain;
+
+    DecoratedDataSource(String beanName, DataSource realDataSource, DataSource decoratedDataSource, List<DataSourceDecorationStage> decoratingChain) {
+        super(decoratedDataSource);
+        this.beanName = beanName;
+        this.realDataSource = realDataSource;
+        this.decoratedDataSource = decoratedDataSource;
+        this.decoratingChain = decoratingChain;
+    }
 
     /**
      * Returns data source bean name.
      *
      * @return data source bean name
      */
-    String getBeanName();
+    public String getBeanName() {
+        return beanName;
+    }
 
     /**
      * Returns initial data source, before applying any decorator.
      *
      * @return initial data source
      */
-    DataSource getRealDataSource();
+    public DataSource getRealDataSource() {
+        return realDataSource;
+    }
 
     /**
-     * Returns data source resulted {@link DataSourceDecoratorInterceptor}.
+     * Returns wrapped data source with all decorators applied.
      *
      * @return decorated data source
      */
-    DataSource getDecoratedDataSource();
+    public DataSource getDecoratedDataSource() {
+        return decoratedDataSource;
+    }
 
     /**
      * Returns list with all decorators applied on a {@link DataSource} reverse ordered with applying order.
      *
      * @return decorating information chain
      */
-    List<DataSourceDecorationStage> getDecoratingChain();
+    public List<DataSourceDecorationStage> getDecoratingChain() {
+        return decoratingChain;
+    }
+
+    @Override
+    public String toString() {
+        return decoratingChain.stream()
+                .map(entry -> entry.getBeanName() + " [" + entry.getDataSource().getClass().getName() + "]")
+                .collect(Collectors.joining(" -> ")) + " -> " + beanName + " [" + realDataSource.getClass().getName() + "]";
+    }
 }

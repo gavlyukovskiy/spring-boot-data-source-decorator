@@ -77,11 +77,7 @@ public class DataSourceDecoratorBeanPostProcessor implements BeanPostProcessor, 
                 }
             }
             if (dataSource != decoratedDataSource) {
-                ProxyFactory factory = new ProxyFactory(bean);
-                factory.setProxyTargetClass(true);
-                factory.addInterface(DecoratedDataSource.class);
-                factory.addAdvice(new DataSourceDecoratorInterceptor(beanName, dataSource, decoratedDataSource, decoratedDataSourceChainEntries));
-                return factory.getProxy();
+                return new DecoratedDataSource(beanName, dataSource, decoratedDataSource, decoratedDataSourceChainEntries);
             }
         }
         return bean;

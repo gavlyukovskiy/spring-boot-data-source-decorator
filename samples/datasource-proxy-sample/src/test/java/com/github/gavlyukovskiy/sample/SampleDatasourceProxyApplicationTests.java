@@ -39,7 +39,6 @@ class SampleDatasourceProxyApplicationTests {
     @Test
     void contextLoads() {
         assertThat(dataSource).isInstanceOf(DecoratedDataSource.class);
-        assertThat(dataSource).isInstanceOf(HikariDataSource.class);
 
         DecoratedDataSource decoratedDataSource = (DecoratedDataSource) dataSource;
 
