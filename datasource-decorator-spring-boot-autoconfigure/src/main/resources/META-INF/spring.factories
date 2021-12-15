@@ -1,3 +1,6 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
 com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorAutoConfiguration,\
 com.github.gavlyukovskiy.cloud.sleuth.SleuthListenerAutoConfiguration
+
+org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase=\
+com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorAutoConfiguration
