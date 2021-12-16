@@ -39,7 +39,9 @@ import java.util.stream.Collectors;
  *
  * @author Arthur Gavlyukovskiy
  * @since 1.2
+ * @deprecated in 1.8.0 in favor of <a href="https://docs.spring.io/spring-cloud-sleuth/docs/3.1.0/reference/html/integrations.html#sleuth-jdbc-integration">Spring Cloud Sleuth: Spring JDBC</a>
  */
+@Deprecated
 public class TracingQueryExecutionListener implements QueryExecutionListener, MethodExecutionListener, Ordered {
 
     private final TracingListenerStrategy<String, Statement, ResultSet> strategy;

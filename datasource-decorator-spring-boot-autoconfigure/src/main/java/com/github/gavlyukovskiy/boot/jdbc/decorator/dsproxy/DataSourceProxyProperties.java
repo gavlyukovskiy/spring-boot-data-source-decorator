@@ -16,18 +16,13 @@
 
 package com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy;
 
-import lombok.Getter;
-import lombok.Setter;
 import net.ttddyy.dsproxy.QueryCountHolder;
 import net.ttddyy.dsproxy.listener.logging.CommonsLogLevel;
 import net.ttddyy.dsproxy.listener.logging.SLF4JLogLevel;
 import net.ttddyy.dsproxy.support.ProxyDataSourceBuilder;
-import org.slf4j.Logger;
 
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-
-import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * Properties for datasource-proxy
@@ -35,11 +30,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  * @author Arthur Gavlyukovskiy
  * @since 1.1
  */
-@Getter
-@Setter
 public class DataSourceProxyProperties {
-
-    private static final Logger log = getLogger(DataSourceProxyProperties.class);
 
     /**
      * Logging to use for logging queries.
@@ -69,6 +60,54 @@ public class DataSourceProxyProperties {
      */
     private boolean countQuery = false;
 
+    public DataSourceProxyLogging getLogging() {
+        return this.logging;
+    }
+
+    public Query getQuery() {
+        return this.query;
+    }
+
+    public SlowQuery getSlowQuery() {
+        return this.slowQuery;
+    }
+
+    public boolean isMultiline() {
+        return this.multiline;
+    }
+
+    public boolean isJsonFormat() {
+        return this.jsonFormat;
+    }
+
+    public boolean isCountQuery() {
+        return this.countQuery;
+    }
+
+    public void setLogging(DataSourceProxyLogging logging) {
+        this.logging = logging;
+    }
+
+    public void setQuery(Query query) {
+        this.query = query;
+    }
+
+    public void setSlowQuery(SlowQuery slowQuery) {
+        this.slowQuery = slowQuery;
+    }
+
+    public void setMultiline(boolean multiline) {
+        this.multiline = multiline;
+    }
+
+    public void setJsonFormat(boolean jsonFormat) {
+        this.jsonFormat = jsonFormat;
+    }
+
+    public void setCountQuery(boolean countQuery) {
+        this.countQuery = countQuery;
+    }
+
     /**
      * Properties to configure query logging listener.
      *
@@ -77,8 +116,6 @@ public class DataSourceProxyProperties {
      * @see ProxyDataSourceBuilder#logQueryByCommons(CommonsLogLevel, String)
      * @see ProxyDataSourceBuilder#logQueryByJUL(Level, String)
      */
-    @Getter
-    @Setter
     public static class Query {
         /**
          * Enable logging all queries to the log.
@@ -92,6 +129,30 @@ public class DataSourceProxyProperties {
          * Severity of query logger.
          */
         private String logLevel = "DEBUG";
+
+        public boolean isEnableLogging() {
+            return this.enableLogging;
+        }
+
+        public String getLoggerName() {
+            return this.loggerName;
+        }
+
+        public String getLogLevel() {
+            return this.logLevel;
+        }
+
+        public void setEnableLogging(boolean enableLogging) {
+            this.enableLogging = enableLogging;
+        }
+
+        public void setLoggerName(String loggerName) {
+            this.loggerName = loggerName;
+        }
+
+        public void setLogLevel(String logLevel) {
+            this.logLevel = logLevel;
+        }
     }
 
     /**
@@ -102,8 +163,6 @@ public class DataSourceProxyProperties {
      * @see ProxyDataSourceBuilder#logSlowQueryByCommons(long, TimeUnit)
      * @see ProxyDataSourceBuilder#logSlowQueryByJUL(long, TimeUnit)
      */
-    @Getter
-    @Setter
     public static class SlowQuery {
         /**
          * Enable logging slow queries to the log.
@@ -121,6 +180,38 @@ public class DataSourceProxyProperties {
          * Number of seconds to consider query as slow.
          */
         private long threshold = 300;
+
+        public boolean isEnableLogging() {
+            return this.enableLogging;
+        }
+
+        public String getLoggerName() {
+            return this.loggerName;
+        }
+
+        public String getLogLevel() {
+            return this.logLevel;
+        }
+
+        public long getThreshold() {
+            return this.threshold;
+        }
+
+        public void setEnableLogging(boolean enableLogging) {
+            this.enableLogging = enableLogging;
+        }
+
+        public void setLoggerName(String loggerName) {
+            this.loggerName = loggerName;
+        }
+
+        public void setLogLevel(String logLevel) {
+            this.logLevel = logLevel;
+        }
+
+        public void setThreshold(long threshold) {
+            this.threshold = threshold;
+        }
     }
 
     public enum DataSourceProxyLogging {

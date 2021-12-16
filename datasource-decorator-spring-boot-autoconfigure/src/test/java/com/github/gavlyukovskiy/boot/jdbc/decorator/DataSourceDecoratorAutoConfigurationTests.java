@@ -53,7 +53,7 @@ class DataSourceDecoratorAutoConfigurationTests {
                     DataSourceDecoratorAutoConfiguration.class,
                     PropertyPlaceholderAutoConfiguration.class
             ))
-            .withPropertyValues("spring.datasource.initialization-mode=never",
+            .withPropertyValues("spring.sql.init.mode=never",
                     "spring.datasource.url:jdbc:h2:mem:testdb-" + ThreadLocalRandom.current().nextInt());
 
     @Test
@@ -231,7 +231,7 @@ class DataSourceDecoratorAutoConfigurationTests {
         return assertThat(((DecoratedDataSource) dataSource).getDecoratingChain()).extracting("dataSource").extracting("class");
     }
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     static class TestDataSourceConfiguration {
 
         @Bean
@@ -244,7 +244,7 @@ class DataSourceDecoratorAutoConfigurationTests {
         }
     }
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     static class TestDataSourceDecoratorConfiguration {
 
         @Bean
@@ -253,7 +253,7 @@ class DataSourceDecoratorAutoConfigurationTests {
         }
     }
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     static class TestMultiDataSourceConfiguration {
 
         @Bean
@@ -276,7 +276,7 @@ class DataSourceDecoratorAutoConfigurationTests {
         }
     }
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     static class TestScopedDataSourceConfiguration {
 
         @Bean

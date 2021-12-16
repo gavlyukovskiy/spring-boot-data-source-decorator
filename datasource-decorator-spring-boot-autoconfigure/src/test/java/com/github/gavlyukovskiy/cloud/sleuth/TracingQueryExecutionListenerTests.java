@@ -26,6 +26,7 @@ import org.springframework.cloud.sleuth.autoconfig.brave.BraveAutoConfiguration;
 
 import java.util.concurrent.ThreadLocalRandom;
 
+@SuppressWarnings("deprecation")
 class TracingQueryExecutionListenerTests extends TracingListenerStrategyTests {
 
     TracingQueryExecutionListenerTests() {
@@ -38,9 +39,11 @@ class TracingQueryExecutionListenerTests extends TracingListenerStrategyTests {
                               TestSpanHandlerConfiguration.class,
                               PropertyPlaceholderAutoConfiguration.class
                       ))
-                      .withPropertyValues("spring.datasource.initialization-mode=never",
-                                          "spring.datasource.url:jdbc:h2:mem:testdb-" + ThreadLocalRandom.current().nextInt(),
-                                          "spring.datasource.hikari.pool-name=test")
+                      .withPropertyValues(
+                              "spring.sql.init.mode=never",
+                              "spring.datasource.url:jdbc:h2:mem:testdb-" + ThreadLocalRandom.current().nextInt(),
+                              "spring.datasource.hikari.pool-name=test"
+                      )
                       .withClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "com.p6spy")));
     }
 }

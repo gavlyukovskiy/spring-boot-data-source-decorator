@@ -1,5 +1,0 @@
-spring:
-  sleuth:
-    enabled: true
-  zipkin:
-    enabled: true

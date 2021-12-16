@@ -34,6 +34,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@SuppressWarnings("deprecation")
 class SleuthProxyDataSourceListenerAutoConfigurationTests {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
@@ -44,8 +45,10 @@ class SleuthProxyDataSourceListenerAutoConfigurationTests {
                     SleuthListenerAutoConfiguration.class,
                     PropertyPlaceholderAutoConfiguration.class
             ))
-            .withPropertyValues("spring.datasource.initialization-mode=never",
-                    "spring.datasource.url:jdbc:h2:mem:testdb-" + ThreadLocalRandom.current().nextInt())
+            .withPropertyValues(
+                    "spring.sql.init.mode=never",
+                    "spring.datasource.url:jdbc:h2:mem:testdb-" + ThreadLocalRandom.current().nextInt()
+            )
             .withClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "com.p6spy"));
 
     @Test

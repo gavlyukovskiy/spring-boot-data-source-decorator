@@ -37,6 +37,8 @@ import org.springframework.context.annotation.Bean;
  *
  * @author Arthur Gavlyukovskiy
  */
+// Datasource-Proxy is automatically configured by Spring Cloud Sleuth if exists
+@ConditionalOnMissingBean(type = "org.springframework.cloud.sleuth.autoconfig.instrument.jdbc.DataSourceProxyConfiguration")
 @ConditionalOnClass(ProxyDataSource.class)
 public class DataSourceProxyConfiguration {
 

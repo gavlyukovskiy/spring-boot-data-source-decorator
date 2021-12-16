@@ -13,21 +13,9 @@ Run sample application on port 8081 with next endpoints:
 ./gradlew :samples:p6spy-sample:bootRun
 ```
 
-or with [Zipkin](https://github.com/openzipkin/zipkin):
-```
-docker run -p 9411:9411 openzipkin/zipkin
-./gradlew :samples:p6spy-sample:bootRun --args='--spring.profiles.active=zipkin'
-```
-
 **Datasource Proxy**
 ```
 ./gradlew :samples:datasource-proxy-sample:bootRun
-```
-
-or with [Zipkin](https://github.com/openzipkin/zipkin):
-```
-docker run -p 9411:9411 openzipkin/zipkin
-./gradlew :samples:datasource-proxy-sample:bootRun --args='--spring.profiles.active=zipkin'
 ```
 
 **FlexyPool**

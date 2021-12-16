@@ -38,11 +38,14 @@ import javax.sql.DataSource;
  *
  * @author Arthur Gavlyukovskiy
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(DataSourceDecoratorProperties.class)
 @ConditionalOnProperty(name = "decorator.datasource.enabled", havingValue = "true", matchIfMissing = true)
 @ConditionalOnBean(DataSource.class)
-@AutoConfigureAfter(DataSourceAutoConfiguration.class)
+@AutoConfigureAfter(
+        value = DataSourceAutoConfiguration.class,
+        name = "org.springframework.cloud.sleuth.autoconfig.instrument.jdbc.TraceJdbcAutoConfiguration"
+)
 @Import({
         P6SpyConfiguration.class,
         DataSourceProxyConfiguration.class,
@@ -58,6 +61,7 @@ public class DataSourceDecoratorAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
+    @ConditionalOnBean(DataSourceDecorator.class)
     public DataSourceNameResolver dataSourceNameResolver(ApplicationContext applicationContext) {
         return new DataSourceNameResolver(applicationContext);
     }

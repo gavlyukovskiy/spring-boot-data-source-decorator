@@ -34,7 +34,8 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class TracingJdbcEventListenerTests extends TracingListenerStrategyTests{
+@SuppressWarnings("deprecation")
+class TracingJdbcEventListenerTests extends TracingListenerStrategyTests {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withConfiguration(AutoConfigurations.of(
@@ -45,9 +46,12 @@ class TracingJdbcEventListenerTests extends TracingListenerStrategyTests{
                     TestSpanHandlerConfiguration.class,
                     PropertyPlaceholderAutoConfiguration.class
             ))
-            .withPropertyValues("spring.datasource.initialization-mode=never",
+            .withPropertyValues(
+                    "spring.sql.init.mode=never",
+                    "spring.sleuth.jdbc.enabled=false",
                     "spring.datasource.url:jdbc:h2:mem:testdb-" + ThreadLocalRandom.current().nextInt(),
-                    "spring.datasource.hikari.pool-name=test")
+                    "spring.datasource.hikari.pool-name=test"
+            )
             .withClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "net.ttddyy.dsproxy"));
 
     protected TracingJdbcEventListenerTests() {
@@ -60,7 +64,7 @@ class TracingJdbcEventListenerTests extends TracingListenerStrategyTests{
                               TestSpanHandlerConfiguration.class,
                               PropertyPlaceholderAutoConfiguration.class
                       ))
-                      .withPropertyValues("spring.datasource.initialization-mode=never",
+                      .withPropertyValues("spring.sql.init.mode=never",
                                           "spring.datasource.url:jdbc:h2:mem:testdb-" + ThreadLocalRandom.current().nextInt(),
                                           "spring.datasource.hikari.pool-name=test")
                       .withClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "net.ttddyy.dsproxy")));

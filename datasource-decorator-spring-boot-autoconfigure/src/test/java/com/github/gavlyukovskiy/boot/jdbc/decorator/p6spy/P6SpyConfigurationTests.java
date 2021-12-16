@@ -57,7 +57,7 @@ public class P6SpyConfigurationTests {
                     DataSourceDecoratorAutoConfiguration.class,
                     PropertyPlaceholderAutoConfiguration.class
             ))
-            .withPropertyValues("spring.datasource.initialization-mode=never",
+            .withPropertyValues("spring.sql.init.mode=never",
                     "spring.datasource.url:jdbc:h2:mem:testdb-" + ThreadLocalRandom.current().nextInt())
             .withClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "net.ttddyy.dsproxy"));
 
@@ -203,7 +203,7 @@ public class P6SpyConfigurationTests {
         });
     }
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     static class CustomListenerConfiguration {
 
         @Bean

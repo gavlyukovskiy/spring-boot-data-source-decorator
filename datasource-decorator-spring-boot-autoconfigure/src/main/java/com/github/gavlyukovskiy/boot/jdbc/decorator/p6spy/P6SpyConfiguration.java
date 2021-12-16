@@ -36,7 +36,6 @@ import org.springframework.context.annotation.Bean;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +51,8 @@ import static org.slf4j.LoggerFactory.getLogger;
  *
  * @author Arthur Gavlyukovskiy
  */
+// P6Spy is automatically configured by Spring Cloud Sleuth if exists
+@ConditionalOnMissingBean(type = "org.springframework.cloud.sleuth.autoconfig.instrument.jdbc.P6SpyConfiguration")
 @ConditionalOnClass(P6DataSource.class)
 public class P6SpyConfiguration {
 

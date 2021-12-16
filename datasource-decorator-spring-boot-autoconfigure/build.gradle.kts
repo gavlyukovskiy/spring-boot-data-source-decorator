@@ -8,8 +8,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-jdbc:${project.extra["springBootVersion"]}")
 
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:${project.extra["springBootVersion"]}")
-    annotationProcessor("org.projectlombok:lombok:1.18.8")
-    compileOnly("org.projectlombok:lombok:1.18.8")
 
     compileOnly("org.apache.commons:commons-dbcp2:2.6.0")
     compileOnly("org.apache.tomcat:tomcat-jdbc:9.0.22")
@@ -44,9 +42,6 @@ dependencies {
     testImplementation("org.apache.commons:commons-dbcp2:2.6.0")
     testImplementation("org.apache.tomcat:tomcat-jdbc:9.0.22")
     testImplementation("com.zaxxer:HikariCP:3.3.1")
-
-    testAnnotationProcessor("org.projectlombok:lombok:1.18.8")
-    testCompileOnly("org.projectlombok:lombok:1.18.8")
 }
 
 tasks {

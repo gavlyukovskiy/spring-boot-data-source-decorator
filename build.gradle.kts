@@ -24,17 +24,17 @@ version = scmVersion.version
 subprojects {
     apply(plugin = "java")
 
-    extra["springBootVersion"] = "2.4.3"
+    extra["springBootVersion"] = "2.6.1"
     extra["p6SpyVersion"] = "3.9.0"
     extra["datasourceProxyVersion"] = "1.7"
     extra["flexyPoolVersion"] = "2.2.1"
-    extra["sleuthVersion"] = "3.0.1"
+    extra["sleuthVersion"] = "3.1.0"
 
     extra["release"] = listOf(
-            "datasource-decorator-spring-boot-autoconfigure",
-            "datasource-proxy-spring-boot-starter",
-            "flexy-pool-spring-boot-starter",
-            "p6spy-spring-boot-starter"
+        "datasource-decorator-spring-boot-autoconfigure",
+        "datasource-proxy-spring-boot-starter",
+        "flexy-pool-spring-boot-starter",
+        "p6spy-spring-boot-starter"
     ).contains(project.name)
 
     java.sourceCompatibility = JavaVersion.VERSION_1_8
