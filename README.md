@@ -268,7 +268,7 @@ Spring Cloud Sleuth JDBC was based on this project and keeps all functionality i
 1. If you are using Spring Cloud Sleuth you can migrate all properties from `decorator.datasource.*` to `spring.sleuth.jdbc.*` with minimal changes.
 2. If you have query logging enabled (default state) then you need to explicitly enable logging using:
    - P6Spy: `spring.sleuth.jdbc.p6spy.enable-logging=true`
-   - Datasource-Proxy? `spring.sleuth.jdbc.datasource-proxy.query.enable-logging=true`
+   - Datasource-Proxy: `spring.sleuth.jdbc.datasource-proxy.query.enable-logging=true`
 3. If you were using decoration customizers please consult with Spring Cloud Sleuth documentation and migrate usage of those to appropriate alternatives in Spring Cloud Sleuth
 4. _(Optional)_ Replace dependency on this starter with the particular library
    - P6Spy: replace `com.github.gavlyukovskiy:p6spy-spring-boot-starter` with `p6spy:p6spy`
