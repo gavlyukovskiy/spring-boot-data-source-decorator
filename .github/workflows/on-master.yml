@@ -3,12 +3,9 @@ name: Build
 on:
   push:
     branches:
-      - '*'
+      - master
     tags-ignore:
       - '*'
-  pull_request:
-    branches:
-      - master
 
 jobs:
   build:
@@ -36,6 +33,15 @@ jobs:
           key: ${{ runner.os }}-gradle-cache-${{ hashFiles('**/*.gradle.kts') }}
           restore-keys: |
             ${{ runner.os }}-gradle-cache-
+
+      - name: Upload snapshot artifacts to Sonatype
+        id: upload_snapshot_artifacts
+        env:
+          SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          GPG_KEY: ${{ secrets.GPG_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
 
       - name: Build with Gradle
         run: ./gradlew build

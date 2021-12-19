@@ -1,13 +1,8 @@
-buildscript {
-    repositories {
-        jcenter()
-    }
-}
-
 plugins {
     java
     `maven-publish`
-    id("com.jfrog.bintray").version("1.8.4")
+    signing
+    id("io.github.gradle-nexus.publish-plugin").version("1.1.0")
     id("pl.allegro.tech.build.axion-release").version("1.10.3")
 }
 
@@ -20,6 +15,24 @@ scmVersion {
 
 group = "com.github.gavlyukovskiy"
 version = scmVersion.version
+
+val sonatypeUser: String? = project.properties["sonatype_user"]?.toString()
+    ?: System.getenv("SONATYPE_USER")
+val sonatypePassword: String? = project.properties["sonatype_password"]?.toString()
+    ?: System.getenv("SONATYPE_PASSWORD")
+val gpgKey: String? = project.properties["gpg_key_path"]?.toString()?.let { File(it).readText() }
+    ?: System.getenv("GPG_KEY")
+val gpgPassphrase: String? = project.properties["gpg_passphrase"] as String?
+    ?: System.getenv("GPG_PASSPHRASE")
+
+nexusPublishing {
+    repositories {
+        sonatype {
+            username.set(sonatypeUser)
+            password.set(sonatypePassword)
+        }
+    }
+}
 
 subprojects {
     apply(plugin = "java")
@@ -48,49 +61,7 @@ subprojects {
 
     if (extra["release"] as Boolean) {
         apply(plugin = "maven-publish")
-        apply(plugin = "com.jfrog.bintray")
-
-        tasks {
-            val bintrayUploadCheck by registering {
-                doLast {
-                    val errors = ArrayList<String>()
-                    if ((project.version as String).contains("SNAPSHOT")) {
-                        // errors.add("Cannot release SNAPSHOT version")
-                    }
-                    if (System.getenv("BINTRAY_USER") == null && !project.hasProperty("release.bintray_user")) {
-                        errors.add("'BINTRAY_USER' or '-Prelease.bintray_user' must be set")
-                    }
-                    if (System.getenv("BINTRAY_KEY") == null && !project.hasProperty("release.bintray_key")) {
-                        errors.add("'BINTRAY_KEY' or '-Prelease.bintray_key' must be set")
-                    }
-                    if (System.getenv("GPG_PASSPHRASE") == null && !project.hasProperty("release.gpg_passphrase")) {
-                        errors.add("'GPG_PASSPHRASE' or '-Prelease.gpg_passphrase' must be set")
-                    }
-                    if (project.hasProperty("release.maven_central_sync")) {
-                        if (System.getenv("SONATYPE_USER") == null && !project.hasProperty("release.sonatype_user")) {
-                            errors.add("'SONATYPE_USER' or '-Prelease.sonatype_user' must be set")
-                        }
-                        if (System.getenv("SONATYPE_PASSWORD") == null && !project.hasProperty("release.sonatype_password")) {
-                            errors.add("'SONATYPE_PASSWORD' or '-Prelease.sonatype_password' must be set")
-                        }
-                    }
-                    if (errors.isNotEmpty()) {
-                        throw IllegalStateException(errors.joinToString("\n"))
-                    }
-                }
-            }
-
-            bintrayUpload {
-                dependsOn(bintrayUploadCheck)
-            }
-
-            withType<Jar> {
-                from(rootProject.projectDir) {
-                    include("LICENSE.txt")
-                    into("META-INF")
-                }
-            }
-        }
+        apply(plugin = "signing")
 
         val sourceJar by tasks.registering(Jar::class) {
             archiveClassifier.set("sources")
@@ -100,6 +71,13 @@ subprojects {
         val javadocJar by tasks.registering(Jar::class) {
             archiveClassifier.set("javadoc")
             from(tasks["javadoc"])
+        }
+
+        tasks.withType<Jar> {
+            from(rootProject.projectDir) {
+                include("LICENSE.txt")
+                into("META-INF")
+            }
         }
 
         publishing {
@@ -134,31 +112,10 @@ subprojects {
             }
         }
 
-        bintray {
-            user = (project.properties["release.bintray_user"] ?: System.getenv("BINTRAY_USER"))?.toString()
-            key = (project.properties["release.bintray_key"] ?: System.getenv("BINTRAY_KEY"))?.toString()
-            setPublications("mavenJava")
-            publish = true
-            with(pkg) {
-                repo = project.group.toString()
-                name = project.name
-                setLicenses("Apache-2.0")
-                publicDownloadNumbers = true
-                with(version) {
-                    name = project.version.toString()
-                    vcsTag = project.version.toString()
-                    with(gpg) {
-                        sign = true
-                        passphrase = (project.properties["release.gpg_passphrase"] ?: System.getenv("GPG_PASSPHRASE"))?.toString()
-                    }
-                    with(mavenCentralSync) {
-                        sync = project.hasProperty("release.maven_central_sync")
-                        user = (project.properties["release.sonatype_user"] ?: System.getenv("SONATYPE_USER"))?.toString()
-                        password = (project.properties["release.sonatype_password"] ?: System.getenv("SONATYPE_PASSWORD"))?.toString()
-                        close = "1"
-                    }
-                }
-            }
+        signing {
+            isRequired = gpgKey != null
+            useInMemoryPgpKeys(gpgKey, gpgPassphrase)
+            sign(*publishing.publications.toTypedArray())
         }
     }
 
@@ -198,9 +155,5 @@ tasks {
         subprojects.forEach {
             dependsOn(it.tasks.build)
         }
-    }
-
-    bintrayUpload {
-        enabled = false
     }
 }

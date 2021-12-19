@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       releaseVersion:
+        required: true
         description: "New version to be released, ex. '1.6.5'"
 
 jobs:
@@ -37,25 +38,16 @@ jobs:
             -Prelease.customUsername=${{ github.actor }} \
             -Prelease.customPassword=${{ github.token }}
 
-      - name: Upload artifact to Bintray
-        id: upload_artifact
+      - name: Upload release artifacts to Sonatype
+        id: upload_release_artifacts
         env:
-          BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
-          BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-        run: ./gradlew bintrayUpload
-
-      - name: Sync artifact to Maven Central
-        id: sync_artifact
-        env:
-          BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
-          BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
           SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          GPG_KEY: ${{ secrets.GPG_KEY }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-        run: ./gradlew bintrayUpload -Prelease.maven_central_sync
+        run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
 
-      - name: Create Release
+      - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
         env:
