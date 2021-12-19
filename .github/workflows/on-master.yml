@@ -34,6 +34,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-cache-
 
+      - name: Build with Gradle
+        run: ./gradlew build
+
       - name: Upload snapshot artifacts to Sonatype
         id: upload_snapshot_artifacts
         env:
@@ -42,6 +45,3 @@ jobs:
           GPG_KEY: ${{ secrets.GPG_KEY }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
-
-      - name: Build with Gradle
-        run: ./gradlew build
