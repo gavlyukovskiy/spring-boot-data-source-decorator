@@ -270,11 +270,11 @@ Spring Cloud Sleuth JDBC was based on this project and keeps all functionality i
    - P6Spy: `spring.sleuth.jdbc.p6spy.enable-logging=true`
    - Datasource-Proxy? `spring.sleuth.jdbc.datasource-proxy.query.enable-logging=true`
 3. If you were using decoration customizers please consult with Spring Cloud Sleuth documentation and migrate usage of those to appropriate alternatives in Spring Cloud Sleuth
-4. _(Optional)_ Remove dependency on this starter.
-   - P6Spy: `com.github.gavlyukovskiy:p6spy-spring-boot-starter`
-   - Datasource-Proxy: `com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter`
+4. _(Optional)_ Replace dependency on this starter with the particular library
+   - P6Spy: replace `com.github.gavlyukovskiy:p6spy-spring-boot-starter` with `p6spy:p6spy`
+   - Datasource-Proxy: replace `com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter` with `net.ttddyy:datasource-proxy`
 5. Any issues can be raised in Spring Cloud Sleuth  project on GitHub, you may tag me (@gavlyukovskiy) and I'll try to help.
-6. Enjoy using JDBC instrumentation and thank you for using this library :)
+6. Enjoy using JDBC instrumentation, and thank you for using this library :)
  
 Due to similarities in implementation, using starters from this library together with Spring Cloud Sleuth 3.1.0 is possible, although decoration will be automatically disabled in favor of Spring Cloud Sleuth to avoid duplicated logging, tracing or any other potential issues.
 

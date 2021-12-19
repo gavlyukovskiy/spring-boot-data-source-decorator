@@ -62,15 +62,15 @@ import org.springframework.context.annotation.Configuration;
  * </li>
  * <li>If you were using decoration customizers please consult with Spring Cloud Sleuth documentation and migrate usage
  * of those to appropriate alternatives in Spring Cloud Sleuth</li>
- * <li>(Optional) Remove dependency on this starter.
+ * <li>(Optional) Replace dependency on this starter with the particular library.
  *   <ul>
- *   <li>{@code P6Spy}: {@code com.github.gavlyukovskiy:p6spy-spring-boot-starter}</li>
- *   <li>{@code Datasource-Proxy}: {@code com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter}</li>
+ *   <li>{@code P6Spy}: replace {@code com.github.gavlyukovskiy:p6spy-spring-boot-starter} with {@code p6spy:p6spy}</li>
+ *   <li>{@code Datasource-Proxy}: replace {@code com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter} with {@code net.ttddyy:datasource-proxy}</li>
  *   </ul>
  * </li>
  * <li>Any issues can be raised in <a href="https://github.com/spring-cloud/spring-cloud-sleuth">Spring Cloud Sleuth</a>
  * project on GitHub, you may tag me (@gavlyukovskiy) and I'll try to help.</li>
- * <li>Enjoy using JDBC instrumentation and thank you for using this library :)</li>
+ * <li>Enjoy using JDBC instrumentation, and thank you for using this library :)</li>
  * </ol>
  *
  * <p>
