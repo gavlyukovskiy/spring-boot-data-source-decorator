@@ -7,7 +7,6 @@
 * [P6Spy](https://github.com/p6spy/p6spy) - adds ability to intercept and log sql queries, including interception of a most `Connection`, `Statement` and `ResultSet` methods invocations
 * [Datasource Proxy](https://github.com/ttddyy/datasource-proxy) - adds ability to intercept all queries and `Connection`, `Statement` and `ResultSet` method calls
 * [FlexyPool](https://github.com/vladmihalcea/flexy-pool) - adds connection pool metrics (jmx, codahale, dropwizard) and flexible strategies for adjusting pool size on demand
-* [Spring Cloud Sleuth](https://github.com/spring-cloud/spring-cloud-sleuth) - library for distributed tracing, if found in classpath enables jdbc connections and queries tracing (only with p6spy or datasource-proxy)
 
 #### Why not wrap DataSource in a configuration?
 
@@ -48,7 +47,7 @@ implementation("com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:${
 ```
 
 or [FlexyPool](https://github.com/vladmihalcea/flexy-pool)
-> To use FlexyPool with connection pool different than HikariCP you must add `PoolAdapter` for your [particular connection pool](https://github.com/vladmihalcea/flexy-pool/wiki/Installation-Guide#connection-pool-settings).
+> To use FlexyPool with connection pool other than HikariCP you must add `PoolAdapter` for your [particular connection pool](https://github.com/vladmihalcea/flexy-pool/wiki/Installation-Guide#connection-pool-settings).
 ```groovy
 implementation("com.github.gavlyukovskiy:flexy-pool-spring-boot-starter:${version}")
 ```
@@ -252,43 +251,32 @@ decorator.datasource.flexy-pool.threshold.connection.acquire=50
 decorator.datasource.flexy-pool.threshold.connection.lease=1000
 ```
 
-#### Spring Cloud Sleuth
+#### Spring Cloud Sleuth (deprecated)
 
-P6Spy and Datasource Proxy allow to create spans on various jdbc events:
- * `jdbc:/<dataSource>/connection` - opening connection including events for commits and rollbacks
- * `jdbc:/<dataSource>/query` - executing query including sql text and number of affected rows in the tags
- * `jdbc:/<dataSource>/fetch` - fetching result set data including number of rows in the tags
+##### For Spring Boot users, that DO NOT use Spring Cloud Sleuth
+Nothing has changed, this project is continued to be supported and maintained, and can be used to enable JDBC logging
+and provide auto-configuration of P6Spy, Datasource-Proxy and FlexyPool.
 
-You can configure the tracing with the following properties:
-```properties
-# Creates span for every connection and query. Works only with p6spy or datasource-proxy.
-decorator.datasource.sleuth.enabled=true
-# Specify traces that will be created in tracing system (see screenshots)
-decorator.datasource.sleuth.include=connection, query, fetch
-```
-##### ~~Pizza~~ Demo time
-All screenshots were taken using  [Spring PetClinic](https://github.com/spring-petclinic/spring-petclinic-rest) with [Zipkin](https://github.com/openzipkin/zipkin) backend, but other tracing systems are supported through Spring Cloud Sleuth/Brave.
 
-Request span with jdbc tracing:
-![Request trace with jdbc screenshot](images/zipkin.png)
+##### For Spring Cloud Sleuth users
+As of release 1.8.0 the "sleuth part" of this project was deprecated in favor of [Spring Cloud Sleuth: Spring JDBC](https://docs.spring.io/spring-cloud-sleuth/docs/3.1.0/reference/html/integrations.html#sleuth-jdbc-integration)
+which provides JDBC instrumentation out of the box.
 
-Connection:
-![Connection screenshot](images/connection-span.png)
+Spring Cloud Sleuth JDBC was based on this project and keeps all functionality including logging, tracing, configuration and customizations.
 
-Connection that was rolled back:
-![Connection that was rolled back screenshot](images/connection-span-rollback.png)
-
-Connection that was closed on database side:
-![Connection that was closed on database side screenshot](images/connection-span-error.png)
-
-Query:
-![Query screenshot](images/query-span.png)
-
-Query with error:
-![Query with error screenshot](images/query-span-error.png)
-
-Fetch:
-![Fetch screenshot](images/fetch-span.png)
+##### Migration process:
+1. If you are using Spring Cloud Sleuth you can migrate all properties from `decorator.datasource.*` to `spring.sleuth.jdbc.*` with minimal changes.
+2. If you have query logging enabled (default state) then you need to explicitly enable logging using:
+   - P6Spy: `spring.sleuth.jdbc.p6spy.enable-logging=true`
+   - Datasource-Proxy? `spring.sleuth.jdbc.datasource-proxy.query.enable-logging=true`
+3. If you were using decoration customizers please consult with Spring Cloud Sleuth documentation and migrate usage of those to appropriate alternatives in Spring Cloud Sleuth
+4. _(Optional)_ Replace dependency on this starter with the particular library
+   - P6Spy: replace `com.github.gavlyukovskiy:p6spy-spring-boot-starter` with `p6spy:p6spy`
+   - Datasource-Proxy: replace `com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter` with `net.ttddyy:datasource-proxy`
+5. Any issues can be raised in Spring Cloud Sleuth  project on GitHub, you may tag me (@gavlyukovskiy) and I'll try to help.
+6. Enjoy using JDBC instrumentation, and thank you for using this library :)
+ 
+Due to similarities in implementation, using starters from this library together with Spring Cloud Sleuth 3.1.0 is possible, although decoration will be automatically disabled in favor of Spring Cloud Sleuth to avoid duplicated logging, tracing or any other potential issues.
 
 #### Custom Decorators
 

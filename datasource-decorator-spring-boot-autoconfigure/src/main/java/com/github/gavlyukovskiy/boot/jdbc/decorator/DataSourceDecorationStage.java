@@ -16,8 +16,6 @@
 
 package com.github.gavlyukovskiy.boot.jdbc.decorator;
 
-import lombok.Data;
-
 import javax.sql.DataSource;
 
 /**
@@ -26,7 +24,6 @@ import javax.sql.DataSource;
  * @author Arthur Gavlyukovskiy
  * @since 1.2.2
  */
-@Data
 public class DataSourceDecorationStage {
     /**
      * Bean name of a decorator.
@@ -40,4 +37,26 @@ public class DataSourceDecorationStage {
      * Decorated {@link DataSource} after applying {@link DataSourceDecorator#decorate(String, DataSource)}.
      */
     private final DataSource dataSource;
+
+    public DataSourceDecorationStage(
+            String beanName,
+            DataSourceDecorator dataSourceDecorator,
+            DataSource dataSource
+    ) {
+        this.beanName = beanName;
+        this.dataSourceDecorator = dataSourceDecorator;
+        this.dataSource = dataSource;
+    }
+
+    public String getBeanName() {
+        return this.beanName;
+    }
+
+    public DataSourceDecorator getDataSourceDecorator() {
+        return this.dataSourceDecorator;
+    }
+
+    public DataSource getDataSource() {
+        return this.dataSource;
+    }
 }

@@ -141,7 +141,7 @@ public class FlexyPoolConfiguration {
         }
     }
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     @ConditionalOnMissingBean(FlexyPoolDataSourceDecorator.class)
     @ConditionalOnClass(HikariCPPoolAdapter.class)
     @ConditionalOnBean(HikariDataSource.class)
@@ -160,7 +160,7 @@ public class FlexyPoolConfiguration {
         }
     }
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     @ConditionalOnMissingBean(FlexyPoolDataSourceDecorator.class)
     @ConditionalOnClass(TomcatCPPoolAdapter.class)
     @ConditionalOnBean(org.apache.tomcat.jdbc.pool.DataSource.class)
@@ -179,7 +179,7 @@ public class FlexyPoolConfiguration {
         }
     }
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     @ConditionalOnMissingBean(FlexyPoolDataSourceDecorator.class)
     @ConditionalOnClass(DBCP2PoolAdapter.class)
     @ConditionalOnBean(BasicDataSource.class)
@@ -198,7 +198,7 @@ public class FlexyPoolConfiguration {
         }
     }
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     @ConditionalOnMissingBean(FlexyPoolDataSourceDecorator.class)
     @Conditional(FlexyPoolConfiguration.FlexyPoolConfigurationAvailableCondition.class)
     static class PropertyFlexyConfiguration {
@@ -222,7 +222,7 @@ public class FlexyPoolConfiguration {
         }
     }
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(MicrometerMetrics.class)
     static class MicrometerConfiguration {
 

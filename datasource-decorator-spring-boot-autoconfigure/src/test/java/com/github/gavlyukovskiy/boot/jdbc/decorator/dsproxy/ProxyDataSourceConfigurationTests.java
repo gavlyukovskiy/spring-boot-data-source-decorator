@@ -58,7 +58,7 @@ class ProxyDataSourceConfigurationTests {
                     DataSourceDecoratorAutoConfiguration.class,
                     PropertyPlaceholderAutoConfiguration.class
             ))
-            .withPropertyValues("spring.datasource.initialization-mode=never",
+            .withPropertyValues("spring.sql.init.mode=never",
                     "spring.datasource.url:jdbc:h2:mem:testdb-" + ThreadLocalRandom.current().nextInt())
             .withClassLoader(new HidePackagesClassLoader("com.vladmihalcea.flexypool", "com.p6spy"));
 
@@ -175,7 +175,7 @@ class ProxyDataSourceConfigurationTests {
         });
     }
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     static class CustomDataSourceProxyConfiguration {
 
         @Bean
@@ -194,7 +194,7 @@ class ProxyDataSourceConfigurationTests {
         }
     }
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     static class CustomListenerConfiguration {
 
         @Bean

@@ -27,6 +27,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * @deprecated in 1.8.0 in favor of <a href="https://docs.spring.io/spring-cloud-sleuth/docs/3.1.0/reference/html/integrations.html#sleuth-jdbc-integration">Spring Cloud Sleuth: Spring JDBC</a>
+ */
+@Deprecated
 class TracingListenerStrategy<CON, STMT, RS> {
     private final Map<CON, ConnectionInfo> openConnections = new ConcurrentHashMap<>();
 

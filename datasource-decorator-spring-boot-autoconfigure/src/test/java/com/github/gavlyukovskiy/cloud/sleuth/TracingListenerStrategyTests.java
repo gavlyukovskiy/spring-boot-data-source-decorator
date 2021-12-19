@@ -39,6 +39,7 @@ import java.util.stream.IntStream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@SuppressWarnings("deprecation")
 abstract class TracingListenerStrategyTests {
 
     protected final ApplicationContextRunner contextRunner;

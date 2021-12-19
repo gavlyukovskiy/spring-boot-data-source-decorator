@@ -16,7 +16,6 @@
 
 package com.github.gavlyukovskiy.boot.jdbc.decorator;
 
-import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.scope.ScopedProxyUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -26,7 +25,6 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 
 import javax.sql.DataSource;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -92,7 +90,7 @@ public class DataSourceDecoratorBeanPostProcessor implements BeanPostProcessor, 
 
     @Override
     public int getOrder() {
-        return Ordered.LOWEST_PRECEDENCE - 10;
+        return Ordered.LOWEST_PRECEDENCE - 20;
     }
 
     @Override

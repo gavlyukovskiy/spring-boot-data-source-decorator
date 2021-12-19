@@ -16,8 +16,7 @@
 
 package com.github.gavlyukovskiy.cloud.sleuth;
 
-import lombok.Getter;
-import lombok.Setter;
+import org.springframework.boot.context.properties.DeprecatedConfigurationProperty;
 
 import java.util.Arrays;
 import java.util.List;
@@ -27,17 +26,50 @@ import java.util.List;
  *
  * @author Arthur Gavlyukovskiy
  * @since 1.4.0
+ * @deprecated in 1.8.0 in favor of <a href="https://docs.spring.io/spring-cloud-sleuth/docs/3.1.0/reference/html/integrations.html#sleuth-jdbc-integration">Spring Cloud Sleuth: Spring JDBC</a>
  */
-@Getter
-@Setter
+@Deprecated
 public class SleuthProperties {
 
     /**
      * Creates span for every connection and query. Works only with p6spy or datasource-proxy.
      */
+    @Deprecated
     private boolean enabled = true;
 
+    /**
+     * Specify traces that will be created in tracing system.
+     */
+    @Deprecated
     private List<TraceType> include = Arrays.asList(TraceType.CONNECTION, TraceType.QUERY, TraceType.FETCH);
+
+    @Deprecated
+    @DeprecatedConfigurationProperty(
+            reason = "JDBC instrumentation is provided in Spring Cloud Sleuth",
+            replacement = "spring.sleuth.jdbc.enabled"
+    )
+    public boolean isEnabled() {
+        return this.enabled;
+    }
+
+    @Deprecated
+    @DeprecatedConfigurationProperty(
+            reason = "JDBC instrumentation is provided in Spring Cloud Sleuth",
+            replacement = "spring.sleuth.jdbc.includes"
+    )
+    public List<TraceType> getInclude() {
+        return this.include;
+    }
+
+    @Deprecated
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    @Deprecated
+    public void setInclude(List<TraceType> include) {
+        this.include = include;
+    }
 
     public enum TraceType {
         CONNECTION,

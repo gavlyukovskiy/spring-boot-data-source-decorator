@@ -16,8 +16,7 @@
 
 package com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy;
 
-import lombok.Getter;
-import lombok.Setter;
+import org.springframework.boot.context.properties.DeprecatedConfigurationProperty;
 
 import java.util.regex.Pattern;
 
@@ -26,8 +25,6 @@ import java.util.regex.Pattern;
  *
  * @author Arthur Gavlyukovskiy
  */
-@Getter
-@Setter
 public class P6SpyProperties {
 
     /**
@@ -69,6 +66,70 @@ public class P6SpyProperties {
      */
     private P6SpyLogFilter logFilter = new P6SpyLogFilter();
 
+    public boolean isEnableLogging() {
+        return this.enableLogging;
+    }
+
+    public boolean isMultiline() {
+        return this.multiline;
+    }
+
+    public P6SpyLogging getLogging() {
+        return this.logging;
+    }
+
+    public String getLogFile() {
+        return this.logFile;
+    }
+
+    public String getLogFormat() {
+        return this.logFormat;
+    }
+
+    public P6SpyTracing getTracing() {
+        return this.tracing;
+    }
+
+    public String getCustomAppenderClass() {
+        return this.customAppenderClass;
+    }
+
+    public P6SpyLogFilter getLogFilter() {
+        return this.logFilter;
+    }
+
+    public void setEnableLogging(boolean enableLogging) {
+        this.enableLogging = enableLogging;
+    }
+
+    public void setMultiline(boolean multiline) {
+        this.multiline = multiline;
+    }
+
+    public void setLogging(P6SpyLogging logging) {
+        this.logging = logging;
+    }
+
+    public void setLogFile(String logFile) {
+        this.logFile = logFile;
+    }
+
+    public void setLogFormat(String logFormat) {
+        this.logFormat = logFormat;
+    }
+
+    public void setTracing(P6SpyTracing tracing) {
+        this.tracing = tracing;
+    }
+
+    public void setCustomAppenderClass(String customAppenderClass) {
+        this.customAppenderClass = customAppenderClass;
+    }
+
+    public void setLogFilter(P6SpyLogFilter logFilter) {
+        this.logFilter = logFilter;
+    }
+
     public enum P6SpyLogging {
         SYSOUT,
         SLF4J,
@@ -76,23 +137,43 @@ public class P6SpyProperties {
         CUSTOM
     }
 
-    @Getter
-    @Setter
+    @Deprecated
     public static class P6SpyTracing {
         /**
          * Report the effective sql string (with '?' replaced with real values) to tracing systems.
          * <p>
          * NOTE this setting does not affect the logging message.
          */
+        @Deprecated
         private boolean includeParameterValues = true;
+
+        @Deprecated
+        @DeprecatedConfigurationProperty(
+                reason = "JDBC instrumentation is provided in Spring Cloud Sleuth",
+                replacement = "spring.sleuth.jdbc.p6spy.tracing.include-parameter-values"
+        )
+        public boolean isIncludeParameterValues() {
+            return this.includeParameterValues;
+        }
+
+        @Deprecated
+        public void setIncludeParameterValues(boolean includeParameterValues) {
+            this.includeParameterValues = includeParameterValues;
+        }
     }
 
-    @Getter
-    @Setter
     public static class P6SpyLogFilter {
         /**
          * Use regex pattern to filter log messages. Only matched messages will be logged.
          */
         private Pattern pattern;
+
+        public Pattern getPattern() {
+            return this.pattern;
+        }
+
+        public void setPattern(Pattern pattern) {
+            this.pattern = pattern;
+        }
     }
 }
