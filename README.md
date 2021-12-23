@@ -14,7 +14,6 @@ Instead of using the library you can manually wrap your `DataSource`, but this l
 * ability to use `@ConfigurationProperties` provided by Spring Boot (`spring.datasource.hikari.*`, `spring.datasource.dbcp2.*`)
 * disabling decorating by deployment property `decorator.datasource.enabled=true/false`
 * configure proxies through spring properties `application.properties/yml` and customize proxies by defining beans in the spring context
-* integration with [Spring Cloud Sleuth](https://github.com/spring-cloud/spring-cloud-sleuth)
 
 #### Quick Start
 
