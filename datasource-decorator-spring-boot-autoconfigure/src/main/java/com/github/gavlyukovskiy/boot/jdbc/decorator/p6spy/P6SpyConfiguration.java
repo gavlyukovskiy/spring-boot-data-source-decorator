@@ -83,6 +83,11 @@ public class P6SpyConfiguration {
             }
             System.setProperty("p6spy.config.modulelist", String.join(",", moduleList));
         }
+        if (!initialP6SpyOptions.containsKey("dateformat")) {
+            if (p6spy.getDateformat() != null) {
+                System.setProperty("p6spy.config.dateformat", p6spy.getDateformat());
+            }
+        }
         if (!initialP6SpyOptions.containsKey("logMessageFormat")) {
             if (p6spy.getLogFormat() != null) {
                 System.setProperty("p6spy.config.logMessageFormat", "com.p6spy.engine.spy.appender.CustomLineFormat");
