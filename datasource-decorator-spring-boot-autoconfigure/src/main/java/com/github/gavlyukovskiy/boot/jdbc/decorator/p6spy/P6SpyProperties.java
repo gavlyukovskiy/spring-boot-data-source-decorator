@@ -51,6 +51,11 @@ public class P6SpyProperties {
     private String logFormat;
 
     /**
+     * log dateFormat.
+     */
+    private String dateFormat;
+
+    /**
      * Tracing related properties
      */
     private P6SpyTracing tracing = new P6SpyTracing();
@@ -86,6 +91,10 @@ public class P6SpyProperties {
         return this.logFormat;
     }
 
+    public String getDateFormat() {
+        return this.dateFormat;
+    }
+
     public P6SpyTracing getTracing() {
         return this.tracing;
     }
@@ -116,6 +125,10 @@ public class P6SpyProperties {
 
     public void setLogFormat(String logFormat) {
         this.logFormat = logFormat;
+    }
+
+    public void setDateFormat(String dateFormat) {
+        this.dateFormat = dateFormat;
     }
 
     public void setTracing(P6SpyTracing tracing) {
