@@ -43,6 +43,9 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -163,7 +166,8 @@ public class P6SpyConfigurationTests {
         ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues(
                 "decorator.datasource.p6spy.logging:custom",
                 "decorator.datasource.p6spy.custom-appender-class:" + LogAccumulator.class.getName(),
-                "decorator.datasource.p6spy.log-filter.pattern:.*table1.*"
+                "decorator.datasource.p6spy.log-filter.pattern:.*table1.*",
+                "decorator.datasource.p6spy.dateformat:yyyy-MM-dd'T'HH:mm:ssZ" // human-readable datetime format
         );
 
         contextRunner.run(context -> {
@@ -175,9 +179,10 @@ public class P6SpyConfigurationTests {
                 ps1.execute();
                 ps2.execute();
             }
-
+            String datetime = OffsetDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             assertThat(LogAccumulator.MESSAGES).hasSize(1);
             assertThat(LogAccumulator.MESSAGES).allMatch(message -> message.contains("table1"));
+            assertThat(LogAccumulator.MESSAGES).allMatch(message -> message.contains(datetime));
         });
     }
 
