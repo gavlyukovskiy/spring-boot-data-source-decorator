@@ -76,7 +76,7 @@ public class FlexyPoolDataSourceDecorator implements DataSourceDecorator, Ordere
             if (customizers != null) {
                 customizers.forEach(customizer -> customizer.customize(beanName, configurationBuilder, dataSourceClass));
             }
-            FlexyPoolDataSource<DataSource> flexyPoolDataSource = new FlexyPoolDataSource<>(configurationBuilder.build(), connectionAcquiringStrategyFactories);
+            FlexyPoolDataSource<DataSource> flexyPoolDataSource = new FlexyPoolDataSource<DataSource>(configurationBuilder.build(), connectionAcquiringStrategyFactories);
             flexyPoolDataSource.start();
             return flexyPoolDataSource;
         }
