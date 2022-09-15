@@ -23,6 +23,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
+import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 
 import javax.sql.DataSource;
 import java.util.ArrayList;
@@ -52,6 +53,7 @@ public class DataSourceDecoratorBeanPostProcessor implements BeanPostProcessor, 
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         if (bean instanceof DataSource
                 && !ScopedProxyUtils.isScopedTarget(beanName)
+                && !((bean instanceof AbstractRoutingDataSource) && getDataSourceDecoratorProperties().isIgnoreRoutingDataSources())
                 && !getDataSourceDecoratorProperties().getExcludeBeans().contains(beanName)) {
             DataSource dataSource = (DataSource) bean;
             DataSource decoratedDataSource = dataSource;

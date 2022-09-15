@@ -43,6 +43,11 @@ public class DataSourceDecoratorProperties {
      * Beans that won't be decorated.
      */
     private Collection<String> excludeBeans = Collections.emptyList();
+    
+    /**
+     * If AbstractRoutingDataSource will be decorated or not
+     */
+    private boolean ignoreRoutingDataSources = false;
 
     @NestedConfigurationProperty
     private DataSourceProxyProperties datasourceProxy = new DataSourceProxyProperties();
@@ -66,6 +71,10 @@ public class DataSourceDecoratorProperties {
 
     public Collection<String> getExcludeBeans() {
         return this.excludeBeans;
+    }
+
+    public boolean isIgnoreRoutingDataSources() {
+        return ignoreRoutingDataSources;
     }
 
     public DataSourceProxyProperties getDatasourceProxy() {
@@ -96,6 +105,11 @@ public class DataSourceDecoratorProperties {
     public void setExcludeBeans(Collection<String> excludeBeans) {
         this.excludeBeans = excludeBeans;
     }
+
+    public void setIgnoreRoutingDataSources(boolean ignoreRoutingDataSources) {
+        this.ignoreRoutingDataSources = ignoreRoutingDataSources;
+    }
+    
 
     public void setDatasourceProxy(DataSourceProxyProperties datasourceProxy) {
         this.datasourceProxy = datasourceProxy;

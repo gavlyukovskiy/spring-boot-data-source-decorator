@@ -35,11 +35,14 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 
 import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 
@@ -226,6 +229,30 @@ class DataSourceDecoratorAutoConfigurationTests {
             assertThat(dataSource2).isInstanceOf(DecoratedDataSource.class);
         });
     }
+    
+    @Test
+    void testRoutingDataSourceIsDecorated() {
+        ApplicationContextRunner contextRunner = this.contextRunner.withUserConfiguration(TestAbstractRoutingDataSourceConfiguration.class);
+
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            assertThat(dataSource).isInstanceOf(DecoratedDataSource.class);
+            DataSource realDataSource = ((DecoratedDataSource) dataSource).getRealDataSource();
+            assertThat(realDataSource).isInstanceOf(AbstractRoutingDataSource.class);
+        });
+    }
+    
+    @Test
+    void testRoutingDataSourceIsNotDecorated() {
+        ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("decorator.datasource.ignore-routing-data-sources=true")
+                .withUserConfiguration(TestAbstractRoutingDataSourceConfiguration.class);
+
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            assertThat(dataSource).isNotInstanceOf(DecoratedDataSource.class);
+            assertThat(dataSource).isInstanceOf(AbstractRoutingDataSource.class);
+        });
+    }
 
     private AbstractListAssert<?, List<?>, Object, ObjectAssert<Object>> assertThatDataSourceDecoratingChain(DataSource dataSource) {
         return assertThat(((DecoratedDataSource) dataSource).getDecoratingChain()).extracting("dataSource").extracting("class");
@@ -287,6 +314,29 @@ class DataSourceDecoratorAutoConfigurationTests {
             pool.setUrl("jdbc:hsqldb:target/overridedb");
             pool.setUsername("sa");
             return pool;
+        }
+    }
+    
+    @Configuration(proxyBeanMethods = false)
+    static class TestAbstractRoutingDataSourceConfiguration {
+
+        @Bean
+        public DataSource dataSource() {
+            AbstractRoutingDataSource routingDs = new AbstractRoutingDataSource() {
+              @Override
+              protected Object determineCurrentLookupKey() {
+                return "ds1";
+              }
+            };
+            BasicDataSource pool = new BasicDataSource();
+            pool.setDriverClassName("org.hsqldb.jdbcDriver");
+            pool.setUrl("jdbc:hsqldb:target/routingds");
+            pool.setUsername("sa");
+            Map<Object, Object> targetDataSources = new HashMap<>();
+            targetDataSources.put("ds1", pool);
+            routingDs.setTargetDataSources(targetDataSources);
+            routingDs.setDefaultTargetDataSource(pool);
+            return routingDs;
         }
     }
 
