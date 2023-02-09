@@ -19,7 +19,7 @@ package com.github.gavlyukovskiy.boot.jdbc.decorator;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy.DataSourceProxyConfiguration;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool.FlexyPoolConfiguration;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy.P6SpyConfiguration;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -28,7 +28,6 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 import javax.sql.DataSource;
@@ -38,14 +37,10 @@ import javax.sql.DataSource;
  *
  * @author Arthur Gavlyukovskiy
  */
-@Configuration(proxyBeanMethods = false)
+@AutoConfiguration(after = DataSourceAutoConfiguration.class)
 @EnableConfigurationProperties(DataSourceDecoratorProperties.class)
 @ConditionalOnProperty(name = "decorator.datasource.enabled", havingValue = "true", matchIfMissing = true)
 @ConditionalOnBean(DataSource.class)
-@AutoConfigureAfter(
-        value = DataSourceAutoConfiguration.class,
-        name = "org.springframework.cloud.sleuth.autoconfig.instrument.jdbc.TraceJdbcAutoConfiguration"
-)
 @Import({
         P6SpyConfiguration.class,
         DataSourceProxyConfiguration.class,

@@ -3,13 +3,13 @@ plugins {
     `maven-publish`
     signing
     id("io.github.gradle-nexus.publish-plugin").version("1.1.0")
-    id("pl.allegro.tech.build.axion-release").version("1.10.3")
+    id("pl.allegro.tech.build.axion-release").version("1.14.3")
 }
 
 scmVersion {
     with(tag) {
-        prefix = ""
-        versionSeparator = ""
+        prefix.set("")
+        versionSeparator.set("")
     }
 }
 
@@ -37,11 +37,10 @@ nexusPublishing {
 subprojects {
     apply(plugin = "java")
 
-    extra["springBootVersion"] = "2.6.1"
+    extra["springBootVersion"] = "3.0.2"
     extra["p6SpyVersion"] = "3.9.0"
-    extra["datasourceProxyVersion"] = "1.7"
-    extra["flexyPoolVersion"] = "2.2.1"
-    extra["sleuthVersion"] = "3.1.0"
+    extra["datasourceProxyVersion"] = "1.8.1"
+    extra["flexyPoolVersion"] = "2.2.3"
 
     extra["release"] = listOf(
         "datasource-decorator-spring-boot-autoconfigure",
@@ -50,7 +49,7 @@ subprojects {
         "p6spy-spring-boot-starter"
     ).contains(project.name)
 
-    java.sourceCompatibility = JavaVersion.VERSION_1_8
+    java.sourceCompatibility = JavaVersion.VERSION_17
 
     group = rootProject.group
     version = rootProject.version

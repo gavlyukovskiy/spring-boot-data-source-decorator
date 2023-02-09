@@ -19,9 +19,7 @@ package com.github.gavlyukovskiy.boot.jdbc.decorator;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy.DataSourceProxyProperties;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool.FlexyPoolProperties;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy.P6SpyProperties;
-import com.github.gavlyukovskiy.cloud.sleuth.SleuthProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.DeprecatedConfigurationProperty;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 import java.util.Collection;
@@ -43,7 +41,7 @@ public class DataSourceDecoratorProperties {
      * Beans that won't be decorated.
      */
     private Collection<String> excludeBeans = Collections.emptyList();
-    
+
     /**
      * If AbstractRoutingDataSource will be decorated or not
      */
@@ -57,13 +55,6 @@ public class DataSourceDecoratorProperties {
 
     @NestedConfigurationProperty
     private FlexyPoolProperties flexyPool = new FlexyPoolProperties();
-
-    /**
-     * @deprecated in 1.8.0 in favor of <a href="https://docs.spring.io/spring-cloud-sleuth/docs/3.1.0/reference/html/integrations.html#sleuth-jdbc-integration">Spring Cloud Sleuth: Spring JDBC</a>
-     */
-    @NestedConfigurationProperty
-    @Deprecated
-    private SleuthProperties sleuth = new SleuthProperties();
 
     public boolean isEnabled() {
         return this.enabled;
@@ -89,15 +80,6 @@ public class DataSourceDecoratorProperties {
         return this.flexyPool;
     }
 
-    @Deprecated
-    @DeprecatedConfigurationProperty(
-            reason = "JDBC instrumentation is provided in Spring Cloud Sleuth",
-            replacement = "spring.sleuth.jdbc"
-    )
-    public SleuthProperties getSleuth() {
-        return this.sleuth;
-    }
-
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
@@ -109,7 +91,7 @@ public class DataSourceDecoratorProperties {
     public void setIgnoreRoutingDataSources(boolean ignoreRoutingDataSources) {
         this.ignoreRoutingDataSources = ignoreRoutingDataSources;
     }
-    
+
 
     public void setDatasourceProxy(DataSourceProxyProperties datasourceProxy) {
         this.datasourceProxy = datasourceProxy;
@@ -121,10 +103,5 @@ public class DataSourceDecoratorProperties {
 
     public void setFlexyPool(FlexyPoolProperties flexyPool) {
         this.flexyPool = flexyPool;
-    }
-
-    @Deprecated
-    public void setSleuth(SleuthProperties sleuth) {
-        this.sleuth = sleuth;
     }
 }

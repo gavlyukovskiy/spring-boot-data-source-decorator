@@ -258,8 +258,10 @@ and provide auto-configuration of P6Spy, Datasource-Proxy and FlexyPool.
 
 
 ##### For Spring Cloud Sleuth users
-As of release 1.8.0 the "sleuth part" of this project was deprecated in favor of [Spring Cloud Sleuth: Spring JDBC](https://docs.spring.io/spring-cloud-sleuth/docs/3.1.0/reference/html/integrations.html#sleuth-jdbc-integration)
+As of release 1.8.0 Spring Cloud Sleuth integration was deprecated in favor of [Spring Cloud Sleuth: Spring JDBC](https://docs.spring.io/spring-cloud-sleuth/docs/3.1.0/reference/html/integrations.html#sleuth-jdbc-integration)
 which provides JDBC instrumentation out of the box.
+
+As of release 1.9.0 Spring Cloud Sleuth integration was removed.
 
 Spring Cloud Sleuth JDBC was based on this project and keeps all functionality including logging, tracing, configuration and customizations.
 

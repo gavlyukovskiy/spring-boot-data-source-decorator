@@ -9,9 +9,9 @@ dependencies {
 
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:${project.extra["springBootVersion"]}")
 
-    compileOnly("org.apache.commons:commons-dbcp2:2.6.0")
-    compileOnly("org.apache.tomcat:tomcat-jdbc:9.0.22")
-    compileOnly("com.zaxxer:HikariCP:3.3.1")
+    compileOnly("org.apache.commons:commons-dbcp2:2.9.0")
+    compileOnly("org.apache.tomcat:tomcat-jdbc:10.1.5")
+    compileOnly("com.zaxxer:HikariCP:5.0.1")
 
     compileOnly("p6spy:p6spy:${project.extra["p6SpyVersion"]}")
     compileOnly("net.ttddyy:datasource-proxy:${project.extra["datasourceProxyVersion"]}")
@@ -22,9 +22,8 @@ dependencies {
     compileOnly("com.vladmihalcea.flexy-pool:flexy-micrometer-metrics:${project.extra["flexyPoolVersion"]}")
 
     compileOnly("org.springframework.boot:spring-boot-starter-actuator:${project.extra["springBootVersion"]}")
-    compileOnly("org.springframework.cloud:spring-cloud-starter-sleuth:${project.extra["sleuthVersion"]}")
 
-    testImplementation("com.h2database:h2:1.4.199")
+    testImplementation("com.h2database:h2:2.1.214")
     testImplementation("org.springframework.boot:spring-boot-starter-test:${project.extra["springBootVersion"]}")
 
     testImplementation("p6spy:p6spy:${project.extra["p6SpyVersion"]}")
@@ -35,13 +34,10 @@ dependencies {
     testImplementation("com.vladmihalcea.flexy-pool:flexy-tomcatcp:${project.extra["flexyPoolVersion"]}")
     testImplementation("com.vladmihalcea.flexy-pool:flexy-micrometer-metrics:${project.extra["flexyPoolVersion"]}")
 
-    testImplementation("org.springframework.cloud:spring-cloud-starter-sleuth:${project.extra["sleuthVersion"]}")
-    testImplementation("io.zipkin.brave:brave-tests:5.13.3")
-
     testImplementation("commons-dbcp:commons-dbcp:1.4")
-    testImplementation("org.apache.commons:commons-dbcp2:2.6.0")
-    testImplementation("org.apache.tomcat:tomcat-jdbc:9.0.22")
-    testImplementation("com.zaxxer:HikariCP:3.3.1")
+    testImplementation("org.apache.commons:commons-dbcp2:2.9.0")
+    testImplementation("org.apache.tomcat:tomcat-jdbc:10.1.5")
+    testImplementation("com.zaxxer:HikariCP:5.0.1")
 }
 
 tasks {
