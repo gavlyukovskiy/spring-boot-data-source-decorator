@@ -28,14 +28,14 @@ import com.p6spy.engine.spy.option.EnvironmentVariables;
 import com.p6spy.engine.spy.option.P6OptionsSource;
 import com.p6spy.engine.spy.option.SpyDotProperties;
 import com.p6spy.engine.spy.option.SystemProperties;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -94,18 +94,10 @@ public class P6SpyConfiguration {
         }
         if (p6spy.isEnableLogging() && !initialP6SpyOptions.containsKey("appender")) {
             switch (p6spy.getLogging()) {
-                case SYSOUT:
-                    System.setProperty("p6spy.config.appender", "com.p6spy.engine.spy.appender.StdoutLogger");
-                    break;
-                case SLF4J:
-                    System.setProperty("p6spy.config.appender", "com.p6spy.engine.spy.appender.Slf4JLogger");
-                    break;
-                case FILE:
-                    System.setProperty("p6spy.config.appender", "com.p6spy.engine.spy.appender.FileLogger");
-                    break;
-                case CUSTOM:
-                    System.setProperty("p6spy.config.appender", p6spy.getCustomAppenderClass());
-                    break;
+                case SYSOUT -> System.setProperty("p6spy.config.appender", "com.p6spy.engine.spy.appender.StdoutLogger");
+                case SLF4J -> System.setProperty("p6spy.config.appender", "com.p6spy.engine.spy.appender.Slf4JLogger");
+                case FILE -> System.setProperty("p6spy.config.appender", "com.p6spy.engine.spy.appender.FileLogger");
+                case CUSTOM -> System.setProperty("p6spy.config.appender", p6spy.getCustomAppenderClass());
             }
         }
         if (!initialP6SpyOptions.containsKey("logfile")) {
