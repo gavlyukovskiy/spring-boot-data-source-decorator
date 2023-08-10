@@ -49,9 +49,9 @@ public class DataSourceProxyProperties {
 
 
     /**
-     * Use multiline output for logging query.
+     * Use formatted SQL for logging query.
      *
-     * @see ProxyDataSourceBuilder#formatSql()
+     * @see ProxyDataSourceBuilder#formatQuery(ProxyDataSourceBuilder.FormatQueryCallback) 
      */
     private boolean formatSql = false;
 

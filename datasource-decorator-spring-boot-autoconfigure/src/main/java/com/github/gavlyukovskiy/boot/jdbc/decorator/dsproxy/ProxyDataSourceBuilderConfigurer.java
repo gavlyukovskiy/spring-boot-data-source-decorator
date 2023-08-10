@@ -16,12 +16,6 @@
 
 package com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import net.ttddyy.dsproxy.listener.MethodExecutionListener;
 import net.ttddyy.dsproxy.listener.QueryCountStrategy;
 import net.ttddyy.dsproxy.listener.QueryExecutionListener;
@@ -31,16 +25,22 @@ import net.ttddyy.dsproxy.proxy.ResultSetProxyLogicFactory;
 import net.ttddyy.dsproxy.support.ProxyDataSourceBuilder;
 import net.ttddyy.dsproxy.transform.ParameterTransformer;
 import net.ttddyy.dsproxy.transform.QueryTransformer;
-import org.hibernate.engine.jdbc.internal.BasicFormatterImpl;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * Configurer for {@link ProxyDataSourceBuilder} based on the application context.
  *
- * @author Arthur Gavlyukovskiy
  * @see ProxyDataSourceBuilder
+ *
+ * @author Arthur Gavlyukovskiy
  * @since 1.3.1
  */
 public class ProxyDataSourceBuilderConfigurer {
@@ -68,9 +68,7 @@ public class ProxyDataSourceBuilderConfigurer {
     @Autowired(required = false)
     private ConnectionIdManagerProvider connectionIdManagerProvider;
 
-
     public void configure(ProxyDataSourceBuilder proxyDataSourceBuilder, DataSourceProxyProperties datasourceProxy) {
-
         switch (datasourceProxy.getLogging()) {
             case SLF4J: {
                 if (datasourceProxy.getQuery().isEnableLogging()) {
@@ -78,7 +76,7 @@ public class ProxyDataSourceBuilderConfigurer {
                 }
                 if (datasourceProxy.getSlowQuery().isEnableLogging()) {
                     proxyDataSourceBuilder.logSlowQueryBySlf4j(datasourceProxy.getSlowQuery().getThreshold(), TimeUnit.SECONDS,
-                        toSlf4JLogLevel(datasourceProxy.getSlowQuery().getLogLevel()), datasourceProxy.getSlowQuery().getLoggerName());
+                            toSlf4JLogLevel(datasourceProxy.getSlowQuery().getLogLevel()), datasourceProxy.getSlowQuery().getLoggerName());
                 }
                 break;
             }
@@ -88,7 +86,7 @@ public class ProxyDataSourceBuilderConfigurer {
                 }
                 if (datasourceProxy.getSlowQuery().isEnableLogging()) {
                     proxyDataSourceBuilder.logSlowQueryByJUL(datasourceProxy.getSlowQuery().getThreshold(), TimeUnit.SECONDS,
-                        toJULLogLevel(datasourceProxy.getSlowQuery().getLogLevel()), datasourceProxy.getSlowQuery().getLoggerName());
+                            toJULLogLevel(datasourceProxy.getSlowQuery().getLogLevel()), datasourceProxy.getSlowQuery().getLoggerName());
                 }
                 break;
             }
@@ -98,7 +96,7 @@ public class ProxyDataSourceBuilderConfigurer {
                 }
                 if (datasourceProxy.getSlowQuery().isEnableLogging()) {
                     proxyDataSourceBuilder.logSlowQueryByCommons(datasourceProxy.getSlowQuery().getThreshold(), TimeUnit.SECONDS,
-                        toCommonsLogLevel(datasourceProxy.getSlowQuery().getLogLevel()), datasourceProxy.getSlowQuery().getLoggerName());
+                            toCommonsLogLevel(datasourceProxy.getSlowQuery().getLogLevel()), datasourceProxy.getSlowQuery().getLoggerName());
                 }
                 break;
             }
@@ -131,7 +129,7 @@ public class ProxyDataSourceBuilderConfigurer {
         if (!datasourceProxy.isJsonFormat() && datasourceProxy.isFormatSql()) {
             if (classExists("org.hibernate.engine.jdbc.internal.BasicFormatterImpl")) {
                 log.trace("Formatting SQL enabled, Hibernate's formatter will be used.");
-                org.hibernate.engine.jdbc.internal.BasicFormatterImpl hibernateFormatter = new BasicFormatterImpl();
+                org.hibernate.engine.jdbc.internal.BasicFormatterImpl hibernateFormatter = new org.hibernate.engine.jdbc.internal.BasicFormatterImpl();
                 proxyDataSourceBuilder.formatQuery(hibernateFormatter::format);
             } else if (classExists("com.github.vertical_blank.sqlformatter.SqlFormatter")) {
                 log.trace("Formatting SQL enabled, SqlFormatter will be used.");
@@ -164,9 +162,7 @@ public class ProxyDataSourceBuilderConfigurer {
         }
     }
 
-
     private SLF4JLogLevel toSlf4JLogLevel(String logLevel) {
-
         if (logLevel == null) {
             return null;
         }
@@ -176,18 +172,17 @@ public class ProxyDataSourceBuilderConfigurer {
             }
         }
         throw new IllegalArgumentException("Unresolved log level " + logLevel + " for slf4j logger, " +
-            "known levels: " + Arrays.toString(SLF4JLogLevel.values()));
+                "known levels: " + Arrays.toString(SLF4JLogLevel.values()));
     }
 
-
     private Level toJULLogLevel(String logLevel) {
-
         if (logLevel == null) {
             return null;
         }
         try {
             return Level.parse(logLevel);
-        } catch (IllegalArgumentException e) {
+        }
+        catch (IllegalArgumentException e) {
             if (logLevel.equalsIgnoreCase("DEBUG")) {
                 return Level.FINE;
             }
@@ -198,9 +193,7 @@ public class ProxyDataSourceBuilderConfigurer {
         }
     }
 
-
     private CommonsLogLevel toCommonsLogLevel(String logLevel) {
-
         if (logLevel == null) {
             return null;
         }
@@ -210,9 +203,8 @@ public class ProxyDataSourceBuilderConfigurer {
             }
         }
         throw new IllegalArgumentException("Unresolved log level " + logLevel + " for apache commons logger, " +
-            "known levels " + Arrays.toString(CommonsLogLevel.values()));
+                "known levels " + Arrays.toString(CommonsLogLevel.values()));
     }
-
 
     private static boolean classExists(String fullQualifiedClassName) {
 
