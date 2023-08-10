@@ -196,7 +196,12 @@ decorator.datasource.datasource-proxy.slow-query.logger-name=
 decorator.datasource.datasource-proxy.slow-query.threshold=300
 
 decorator.datasource.datasource-proxy.multiline=true
+
+# Formats the SQL for better readability. Uses Hibernate's formatter if present on the class path. If you opted in for a different JPA provider you need to add https://github.com/vertical-blank/sql-formatter as a runtime dependency to your app  to enable this. 
+# Mutually exclusive with json-format=true
+decorator.datasource.datasource-proxy.format-sql=true
 decorator.datasource.datasource-proxy.json-format=false
+
 # Enable Query Metrics
 decorator.datasource.datasource-proxy.count-query=false
 ```
