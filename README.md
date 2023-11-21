@@ -117,9 +117,6 @@ decorator.datasource.p6spy.custom-appender-class=my.custom.LoggerClass
 decorator.datasource.p6spy.log-format=
 # Use regex pattern to filter log messages. If specified only matched messages will be logged.
 decorator.datasource.p6spy.log-filter.pattern=
-# Report the effective sql string (with '?' replaced with real values) to tracing systems.
-# NOTE this setting does not affect the logging message.
-decorator.datasource.p6spy.tracing.include-parameter-values=true
 ```
 
 Also you can configure P6Spy manually using one of available configuration methods. For more information please refer to the [P6Spy Configuration Guide](http://p6spy.readthedocs.io/en/latest/configandusage.html)
