@@ -18,6 +18,8 @@ package com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy;
 
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorProperties;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceNameResolver;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool.FlexyPoolConfiguration;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy.P6SpyConfiguration;
 import net.ttddyy.dsproxy.listener.QueryCountStrategy;
 import net.ttddyy.dsproxy.listener.QueryExecutionListener;
 import net.ttddyy.dsproxy.listener.SingleQueryCountHolder;
@@ -30,6 +32,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 
 /**
  * Configuration for integration with datasource-proxy, allows to use define custom {@link QueryExecutionListener},
@@ -40,6 +43,10 @@ import org.springframework.context.annotation.Bean;
 // Datasource-Proxy is automatically configured by Spring Cloud Sleuth if exists
 @ConditionalOnMissingBean(type = "org.springframework.cloud.sleuth.autoconfig.instrument.jdbc.DataSourceProxyConfiguration")
 @ConditionalOnClass(ProxyDataSource.class)
+@Import({
+        HibernateFormatterConfiguration.class,
+        SqlFormatterConfiguration.class,
+})
 public class DataSourceProxyConfiguration {
 
     @Autowired

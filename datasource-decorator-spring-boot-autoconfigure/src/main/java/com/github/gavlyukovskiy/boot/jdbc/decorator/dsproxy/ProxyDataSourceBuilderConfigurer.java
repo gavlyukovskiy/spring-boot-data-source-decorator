@@ -38,9 +38,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 /**
  * Configurer for {@link ProxyDataSourceBuilder} based on the application context.
  *
- * @see ProxyDataSourceBuilder
- *
  * @author Arthur Gavlyukovskiy
+ * @see ProxyDataSourceBuilder
  * @since 1.3.1
  */
 public class ProxyDataSourceBuilderConfigurer {
@@ -67,6 +66,9 @@ public class ProxyDataSourceBuilderConfigurer {
 
     @Autowired(required = false)
     private ConnectionIdManagerProvider connectionIdManagerProvider;
+
+    @Autowired(required = false)
+    ProxyDataSourceBuilder.FormatQueryCallback formatQueryCallback;
 
     public void configure(ProxyDataSourceBuilder proxyDataSourceBuilder, DataSourceProxyProperties datasourceProxy) {
         switch (datasourceProxy.getLogging()) {
@@ -127,13 +129,8 @@ public class ProxyDataSourceBuilderConfigurer {
         }
 
         if (!datasourceProxy.isJsonFormat() && datasourceProxy.isFormatSql()) {
-            if (classExists("org.hibernate.engine.jdbc.internal.BasicFormatterImpl")) {
-                log.trace("Formatting SQL enabled, Hibernate's formatter will be used.");
-                org.hibernate.engine.jdbc.internal.BasicFormatterImpl hibernateFormatter = new org.hibernate.engine.jdbc.internal.BasicFormatterImpl();
-                proxyDataSourceBuilder.formatQuery(hibernateFormatter::format);
-            } else if (classExists("com.github.vertical_blank.sqlformatter.SqlFormatter")) {
-                log.trace("Formatting SQL enabled, SqlFormatter will be used.");
-                proxyDataSourceBuilder.formatQuery(com.github.vertical_blank.sqlformatter.SqlFormatter::format);
+            if (formatQueryCallback != null) {
+                proxyDataSourceBuilder.formatQuery(formatQueryCallback);
             } else {
                 log.warn("formatSql requested but cannot be enabled because no formatter is present (neither Hibernate nor SqlFormatter).");
             }
@@ -181,8 +178,7 @@ public class ProxyDataSourceBuilderConfigurer {
         }
         try {
             return Level.parse(logLevel);
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             if (logLevel.equalsIgnoreCase("DEBUG")) {
                 return Level.FINE;
             }
