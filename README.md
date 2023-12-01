@@ -102,6 +102,8 @@ public JdbcEventListener myListener() {
 This done by adding `RuntimeListenerSupportFactory` into P6Spy `modulelist`, overriding this property will cause to not registering factory thus listeners will not be applied
 
 You can configure small set of parameters in your `application.properties`:
+> [!NOTE]
+> Configuration below indicates al possible parameters together with their default values and **does not** need to be set explicitly
 ```properties
 # Register P6LogFactory to log JDBC events
 decorator.datasource.p6spy.enable-logging=true
@@ -180,6 +182,8 @@ public ConnectionIdManagerProvider connectionIdManagerProvider() {
 }
 ```
 You can configure logging, query/slow query listeners and more using your `application.properties`:
+> [!NOTE]
+> Configuration below indicates al possible parameters together with their default values and **does not** need to be set explicitly
 ```properties
 # One of logging libraries (slf4j, jul, common, sysout)
 decorator.datasource.datasource-proxy.logging=slf4j
@@ -199,7 +203,7 @@ decorator.datasource.datasource-proxy.multiline=true
 
 # Formats the SQL for better readability. Uses Hibernate's formatter if present on the class path. If you opted in for a different JPA provider you need to add https://github.com/vertical-blank/sql-formatter as a runtime dependency to your app  to enable this. 
 # Mutually exclusive with json-format=true
-decorator.datasource.datasource-proxy.format-sql=true
+decorator.datasource.datasource-proxy.format-sql=false
 decorator.datasource.datasource-proxy.json-format=false
 
 # Enable Query Metrics
@@ -234,6 +238,8 @@ All beans of type `ConnectionAcquiringStrategyFactory` are used to provide `Conn
 `EventListener<? extends Event>` beans can be registered to subscribe on events of flexy-pool (e.g. `ConnectionAcquireTimeThresholdExceededEvent`, `ConnectionLeaseTimeThresholdExceededEvent`).
 
 You can configure your `FlexyPoolDataSource` by using bean `FlexyPoolConfigurationBuilderCustomizer` or properties:
+> [!NOTE]
+> Configuration below indicates al possible parameters together with their default values and **does not** need to be set explicitly
 ```properties
 # Increments pool size if connection acquire request has timed out
 decorator.datasource.flexy-pool.acquiring-strategy.increment-pool.max-overflow-pool-size=15

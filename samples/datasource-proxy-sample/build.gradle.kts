@@ -23,6 +23,7 @@ dependencies {
 
     implementation("com.h2database:h2")
     implementation("org.apache.commons:commons-io:1.3.2")
+    implementation("com.github.vertical-blank:sql-formatter:2.0.4")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }

@@ -19,3 +19,9 @@ spring:
     init:
       mode: never
 
+decorator:
+  datasource:
+    datasource-proxy:
+      format-sql: true
+      query:
+        log-level: INFO

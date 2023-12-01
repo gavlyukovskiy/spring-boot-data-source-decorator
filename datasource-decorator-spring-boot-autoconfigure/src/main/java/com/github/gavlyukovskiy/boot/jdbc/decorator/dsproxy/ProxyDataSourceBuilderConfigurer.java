@@ -132,7 +132,7 @@ public class ProxyDataSourceBuilderConfigurer {
             if (formatQueryCallback != null) {
                 proxyDataSourceBuilder.formatQuery(formatQueryCallback);
             } else {
-                log.warn("formatSql requested but cannot be enabled because no formatter is present (neither Hibernate nor SqlFormatter).");
+                throw new IllegalStateException("'datasource-proxy.format-sql' was set to 'true', but cannot be enabled because no formatter is present in the classpath (neither 'org.hibernate:hibernate-core' nor 'com.github.vertical-blank:sql-formatter').");
             }
         }
 
