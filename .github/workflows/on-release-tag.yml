@@ -1,0 +1,42 @@
+
+name: Tag & Release Workflow
+on:
+  push:
+    tags:
+      - 'v[0-9]+\.[0-9]+\.[0-9]+'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Get version from tag
+        id: get-version
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          regex="^([0-9]+).([0-9]+).([0-9]+)$"
+          if [[ $version =~ $regex ]]; then
+            echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+          else
+            echo "Version $version is not a valid SemVer"
+            exit 1
+          fi
+
+      - name: Build
+        run: ./gradlew -Pversion=${{ steps.get-version.outputs.version }} publishToMavenLocal
+
+      - name: Upload release artifacts to Sonatype
+        env:
+          SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          GPG_KEY: ${{ secrets.GPG_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: ./gradlew -Pversion=${{ steps.get-version.outputs.version }} publishToSonatype closeAndReleaseSonatypeStagingRepository

@@ -2,19 +2,11 @@ plugins {
     java
     `maven-publish`
     signing
-    id("io.github.gradle-nexus.publish-plugin").version("1.1.0")
-    id("pl.allegro.tech.build.axion-release").version("1.14.3")
-}
-
-scmVersion {
-    with(tag) {
-        prefix.set("")
-        versionSeparator.set("")
-    }
+    id("io.github.gradle-nexus.publish-plugin").version("1.3.0")
 }
 
 group = "com.github.gavlyukovskiy"
-version = scmVersion.version
+version = "0.1.0-SNAPSHOT"
 
 val sonatypeUser: String? = project.properties["sonatype_user"]?.toString()
     ?: System.getenv("SONATYPE_USER")
@@ -52,7 +44,6 @@ subprojects {
     java.sourceCompatibility = JavaVersion.VERSION_17
 
     group = rootProject.group
-    version = rootProject.version
 
     repositories {
         mavenCentral()
@@ -86,6 +77,10 @@ subprojects {
                     artifact(sourceJar.get())
                     artifact(javadocJar.get())
 
+                    if (version.toString() == "0.1.0-SNAPSHOT") {
+                        throw IllegalStateException("'-Pversion' must be set")
+                    }
+
                     pom {
                         name.set(project.name)
                         description.set("Spring Boot integration with p6spy, datasource-proxy and flexy-pool")
@@ -106,6 +101,9 @@ subprojects {
                         scm {
                             url.set("https://github.com/gavlyukovskiy/spring-boot-data-source-decorator")
                         }
+                        issueManagement {
+                            url.set("https://github.com/gavlyukovskiy/spring-boot-data-source-decorator/issues")
+                        }
                     }
                 }
             }
@@ -124,35 +122,6 @@ subprojects {
             dependsOn(":datasource-proxy-spring-boot-starter:publishToMavenLocal")
             dependsOn(":flexy-pool-spring-boot-starter:publishToMavenLocal")
             dependsOn(":p6spy-spring-boot-starter:publishToMavenLocal")
-        }
-    }
-}
-
-tasks {
-    val releaseCheck by registering {
-        doLast {
-            val errors = ArrayList<String>()
-            if (!project.hasProperty("release.version")) {
-                errors.add("'-Prelease.version' must be set")
-            }
-            if (System.getenv("GITHUB_ACTIONS") != "true") {
-                if (!project.hasProperty("release.customUsername")) {
-                    errors.add("'-Prelease.customUsername' must be set")
-                }
-                if (!project.hasProperty("release.customPassword")) {
-                    errors.add("'-Prelease.customPassword' must be set")
-                }
-            }
-            if (errors.isNotEmpty()) {
-                throw IllegalStateException(errors.joinToString("\n"))
-            }
-        }
-    }
-
-    verifyRelease {
-        dependsOn(releaseCheck)
-        subprojects.forEach {
-            dependsOn(it.tasks.build)
         }
     }
 }
