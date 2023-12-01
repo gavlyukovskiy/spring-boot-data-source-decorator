@@ -23,6 +23,10 @@ dependencies {
 
     compileOnly("org.springframework.boot:spring-boot-starter-actuator:${project.extra["springBootVersion"]}")
 
+    // optional (compileOnly) dependencies for SQL formatting
+    compileOnly("org.hibernate:hibernate-core:6.1.6.Final") // should match the version managed by spring-boot
+    compileOnly("com.github.vertical-blank:sql-formatter:2.0.4")
+
     testImplementation("com.h2database:h2:2.1.214")
     testImplementation("org.springframework.boot:spring-boot-starter-test:${project.extra["springBootVersion"]}")
 

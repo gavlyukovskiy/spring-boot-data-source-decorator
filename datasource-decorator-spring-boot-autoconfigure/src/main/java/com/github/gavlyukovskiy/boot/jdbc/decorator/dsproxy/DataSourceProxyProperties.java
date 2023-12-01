@@ -46,6 +46,15 @@ public class DataSourceProxyProperties {
      * @see ProxyDataSourceBuilder#multiline()
      */
     private boolean multiline = true;
+
+
+    /**
+     * Use formatted SQL for logging query.
+     *
+     * @see ProxyDataSourceBuilder#formatQuery(ProxyDataSourceBuilder.FormatQueryCallback) 
+     */
+    private boolean formatSql = false;
+
     /**
      * Use json output for logging query.
      *
@@ -76,6 +85,10 @@ public class DataSourceProxyProperties {
         return this.multiline;
     }
 
+    public boolean isFormatSql() {
+        return this.formatSql;
+    }
+
     public boolean isJsonFormat() {
         return this.jsonFormat;
     }
@@ -98,6 +111,10 @@ public class DataSourceProxyProperties {
 
     public void setMultiline(boolean multiline) {
         this.multiline = multiline;
+    }
+
+    public void setFormatSql(boolean formatSql) {
+        this.formatSql = formatSql;
     }
 
     public void setJsonFormat(boolean jsonFormat) {

@@ -39,7 +39,7 @@ subprojects {
 
     extra["springBootVersion"] = "3.0.2"
     extra["p6SpyVersion"] = "3.9.0"
-    extra["datasourceProxyVersion"] = "1.8.1"
+    extra["datasourceProxyVersion"] = "1.9"
     extra["flexyPoolVersion"] = "2.2.3"
 
     extra["release"] = listOf(

@@ -38,9 +38,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 /**
  * Configurer for {@link ProxyDataSourceBuilder} based on the application context.
  *
- * @see ProxyDataSourceBuilder
- *
  * @author Arthur Gavlyukovskiy
+ * @see ProxyDataSourceBuilder
  * @since 1.3.1
  */
 public class ProxyDataSourceBuilderConfigurer {
@@ -67,6 +66,9 @@ public class ProxyDataSourceBuilderConfigurer {
 
     @Autowired(required = false)
     private ConnectionIdManagerProvider connectionIdManagerProvider;
+
+    @Autowired(required = false)
+    ProxyDataSourceBuilder.FormatQueryCallback formatQueryCallback;
 
     public void configure(ProxyDataSourceBuilder proxyDataSourceBuilder, DataSourceProxyProperties datasourceProxy) {
         switch (datasourceProxy.getLogging()) {
@@ -110,15 +112,30 @@ public class ProxyDataSourceBuilderConfigurer {
                 break;
             }
         }
+
         if (datasourceProxy.isMultiline() && datasourceProxy.isJsonFormat()) {
             log.warn("Found opposite multiline and json format, multiline will be used (may depend on library version)");
         }
+        if (datasourceProxy.isFormatSql() && datasourceProxy.isJsonFormat()) {
+            log.warn("Found opposite format-sql and json format, json format will be used (may depend on library version)");
+        }
+
         if (datasourceProxy.isMultiline()) {
             proxyDataSourceBuilder.multiline();
         }
-        if (datasourceProxy.isJsonFormat()) {
+
+        if (!datasourceProxy.isMultiline() && datasourceProxy.isJsonFormat()) {
             proxyDataSourceBuilder.asJson();
         }
+
+        if (!datasourceProxy.isJsonFormat() && datasourceProxy.isFormatSql()) {
+            if (formatQueryCallback != null) {
+                proxyDataSourceBuilder.formatQuery(formatQueryCallback);
+            } else {
+                log.warn("formatSql requested but cannot be enabled because no formatter is present (neither Hibernate nor SqlFormatter).");
+            }
+        }
+
         if (datasourceProxy.isCountQuery()) {
             proxyDataSourceBuilder.countQuery(queryCountStrategy);
         }
@@ -161,8 +178,7 @@ public class ProxyDataSourceBuilderConfigurer {
         }
         try {
             return Level.parse(logLevel);
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             if (logLevel.equalsIgnoreCase("DEBUG")) {
                 return Level.FINE;
             }
@@ -184,5 +200,15 @@ public class ProxyDataSourceBuilderConfigurer {
         }
         throw new IllegalArgumentException("Unresolved log level " + logLevel + " for apache commons logger, " +
                 "known levels " + Arrays.toString(CommonsLogLevel.values()));
+    }
+
+    private static boolean classExists(String fullQualifiedClassName) {
+
+        try {
+            Class.forName(fullQualifiedClassName);
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 }
