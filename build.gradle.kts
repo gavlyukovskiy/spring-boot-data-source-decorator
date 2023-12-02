@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "com.github.gavlyukovskiy"
-version = "0.1.0-SNAPSHOT"
+version = version.takeUnless { it == "unspecified" } ?: "0.1.0-SNAPSHOT"
 
 val sonatypeUser: String? = project.properties["sonatype_user"]?.toString()
     ?: System.getenv("SONATYPE_USER")
