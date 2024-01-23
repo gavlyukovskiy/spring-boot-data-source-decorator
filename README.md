@@ -1,6 +1,6 @@
 ### Spring Boot DataSource Decorator
 
-![Build status](https://github.com/gavlyukovskiy/spring-boot-data-source-decorator/workflows/Build/badge.svg)
+[![Build status](https://github.com/gavlyukovskiy/spring-boot-data-source-decorator/workflows/Build/badge.svg)](https://github.com/gavlyukovskiy/spring-boot-data-source-decorator/actions/workflows/on-master.yml?query=branch%3Amaster)
 [![Latest release](https://img.shields.io/badge/dynamic/xml.svg?label=Maven%20Central&color=green&query=%2F%2Fmetadata%2Fversioning%2Flatest&url=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Fcom%2Fgithub%2Fgavlyukovskiy%2Fdatasource-decorator-spring-boot-autoconfigure%2Fmaven-metadata.xml)](https://mvnrepository.com/artifact/com.github.gavlyukovskiy/datasource-decorator-spring-boot-autoconfigure/)
 
 [Spring Boot](https://github.com/spring-projects/spring-boot) auto-configuration for integration with
