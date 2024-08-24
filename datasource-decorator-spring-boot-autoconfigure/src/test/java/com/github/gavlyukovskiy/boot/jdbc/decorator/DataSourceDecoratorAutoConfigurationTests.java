@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
+import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
@@ -251,6 +252,35 @@ class DataSourceDecoratorAutoConfigurationTests {
             DataSource dataSource = context.getBean(DataSource.class);
             assertThat(dataSource).isNotInstanceOf(DecoratedDataSource.class);
             assertThat(dataSource).isInstanceOf(AbstractRoutingDataSource.class);
+        });
+    }
+
+    @Test
+    void testUnwrapsRealDataSourceForFlyway() {
+        ApplicationContextRunner contextRunner = this.contextRunner
+                .withConfiguration(AutoConfigurations.of(FlywayAutoConfiguration.class))
+                .withPropertyValues("spring.flyway.user=sa");
+
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            assertThat(dataSource).isInstanceOf(DecoratedDataSource.class);
+            assertThat(dataSource.unwrap(HikariDataSource.class)).isInstanceOf(HikariDataSource.class);
+            assertThat(dataSource.unwrap(DataSource.class)).isInstanceOf(HikariDataSource.class);
+        });
+    }
+
+    @Test
+    void testUnwrapsProxyDataSourcesFromChain() {
+        ApplicationContextRunner contextRunner = this.contextRunner
+                .withConfiguration(AutoConfigurations.of(FlywayAutoConfiguration.class))
+                .withPropertyValues("spring.flyway.user=sa");
+
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            assertThat(dataSource).isInstanceOf(DecoratedDataSource.class);
+            assertThat(dataSource.unwrap(ProxyDataSource.class)).isInstanceOf(ProxyDataSource.class);
+            assertThat(dataSource.unwrap(P6DataSource.class)).isInstanceOf(P6DataSource.class);
+            assertThat(dataSource.unwrap(FlexyPoolDataSource.class)).isInstanceOf(FlexyPoolDataSource.class);
         });
     }
 

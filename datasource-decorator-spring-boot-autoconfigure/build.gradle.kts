@@ -42,6 +42,7 @@ dependencies {
     testImplementation("org.apache.commons:commons-dbcp2:2.9.0")
     testImplementation("org.apache.tomcat:tomcat-jdbc:10.1.5")
     testImplementation("com.zaxxer:HikariCP:5.0.1")
+    testImplementation("org.flywaydb:flyway-core:9.5.1")
 }
 
 tasks {
