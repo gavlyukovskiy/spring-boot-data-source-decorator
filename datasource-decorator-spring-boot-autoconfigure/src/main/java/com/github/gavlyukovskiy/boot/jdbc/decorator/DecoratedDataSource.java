@@ -20,6 +20,7 @@ import org.springframework.jdbc.datasource.DelegatingDataSource;
 
 import javax.sql.DataSource;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -81,6 +82,24 @@ public class DecoratedDataSource extends DelegatingDataSource {
      */
     public List<DataSourceDecorationStage> getDecoratingChain() {
         return decoratingChain;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T unwrap(Class<T> iface) throws SQLException {
+        // Spring Boot unwrapping simply passes 'unwrap(DataSource.class)' expecting real datasource to be returned
+        // if the real datasource type matches - return real datasource
+        if (iface.isInstance(getRealDataSource())) {
+            return (T) getRealDataSource();
+        }
+        // As some decorators don't consider their types during unwrapping
+        // if their type is specifically requested, we can return the decorator itself
+        for (DataSourceDecorationStage dataSourceDecorationStage : decoratingChain) {
+            if (iface.isInstance(dataSourceDecorationStage.getDataSource())) {
+                return (T) dataSourceDecorationStage.getDataSource();
+            }
+        }
+        return super.unwrap(iface);
     }
 
     @Override
