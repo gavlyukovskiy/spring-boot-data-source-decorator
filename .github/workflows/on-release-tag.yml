@@ -1,13 +1,12 @@
 name: Tag & Release Workflow
+
 on:
   push:
     tags:
       - 'v[0-9]+\.[0-9]+\.[0-9]+'
 
 jobs:
-
   release:
-
     if: github.repository == 'gavlyukovskiy/spring-boot-data-source-decorator'
     runs-on: ubuntu-latest
     steps:

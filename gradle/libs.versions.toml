@@ -1,0 +1,43 @@
+[versions]
+spring-boot = "3.3.3"
+p6Spy = "3.9.1"
+datasource-proxy = "1.10"
+flexy-pool = "2.2.3"
+
+[libraries]
+spring-boot-dependencies = { group = "org.springframework.boot", name = "spring-boot-dependencies", version.ref = "spring-boot" }
+spring-boot = { group = "org.springframework.boot", name = "spring-boot" }
+spring-boot-autoconfigure = { group = "org.springframework.boot", name = "spring-boot-autoconfigure" }
+spring-boot-starter-actuator = { group = "org.springframework.boot", name = "spring-boot-starter-actuator" }
+spring-boot-starter-jdbc = { group = "org.springframework.boot", name = "spring-boot-starter-jdbc" }
+spring-boot-configuration-processor = { group = "org.springframework.boot", name = "spring-boot-configuration-processor" }
+spring-boot-starter-test = { group = "org.springframework.boot", name = "spring-boot-starter-test" }
+
+
+spring-boot-starter-web = { group = "org.springframework.boot", name = "spring-boot-starter-web" }
+spring-boot-starter-aop = { group = "org.springframework.boot", name = "spring-boot-starter-aop" }
+
+p6spy = { group = "p6spy", name = "p6spy", version.ref = "p6Spy" }
+
+datasource-proxy = { group = "net.ttddyy", name = "datasource-proxy", version.ref = "datasource-proxy" }
+
+flexy-pool-core = { group = "com.vladmihalcea.flexy-pool", name = "flexy-pool-core", version.ref = "flexy-pool" }
+flexy-pool-dbcp2 = { group = "com.vladmihalcea.flexy-pool", name = "flexy-dbcp2", version.ref = "flexy-pool" }
+flexy-pool-hikaricp = { group = "com.vladmihalcea.flexy-pool", name = "flexy-hikaricp", version.ref = "flexy-pool" }
+flexy-pool-tomcatcp = { group = "com.vladmihalcea.flexy-pool", name = "flexy-tomcatcp", version.ref = "flexy-pool" }
+flexy-pool-micrometer-metrics = { group = "com.vladmihalcea.flexy-pool", name = "flexy-micrometer-metrics", version.ref = "flexy-pool" }
+
+commons-io = { group = "org.apache.commons", name = "commons-io", version = "1.3.2" }
+commons-dbcp2 = { group = "org.apache.commons", name = "commons-dbcp2" }
+tomcat-jdbc = { group = "org.apache.tomcat", name = "tomcat-jdbc" }
+hikari-cp = { group = "com.zaxxer", name = "HikariCP" }
+hibernate-core = { group = "org.hibernate.orm", name = "hibernate-core" }
+sql-formatter = { group = "com.github.vertical-blank", name = "sql-formatter", version = "2.0.5" }
+h2 = { group = "com.h2database", name = "h2" }
+commons-dbcp = { group = "commons-dbcp", name = "commons-dbcp", version = "1.4" }
+flyway-core = { group = "org.flywaydb", name = "flyway-core" }
+
+[plugins]
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
+nexus-publish = { id = "io.github.gradle-nexus.publish-plugin", version = "2.0.0" }
+test-logger = { id = "com.adarshr.test-logger", version = "4.0.0" }

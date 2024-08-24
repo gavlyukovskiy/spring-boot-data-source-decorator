@@ -2,7 +2,7 @@ plugins {
     java
     `maven-publish`
     signing
-    id("io.github.gradle-nexus.publish-plugin").version("1.3.0")
+    alias(libs.plugins.nexus.publish)
 }
 
 group = "com.github.gavlyukovskiy"
@@ -28,11 +28,6 @@ nexusPublishing {
 
 subprojects {
     apply(plugin = "java")
-
-    extra["springBootVersion"] = "3.0.2"
-    extra["p6SpyVersion"] = "3.9.0"
-    extra["datasourceProxyVersion"] = "1.9"
-    extra["flexyPoolVersion"] = "2.2.3"
 
     extra["release"] = listOf(
         "datasource-decorator-spring-boot-autoconfigure",
@@ -117,7 +112,7 @@ subprojects {
     }
 
     if (project.name.contains("sample")) {
-        tasks.compileJava {
+        tasks.withType<JavaCompile> {
             dependsOn(":datasource-decorator-spring-boot-autoconfigure:publishToMavenLocal")
             dependsOn(":datasource-proxy-spring-boot-starter:publishToMavenLocal")
             dependsOn(":flexy-pool-spring-boot-starter:publishToMavenLocal")
