@@ -1,48 +1,54 @@
 plugins {
     `java-library`
+    alias(libs.plugins.test.logger)
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot:${project.extra["springBootVersion"]}")
-    implementation("org.springframework.boot:spring-boot-autoconfigure:${project.extra["springBootVersion"]}")
-    implementation("org.springframework.boot:spring-boot-starter-jdbc:${project.extra["springBootVersion"]}")
+    implementation(platform(libs.spring.boot.dependencies))
+    annotationProcessor(platform(libs.spring.boot.dependencies))
+    compileOnly(platform(libs.spring.boot.dependencies))
+    testImplementation(platform(libs.spring.boot.dependencies))
 
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:${project.extra["springBootVersion"]}")
+    implementation(libs.spring.boot)
+    implementation(libs.spring.boot.autoconfigure)
+    implementation(libs.spring.boot.starter.jdbc)
 
-    compileOnly("org.apache.commons:commons-dbcp2:2.9.0")
-    compileOnly("org.apache.tomcat:tomcat-jdbc:10.1.5")
-    compileOnly("com.zaxxer:HikariCP:5.0.1")
+    annotationProcessor(libs.spring.boot.configuration.processor)
 
-    compileOnly("p6spy:p6spy:${project.extra["p6SpyVersion"]}")
-    compileOnly("net.ttddyy:datasource-proxy:${project.extra["datasourceProxyVersion"]}")
-    compileOnly("com.vladmihalcea.flexy-pool:flexy-pool-core:${project.extra["flexyPoolVersion"]}")
-    compileOnly("com.vladmihalcea.flexy-pool:flexy-dbcp2:${project.extra["flexyPoolVersion"]}")
-    compileOnly("com.vladmihalcea.flexy-pool:flexy-hikaricp:${project.extra["flexyPoolVersion"]}")
-    compileOnly("com.vladmihalcea.flexy-pool:flexy-tomcatcp:${project.extra["flexyPoolVersion"]}")
-    compileOnly("com.vladmihalcea.flexy-pool:flexy-micrometer-metrics:${project.extra["flexyPoolVersion"]}")
+    compileOnly(libs.commons.dbcp2)
+    compileOnly(libs.tomcat.jdbc)
+    compileOnly(libs.hikari.cp)
 
-    compileOnly("org.springframework.boot:spring-boot-starter-actuator:${project.extra["springBootVersion"]}")
+    compileOnly(libs.p6spy)
+    compileOnly(libs.datasource.proxy)
+    compileOnly(libs.flexy.pool.core)
+    compileOnly(libs.flexy.pool.dbcp2)
+    compileOnly(libs.flexy.pool.hikaricp)
+    compileOnly(libs.flexy.pool.tomcatcp)
+    compileOnly(libs.flexy.pool.micrometer.metrics)
+
+    compileOnly(libs.spring.boot.starter.actuator)
 
     // optional (compileOnly) dependencies for SQL formatting
-    compileOnly("org.hibernate:hibernate-core:6.1.6.Final") // should match the version managed by spring-boot
-    compileOnly("com.github.vertical-blank:sql-formatter:2.0.4")
+    compileOnly(libs.hibernate.core)
+    compileOnly(libs.sql.formatter)
 
-    testImplementation("com.h2database:h2:2.1.214")
-    testImplementation("org.springframework.boot:spring-boot-starter-test:${project.extra["springBootVersion"]}")
+    testImplementation(libs.h2)
+    testImplementation(libs.spring.boot.starter.test)
 
-    testImplementation("p6spy:p6spy:${project.extra["p6SpyVersion"]}")
-    testImplementation("net.ttddyy:datasource-proxy:${project.extra["datasourceProxyVersion"]}")
-    testImplementation("com.vladmihalcea.flexy-pool:flexy-pool-core:${project.extra["flexyPoolVersion"]}")
-    testImplementation("com.vladmihalcea.flexy-pool:flexy-dbcp2:${project.extra["flexyPoolVersion"]}")
-    testImplementation("com.vladmihalcea.flexy-pool:flexy-hikaricp:${project.extra["flexyPoolVersion"]}")
-    testImplementation("com.vladmihalcea.flexy-pool:flexy-tomcatcp:${project.extra["flexyPoolVersion"]}")
-    testImplementation("com.vladmihalcea.flexy-pool:flexy-micrometer-metrics:${project.extra["flexyPoolVersion"]}")
+    testImplementation(libs.p6spy)
+    testImplementation(libs.datasource.proxy)
+    testImplementation(libs.flexy.pool.core)
+    testImplementation(libs.flexy.pool.dbcp2)
+    testImplementation(libs.flexy.pool.hikaricp)
+    testImplementation(libs.flexy.pool.tomcatcp)
+    testImplementation(libs.flexy.pool.micrometer.metrics)
 
-    testImplementation("commons-dbcp:commons-dbcp:1.4")
-    testImplementation("org.apache.commons:commons-dbcp2:2.9.0")
-    testImplementation("org.apache.tomcat:tomcat-jdbc:10.1.5")
-    testImplementation("com.zaxxer:HikariCP:5.0.1")
-    testImplementation("org.flywaydb:flyway-core:9.5.1")
+    testImplementation(libs.commons.dbcp)
+    testImplementation(libs.commons.dbcp2)
+    testImplementation(libs.tomcat.jdbc)
+    testImplementation(libs.hikari.cp)
+    testImplementation(libs.flyway.core)
 }
 
 tasks {
@@ -53,13 +59,16 @@ tasks {
     withType<JavaCompile> {
         options.compilerArgs.add("-Xlint:unchecked")
         options.compilerArgs.add("-Xlint:deprecation")
+        options.encoding = "UTF-8"
+    }
+
+    javadoc {
+        val options = options as StandardJavadocDocletOptions
+        options.addBooleanOption("html5", true)
+        options.addStringOption("Xdoclint:all,-missing", "-quiet")
     }
 
     test {
         useJUnitPlatform()
-        testLogging {
-            events("passed", "skipped", "failed")
-            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
-        }
     }
 }

@@ -1,30 +1,28 @@
 plugins {
-    id("org.springframework.boot").version("3.0.2")
+    alias(libs.plugins.spring.boot)
+    alias(libs.plugins.test.logger)
 }
 
 repositories {
     mavenLocal()
 }
 
-apply(plugin = "io.spring.dependency-management")
-
 dependencies {
+    implementation(platform(libs.spring.boot.dependencies))
+    testImplementation(platform(libs.spring.boot.dependencies))
+
     // get latest version from https://github.com/gavlyukovskiy/spring-boot-data-source-decorator/releases
     implementation("com.github.gavlyukovskiy:p6spy-spring-boot-starter:${project.version}")
 
-    implementation("org.springframework.boot:spring-boot")
-    implementation("org.springframework.boot:spring-boot-starter")
-    implementation("org.springframework.boot:spring-boot-autoconfigure")
-    implementation("org.springframework.boot:spring-boot-starter-logging")
-    implementation("org.springframework.boot:spring-boot-starter-tomcat")
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-jdbc")
-    implementation("org.springframework.boot:spring-boot-starter-aop")
+    implementation(libs.spring.boot)
+    implementation(libs.spring.boot.starter.web)
+    implementation(libs.spring.boot.starter.jdbc)
 
-    implementation("com.h2database:h2")
-    implementation("org.apache.commons:commons-io:1.3.2")
+    implementation(libs.h2)
+    implementation(libs.commons.io)
+    implementation(libs.sql.formatter)
 
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation(libs.spring.boot.starter.test)
 }
 
 tasks {
