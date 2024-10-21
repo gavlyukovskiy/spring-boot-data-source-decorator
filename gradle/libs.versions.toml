@@ -2,7 +2,7 @@
 spring-boot = "3.3.4"
 p6Spy = "3.9.1"
 datasource-proxy = "1.10"
-flexy-pool = "2.2.3"
+flexy-pool = "3.0.0"
 
 [libraries]
 spring-boot-dependencies = { group = "org.springframework.boot", name = "spring-boot-dependencies", version.ref = "spring-boot" }
