@@ -14,15 +14,3 @@ spring:
   sql:
     init:
       mode: never
-decorator:
-  datasource:
-    flexy-pool:
-      acquisition-strategy:
-        retry:
-          attempts: 3
-        increment-pool:
-          timeout-millis: 1000
-          max-overgrow-pool-size: 15
-      threshold:
-        connection:
-          acquire: 100
