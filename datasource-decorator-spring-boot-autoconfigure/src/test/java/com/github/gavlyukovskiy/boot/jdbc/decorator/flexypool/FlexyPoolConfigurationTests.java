@@ -22,10 +22,10 @@ import com.github.gavlyukovskiy.boot.jdbc.decorator.HidePackagesClassLoader;
 import com.vladmihalcea.flexypool.FlexyPoolDataSource;
 import com.vladmihalcea.flexypool.connection.ConnectionRequestContext;
 import com.vladmihalcea.flexypool.metric.micrometer.MicrometerMetrics;
-import com.vladmihalcea.flexypool.strategy.ConnectionAcquiringStrategy;
-import com.vladmihalcea.flexypool.strategy.ConnectionAcquiringStrategyFactory;
-import com.vladmihalcea.flexypool.strategy.IncrementPoolOnTimeoutConnectionAcquiringStrategy;
-import com.vladmihalcea.flexypool.strategy.RetryConnectionAcquiringStrategy;
+import com.vladmihalcea.flexypool.strategy.ConnectionAcquisitionStrategy;
+import com.vladmihalcea.flexypool.strategy.ConnectionAcquisitionStrategyFactory;
+import com.vladmihalcea.flexypool.strategy.IncrementPoolOnTimeoutConnectionAcquisitionStrategy;
+import com.vladmihalcea.flexypool.strategy.RetryConnectionAcquisitionStrategy;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.junit.jupiter.api.Test;
@@ -96,14 +96,14 @@ class FlexyPoolConfigurationTests {
             DataSource dataSource = context.getBean(DataSource.class);
             assertDataSourceOfType(dataSource, HikariDataSource.class);
             FlexyPoolDataSource<HikariDataSource> flexyPoolDataSource = assertDataSourceOfType(dataSource, HikariDataSource.class);
-            IncrementPoolOnTimeoutConnectionAcquiringStrategy<HikariDataSource> strategy1 =
-                    findStrategy(flexyPoolDataSource, IncrementPoolOnTimeoutConnectionAcquiringStrategy.class);
+            IncrementPoolOnTimeoutConnectionAcquisitionStrategy<HikariDataSource> strategy1 =
+                    findStrategy(flexyPoolDataSource, IncrementPoolOnTimeoutConnectionAcquisitionStrategy.class);
             assertThat(strategy1).isNotNull();
-            assertThat(strategy1).hasFieldOrPropertyWithValue("maxOverflowPoolSize", 15);
+            assertThat(strategy1).hasFieldOrPropertyWithValue("maxOvergrowPoolSize", 15);
             assertThat(strategy1).hasFieldOrPropertyWithValue("timeoutMillis", 500);
 
-            RetryConnectionAcquiringStrategy<HikariDataSource> strategy2 =
-                    findStrategy(flexyPoolDataSource, RetryConnectionAcquiringStrategy.class);
+            RetryConnectionAcquisitionStrategy<HikariDataSource> strategy2 =
+                    findStrategy(flexyPoolDataSource, RetryConnectionAcquisitionStrategy.class);
             assertThat(strategy2).isNotNull();
             assertThat(strategy2).hasFieldOrPropertyWithValue("retryAttempts", 2);
         });
@@ -113,22 +113,47 @@ class FlexyPoolConfigurationTests {
     @SuppressWarnings("unchecked")
     void testDecoratingHikariDataSourceWithCustomPropertyStrategies() {
         ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("spring.datasource.type:" + HikariDataSource.class.getName(),
-                "decorator.datasource.flexy-pool.acquiring-strategy.increment-pool.max-overflow-pool-size:15",
-                "decorator.datasource.flexy-pool.acquiring-strategy.increment-pool.timeout-millis:500",
-                "decorator.datasource.flexy-pool.acquiring-strategy.retry.attempts:5")
-                .withUserConfiguration(HikariConfiguration.class);
+                "decorator.datasource.flexy-pool.acquisition-strategy.increment-pool.max-overgrow-pool-size:35",
+                "decorator.datasource.flexy-pool.acquisition-strategy.increment-pool.timeout-millis:10000",
+                "decorator.datasource.flexy-pool.acquisition-strategy.retry.attempts:5")
+                .withUserConfiguration(FlexyPoolHikariConfiguration.class);
 
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
             FlexyPoolDataSource<HikariDataSource> flexyPoolDataSource = assertDataSourceOfType(dataSource, HikariDataSource.class);
-            IncrementPoolOnTimeoutConnectionAcquiringStrategy<HikariDataSource> strategy1 =
-                    findStrategy(flexyPoolDataSource, IncrementPoolOnTimeoutConnectionAcquiringStrategy.class);
+            IncrementPoolOnTimeoutConnectionAcquisitionStrategy<HikariDataSource> strategy1 =
+                    findStrategy(flexyPoolDataSource, IncrementPoolOnTimeoutConnectionAcquisitionStrategy.class);
             assertThat(strategy1).isNotNull();
-            assertThat(strategy1).hasFieldOrPropertyWithValue("maxOverflowPoolSize", 35);
+            assertThat(strategy1).hasFieldOrPropertyWithValue("maxOvergrowPoolSize", 35);
             assertThat(strategy1).hasFieldOrPropertyWithValue("timeoutMillis", 10000);
 
-            RetryConnectionAcquiringStrategy<HikariDataSource> strategy2 =
-                    findStrategy(flexyPoolDataSource, RetryConnectionAcquiringStrategy.class);
+            RetryConnectionAcquisitionStrategy<HikariDataSource> strategy2 =
+                    findStrategy(flexyPoolDataSource, RetryConnectionAcquisitionStrategy.class);
+            assertThat(strategy2).isNotNull();
+            assertThat(strategy2).hasFieldOrPropertyWithValue("retryAttempts", 5);
+        });
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void testDecoratingHikariDataSourceWithDeprecatedProperties() {
+        ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("spring.datasource.type:" + HikariDataSource.class.getName(),
+                "decorator.datasource.flexy-pool.acquiring-strategy.increment-pool.max-overflow-pool-size:35",
+                "decorator.datasource.flexy-pool.acquiring-strategy.increment-pool.timeout-millis:10000",
+                "decorator.datasource.flexy-pool.acquiring-strategy.retry.attempts:5")
+                .withUserConfiguration(FlexyPoolHikariConfiguration.class);
+
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            FlexyPoolDataSource<HikariDataSource> flexyPoolDataSource = assertDataSourceOfType(dataSource, HikariDataSource.class);
+            IncrementPoolOnTimeoutConnectionAcquisitionStrategy<HikariDataSource> strategy1 =
+                    findStrategy(flexyPoolDataSource, IncrementPoolOnTimeoutConnectionAcquisitionStrategy.class);
+            assertThat(strategy1).isNotNull();
+            assertThat(strategy1).hasFieldOrPropertyWithValue("maxOvergrowPoolSize", 35);
+            assertThat(strategy1).hasFieldOrPropertyWithValue("timeoutMillis", 10000);
+
+            RetryConnectionAcquisitionStrategy<HikariDataSource> strategy2 =
+                    findStrategy(flexyPoolDataSource, RetryConnectionAcquisitionStrategy.class);
             assertThat(strategy2).isNotNull();
             assertThat(strategy2).hasFieldOrPropertyWithValue("retryAttempts", 5);
         });
@@ -138,19 +163,19 @@ class FlexyPoolConfigurationTests {
     @SuppressWarnings("unchecked")
     void testDecoratingHikariDataSourceWithCustomBeanStrategies() {
         ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("spring.datasource.type:" + HikariDataSource.class.getName())
-                .withConfiguration(AutoConfigurations.of(HikariConfiguration.class));
+                .withConfiguration(AutoConfigurations.of(FlexyPoolHikariConfiguration.class, FlexyPoolCustomFactoriesHikariConfiguration.class));
 
         contextRunner.run(context -> {
             DataSource dataSource = context.getBean(DataSource.class);
             FlexyPoolDataSource<HikariDataSource> flexyPoolDataSource = assertDataSourceOfType(dataSource, HikariDataSource.class);
-            IncrementPoolOnTimeoutConnectionAcquiringStrategy<HikariDataSource> strategy1 =
-                    findStrategy(flexyPoolDataSource, IncrementPoolOnTimeoutConnectionAcquiringStrategy.class);
+            IncrementPoolOnTimeoutConnectionAcquisitionStrategy<HikariDataSource> strategy1 =
+                    findStrategy(flexyPoolDataSource, IncrementPoolOnTimeoutConnectionAcquisitionStrategy.class);
             assertThat(strategy1).isNotNull();
-            assertThat(strategy1).hasFieldOrPropertyWithValue("maxOverflowPoolSize", 35);
+            assertThat(strategy1).hasFieldOrPropertyWithValue("maxOvergrowPoolSize", 35);
             assertThat(strategy1).hasFieldOrPropertyWithValue("timeoutMillis", 10000);
 
-            RetryConnectionAcquiringStrategy<HikariDataSource> strategy2 =
-                    findStrategy(flexyPoolDataSource, RetryConnectionAcquiringStrategy.class);
+            RetryConnectionAcquisitionStrategy<HikariDataSource> strategy2 =
+                    findStrategy(flexyPoolDataSource, RetryConnectionAcquisitionStrategy.class);
             assertThat(strategy2).isNotNull();
             assertThat(strategy2).hasFieldOrPropertyWithValue("retryAttempts", 5);
 
@@ -183,42 +208,46 @@ class FlexyPoolConfigurationTests {
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends ConnectionAcquiringStrategy> T findStrategy(FlexyPoolDataSource<?> flexyPoolDataSource,
+    private <T extends ConnectionAcquisitionStrategy> T findStrategy(FlexyPoolDataSource<?> flexyPoolDataSource,
             Class<T> factoryClass) {
         Field field = ReflectionUtils.findField(FlexyPoolDataSource.class, "connectionAcquiringStrategies");
         Objects.requireNonNull(field);
         ReflectionUtils.makeAccessible(field);
-        Set<ConnectionAcquiringStrategy> strategies =
-                (Set<ConnectionAcquiringStrategy>) ReflectionUtils.getField(field, flexyPoolDataSource);
+        Set<ConnectionAcquisitionStrategy> strategies =
+                (Set<ConnectionAcquisitionStrategy>) ReflectionUtils.getField(field, flexyPoolDataSource);
         Objects.requireNonNull(strategies);
         return (T) strategies.stream().filter(factoryClass::isInstance).findFirst().orElse(null);
     }
 
     @Configuration(proxyBeanMethods = false)
-    static class HikariConfiguration {
+    static class FlexyPoolHikariConfiguration {
 
         @Bean
-        public IncrementPoolOnTimeoutConnectionAcquiringStrategy.Factory<HikariDataSource> incrementPoolOnTimeoutConnectionAcquiringStrategyFactory() {
-            return new IncrementPoolOnTimeoutConnectionAcquiringStrategy.Factory<>(35, 10000);
-        }
-
-        @Bean
-        public RetryConnectionAcquiringStrategy.Factory<HikariDataSource> retryConnectionAcquiringStrategy() {
-            return new RetryConnectionAcquiringStrategy.Factory<>(5);
-        }
-
-        @Bean
-        public ConnectionAcquiringStrategyFactory<?, HikariDataSource> hikariConnectionAcquiringStrategyForHikari() {
+        public ConnectionAcquisitionStrategyFactory<?, HikariDataSource> hikariConnectionAcquisitionStrategyForHikari() {
             return configurationProperties -> new HikariConnectionAcquiringFactory();
         }
 
         @Bean
-        public ConnectionAcquiringStrategyFactory<?, BasicDataSource> dbcp2ConnectionAcquiringFactory() {
+        public ConnectionAcquisitionStrategyFactory<?, BasicDataSource> dbcp2ConnectionAcquiringFactory() {
             return configurationProperties -> new Dbcp2ConnectionAcquiringFactory();
         }
     }
 
-    static class HikariConnectionAcquiringFactory implements ConnectionAcquiringStrategy {
+    @Configuration(proxyBeanMethods = false)
+    static class FlexyPoolCustomFactoriesHikariConfiguration {
+
+        @Bean
+        public IncrementPoolOnTimeoutConnectionAcquisitionStrategy.Factory<HikariDataSource> incrementPoolOnTimeoutConnectionAcquisitionStrategyFactory() {
+            return new IncrementPoolOnTimeoutConnectionAcquisitionStrategy.Factory<>(35, 10000);
+        }
+
+        @Bean
+        public RetryConnectionAcquisitionStrategy.Factory<HikariDataSource> retryConnectionAcquisitionStrategy() {
+            return new RetryConnectionAcquisitionStrategy.Factory<>(5);
+        }
+    }
+
+    static class HikariConnectionAcquiringFactory implements ConnectionAcquisitionStrategy {
 
         @Override
         public Connection getConnection(ConnectionRequestContext requestContext) {
@@ -226,7 +255,7 @@ class FlexyPoolConfigurationTests {
         }
     }
 
-    static class Dbcp2ConnectionAcquiringFactory implements ConnectionAcquiringStrategy {
+    static class Dbcp2ConnectionAcquiringFactory implements ConnectionAcquisitionStrategy {
 
         @Override
         public Connection getConnection(ConnectionRequestContext requestContext) {

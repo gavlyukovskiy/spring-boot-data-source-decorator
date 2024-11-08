@@ -19,8 +19,8 @@ package com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecorator;
 import com.vladmihalcea.flexypool.FlexyPoolDataSource;
 import com.vladmihalcea.flexypool.adaptor.PoolAdapterFactory;
-import com.vladmihalcea.flexypool.config.Configuration;
-import com.vladmihalcea.flexypool.strategy.ConnectionAcquiringStrategyFactory;
+import com.vladmihalcea.flexypool.config.FlexyPoolConfiguration;
+import com.vladmihalcea.flexypool.strategy.ConnectionAcquisitionStrategyFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 
@@ -35,7 +35,7 @@ import java.util.List;
  */
 public class FlexyPoolDataSourceDecorator implements DataSourceDecorator, Ordered {
 
-    private final ConnectionAcquiringStrategyFactory<?, DataSource>[] connectionAcquiringStrategyFactories;
+    private final ConnectionAcquisitionStrategyFactory<?, DataSource>[] ConnectionAcquisitionStrategyFactories;
     private final PoolAdapterFactory<DataSource> poolAdapterFactory;
     private final Class<DataSource> dataSourceClass;
 
@@ -44,17 +44,17 @@ public class FlexyPoolDataSourceDecorator implements DataSourceDecorator, Ordere
 
     @SuppressWarnings("unchecked")
     <T extends DataSource> FlexyPoolDataSourceDecorator(
-            List<ConnectionAcquiringStrategyFactory<?, T>> connectionAcquiringStrategyFactories,
+            List<ConnectionAcquisitionStrategyFactory<?, T>> ConnectionAcquisitionStrategyFactories,
             PoolAdapterFactory<T> poolAdapterFactory,
             Class<T> dataSourceClass) {
-        this.connectionAcquiringStrategyFactories = (ConnectionAcquiringStrategyFactory<?, DataSource>[])
-                connectionAcquiringStrategyFactories.toArray(new ConnectionAcquiringStrategyFactory[0]);
+        this.ConnectionAcquisitionStrategyFactories = (ConnectionAcquisitionStrategyFactory<?, DataSource>[])
+                ConnectionAcquisitionStrategyFactories.toArray(new ConnectionAcquisitionStrategyFactory[0]);
         this.poolAdapterFactory = (PoolAdapterFactory<DataSource>) poolAdapterFactory;
         this.dataSourceClass = (Class<DataSource>) dataSourceClass;
     }
 
     FlexyPoolDataSourceDecorator() {
-        connectionAcquiringStrategyFactories = null;
+        ConnectionAcquisitionStrategyFactories = null;
         poolAdapterFactory = null;
         dataSourceClass = null;
     }
@@ -68,7 +68,7 @@ public class FlexyPoolDataSourceDecorator implements DataSourceDecorator, Ordere
             return flexyPoolDataSource;
         }
         if (dataSourceClass.isInstance(dataSource)) {
-            Configuration.Builder<DataSource> configurationBuilder = new Configuration.Builder<>(
+            FlexyPoolConfiguration.Builder<DataSource> configurationBuilder = new FlexyPoolConfiguration.Builder<>(
                     beanName,
                     dataSourceClass.cast(dataSource),
                     poolAdapterFactory
@@ -76,7 +76,7 @@ public class FlexyPoolDataSourceDecorator implements DataSourceDecorator, Ordere
             if (customizers != null) {
                 customizers.forEach(customizer -> customizer.customize(beanName, configurationBuilder, dataSourceClass));
             }
-            FlexyPoolDataSource<DataSource> flexyPoolDataSource = new FlexyPoolDataSource<>(configurationBuilder.build(), connectionAcquiringStrategyFactories);
+            FlexyPoolDataSource<DataSource> flexyPoolDataSource = new FlexyPoolDataSource<>(configurationBuilder.build(), ConnectionAcquisitionStrategyFactories);
             flexyPoolDataSource.start();
             return flexyPoolDataSource;
         }

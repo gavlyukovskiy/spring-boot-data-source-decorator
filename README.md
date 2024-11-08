@@ -216,8 +216,8 @@ If the `flexy-pool-spring-boot-starter` is added to the classpath your datasourc
 With default setting you will start getting messages about acquiring and leasing connections:
 ```text
 2017-07-13 01:31:02.575  INFO 5432 --- [ool-1-worker-50] c.v.flexypool.FlexyPoolDataSource        : Connection leased for 1500 millis, while threshold is set to 1000 in dataSource FlexyPoolDataSource
-2017-07-13 01:31:03.143  WARN 5432 --- [ool-1-worker-51] PoolOnTimeoutConnectionAcquiringStrategy : Connection was acquired in 1502 millis, timeoutMillis is set to 500
-2017-07-13 01:31:03.143  INFO 5432 --- [ool-1-worker-51] PoolOnTimeoutConnectionAcquiringStrategy : Pool size changed from previous value 10 to 11
+2017-07-13 01:31:03.143  WARN 5432 --- [ool-1-worker-51] PoolOnTimeoutConnectionAcquisitionStrategy : Connection was acquired in 1502 millis, timeoutMillis is set to 500
+2017-07-13 01:31:03.143  INFO 5432 --- [ool-1-worker-51] PoolOnTimeoutConnectionAcquisitionStrategy : Pool size changed from previous value 10 to 11
 ```
 You can declare bean `MetricsFactory` and besides of JMX metrics will be exported to the metrics provider and to the logs:
 ```text
@@ -231,7 +231,7 @@ You can declare bean `MetricsFactory` and besides of JMX metrics will be exporte
 2017-07-13 02:07:04.265  INFO 5432 --- [rter-1-thread-1] c.v.f.metric.codahale.CodahaleMetrics    : type=TIMER, name=overallConnectionAcquireMillis, count=2, min=0.0, max=39.0, mean=19.5, stddev=19.5, median=39.0, p75=39.0, p95=39.0, p98=39.0, p99=39.0, p999=39.0, mean_rate=0.07135462550886962, m1=0.02490778899904623, m5=0.006288975787638508, m15=0.002179432534806779, rate_unit=events/second, duration_unit=milliseconds
 ```
 
-All beans of type `ConnectionAcquiringStrategyFactory` are used to provide `ConnectionAcquiringStrategy` for the pool.
+All beans of type `ConnectionAcquisitionStrategyFactory` are used to provide `ConnectionAcquisitionStrategy` for the pool.
 
 `MetricsFactory` and `ConnectionProxyFactory` beans can be used to customize metrics and connection decorators.
 
@@ -242,11 +242,11 @@ You can configure your `FlexyPoolDataSource` by using bean `FlexyPoolConfigurati
 > Configuration below indicates al possible parameters together with their default values and **does not** need to be set explicitly
 ```properties
 # Increments pool size if connection acquire request has timed out
-decorator.datasource.flexy-pool.acquiring-strategy.increment-pool.max-overflow-pool-size=15
-decorator.datasource.flexy-pool.acquiring-strategy.increment-pool.timeout-millis=500
+decorator.datasource.flexy-pool.acquisition-strategy.increment-pool.max-overgrow-pool-size=15
+decorator.datasource.flexy-pool.acquisition-strategy.increment-pool.timeout-millis=500
 
 # Retries on getting connection
-decorator.datasource.flexy-pool.acquiring-strategy.retry.attempts=2
+decorator.datasource.flexy-pool.acquisition-strategy.retry.attempts=2
 
 # Enable metrics exporting to the JMX
 decorator.datasource.flexy-pool.metrics.reporter.jmx.enabled=true
