@@ -17,8 +17,6 @@
 package com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool;
 
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorProperties;
-import com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool.FlexyPoolProperties.AcquiringStrategy.IncrementPool;
-import com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool.FlexyPoolProperties.AcquiringStrategy.Retry;
 import com.vladmihalcea.flexypool.FlexyPoolDataSource;
 import com.vladmihalcea.flexypool.adaptor.DBCP2PoolAdapter;
 import com.vladmihalcea.flexypool.adaptor.HikariCPPoolAdapter;
@@ -29,9 +27,9 @@ import com.vladmihalcea.flexypool.event.Event;
 import com.vladmihalcea.flexypool.event.EventListener;
 import com.vladmihalcea.flexypool.metric.MetricsFactory;
 import com.vladmihalcea.flexypool.metric.micrometer.MicrometerMetrics;
-import com.vladmihalcea.flexypool.strategy.ConnectionAcquiringStrategyFactory;
-import com.vladmihalcea.flexypool.strategy.IncrementPoolOnTimeoutConnectionAcquiringStrategy;
-import com.vladmihalcea.flexypool.strategy.RetryConnectionAcquiringStrategy;
+import com.vladmihalcea.flexypool.strategy.ConnectionAcquisitionStrategyFactory;
+import com.vladmihalcea.flexypool.strategy.IncrementPoolOnTimeoutConnectionAcquisitionStrategy;
+import com.vladmihalcea.flexypool.strategy.RetryConnectionAcquisitionStrategy;
 import com.vladmihalcea.flexypool.util.ClassLoaderUtils;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.dbcp2.BasicDataSource;
@@ -60,7 +58,7 @@ import java.util.stream.Collectors;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
- * Configuration for integration with flexy-pool, allows to use define custom {@link ConnectionAcquiringStrategyFactory},
+ * Configuration for integration with flexy-pool, allows to use define custom {@link ConnectionAcquisitionStrategyFactory},
  * {@link MetricsFactory}, {@link ConnectionProxyFactory} and {@link EventListener}.
  *
  * @author Arthur Gavlyukovskiy
@@ -68,9 +66,9 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 public class FlexyPoolConfiguration {
 
-    static <T extends DataSource> List<ConnectionAcquiringStrategyFactory<?, T>> mergeFactories(
-            List<ConnectionAcquiringStrategyFactory<?, T>> factories, FlexyPoolProperties flexyPool) {
-        List<ConnectionAcquiringStrategyFactory<?, T>> newFactories = new ArrayList<>();
+    static <T extends DataSource> List<ConnectionAcquisitionStrategyFactory<?, T>> mergeFactories(
+            List<ConnectionAcquisitionStrategyFactory<?, T>> factories, FlexyPoolProperties flexyPool) {
+        List<ConnectionAcquisitionStrategyFactory<?, T>> newFactories = new ArrayList<>();
         List<? extends Class<?>> factoryClasses;
         if (factories != null) {
             factoryClasses = factories.stream().map(Object::getClass).collect(Collectors.toList());
@@ -79,17 +77,23 @@ public class FlexyPoolConfiguration {
         else {
             factoryClasses = Collections.emptyList();
         }
-        if (!factoryClasses.contains(IncrementPoolOnTimeoutConnectionAcquiringStrategy.Factory.class)) {
-            IncrementPool incrementPool = flexyPool.getAcquiringStrategy().getIncrementPool();
-            if (incrementPool.getMaxOverflowPoolSize() > 0) {
-                newFactories.add(new IncrementPoolOnTimeoutConnectionAcquiringStrategy.Factory<>(
-                        incrementPool.getMaxOverflowPoolSize(), incrementPool.getTimeoutMillis()));
+        if (!factoryClasses.contains(IncrementPoolOnTimeoutConnectionAcquisitionStrategy.Factory.class)) {
+            // check deprecated properties first
+            if (flexyPool.getAcquiringStrategy().getIncrementPool().getMaxOverflowPoolSize() != null) {
+                newFactories.add(new IncrementPoolOnTimeoutConnectionAcquisitionStrategy.Factory<>(
+                        flexyPool.getAcquiringStrategy().getIncrementPool().getMaxOverflowPoolSize(),
+                        flexyPool.getAcquiringStrategy().getIncrementPool().getTimeoutMillis()));
+            } else if (flexyPool.getAcquisitionStrategy().getIncrementPool().getMaxOvergrowPoolSize() > 0) {
+                newFactories.add(new IncrementPoolOnTimeoutConnectionAcquisitionStrategy.Factory<>(
+                        flexyPool.getAcquisitionStrategy().getIncrementPool().getMaxOvergrowPoolSize(), flexyPool.getAcquisitionStrategy().getIncrementPool().getTimeoutMillis()));
             }
         }
-        if (!factoryClasses.contains(RetryConnectionAcquiringStrategy.Factory.class)) {
-            Retry retry = flexyPool.getAcquiringStrategy().getRetry();
-            if (retry.getAttempts() > 0) {
-                newFactories.add(new RetryConnectionAcquiringStrategy.Factory<>(retry.getAttempts()));
+        if (!factoryClasses.contains(RetryConnectionAcquisitionStrategy.Factory.class)) {
+            // check deprecated properties first
+            if (flexyPool.getAcquiringStrategy().getRetry().getAttempts() != null) {
+                newFactories.add(new RetryConnectionAcquisitionStrategy.Factory<>(flexyPool.getAcquiringStrategy().getRetry().getAttempts()));
+            } else if (flexyPool.getAcquisitionStrategy().getRetry().getAttempts() > 0) {
+                newFactories.add(new RetryConnectionAcquisitionStrategy.Factory<>(flexyPool.getAcquisitionStrategy().getRetry().getAttempts()));
             }
         }
         return newFactories;
@@ -126,7 +130,7 @@ public class FlexyPoolConfiguration {
                 builder.setMetricLogReporterMillis(flexyPool.getMetrics().getReporter().getLog().getMillis());
                 builder.setJmxEnabled(flexyPool.getMetrics().getReporter().getJmx().isEnabled());
                 builder.setJmxAutoStart(flexyPool.getMetrics().getReporter().getJmx().isAutoStart());
-                builder.setConnectionAcquireTimeThresholdMillis(flexyPool.getThreshold().getConnection().getAcquire());
+                builder.setConnectionAcquisitionTimeThresholdMillis(flexyPool.getThreshold().getConnection().getAcquisition());
                 builder.setConnectionLeaseTimeThresholdMillis(flexyPool.getThreshold().getConnection().getLease());
                 if (metricsFactory != null) {
                     builder.setMetricsFactory(metricsFactory);
@@ -148,14 +152,14 @@ public class FlexyPoolConfiguration {
     static class HikariFlexyConfiguration {
 
         @Autowired(required = false)
-        private List<ConnectionAcquiringStrategyFactory<?, HikariDataSource>> connectionAcquiringStrategyFactories;
+        private List<ConnectionAcquisitionStrategyFactory<?, HikariDataSource>> ConnectionAcquisitionStrategyFactories;
         @Autowired
         private DataSourceDecoratorProperties dataSourceDecoratorProperties;
 
         @Bean
         public FlexyPoolDataSourceDecorator flexyPoolDataSourceDecorator() {
             return new FlexyPoolDataSourceDecorator(
-                    mergeFactories(connectionAcquiringStrategyFactories, dataSourceDecoratorProperties.getFlexyPool()),
+                    mergeFactories(ConnectionAcquisitionStrategyFactories, dataSourceDecoratorProperties.getFlexyPool()),
                     HikariCPPoolAdapter.FACTORY, HikariDataSource.class);
         }
     }
@@ -167,14 +171,14 @@ public class FlexyPoolConfiguration {
     static class TomcatFlexyConfiguration {
 
         @Autowired(required = false)
-        private List<ConnectionAcquiringStrategyFactory<?, org.apache.tomcat.jdbc.pool.DataSource>> connectionAcquiringStrategyFactories;
+        private List<ConnectionAcquisitionStrategyFactory<?, org.apache.tomcat.jdbc.pool.DataSource>> ConnectionAcquisitionStrategyFactories;
         @Autowired
         private DataSourceDecoratorProperties dataSourceDecoratorProperties;
 
         @Bean
         public FlexyPoolDataSourceDecorator flexyPoolDataSourceDecorator() {
             return new FlexyPoolDataSourceDecorator(
-                    mergeFactories(connectionAcquiringStrategyFactories, dataSourceDecoratorProperties.getFlexyPool()),
+                    mergeFactories(ConnectionAcquisitionStrategyFactories, dataSourceDecoratorProperties.getFlexyPool()),
                     TomcatCPPoolAdapter.FACTORY, org.apache.tomcat.jdbc.pool.DataSource.class);
         }
     }
@@ -186,14 +190,14 @@ public class FlexyPoolConfiguration {
     static class Dbcp2FlexyConfiguration {
 
         @Autowired(required = false)
-        private List<ConnectionAcquiringStrategyFactory<?, BasicDataSource>> connectionAcquiringStrategyFactories;
+        private List<ConnectionAcquisitionStrategyFactory<?, BasicDataSource>> ConnectionAcquisitionStrategyFactories;
         @Autowired
         private DataSourceDecoratorProperties dataSourceDecoratorProperties;
 
         @Bean
         public FlexyPoolDataSourceDecorator flexyPoolDataSourceDecorator() {
             return new FlexyPoolDataSourceDecorator(
-                    mergeFactories(connectionAcquiringStrategyFactories, dataSourceDecoratorProperties.getFlexyPool()),
+                    mergeFactories(ConnectionAcquisitionStrategyFactories, dataSourceDecoratorProperties.getFlexyPool()),
                     DBCP2PoolAdapter.FACTORY, BasicDataSource.class);
         }
     }
@@ -206,12 +210,12 @@ public class FlexyPoolConfiguration {
         private static final Logger log = getLogger(PropertyFlexyConfiguration.class);
 
         @Autowired(required = false)
-        private List<ConnectionAcquiringStrategyFactory<?, javax.sql.DataSource>> connectionAcquiringStrategyFactories;
+        private List<ConnectionAcquisitionStrategyFactory<?, javax.sql.DataSource>> ConnectionAcquisitionStrategyFactories;
 
         @PostConstruct
         public void warnIfAnyStrategyFound() {
-            if (connectionAcquiringStrategyFactories != null) {
-                log.warn("ConnectionAcquiringStrategyFactory beans found in the context will not be applied to " +
+            if (ConnectionAcquisitionStrategyFactories != null) {
+                log.warn("ConnectionAcquisitionStrategyFactory beans found in the context will not be applied to " +
                         "FlexyDataSource due to property based configuration of FlexyPool");
             }
         }

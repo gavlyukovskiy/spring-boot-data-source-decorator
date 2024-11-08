@@ -288,6 +288,12 @@ class DataSourceDecoratorAutoConfigurationTests {
         return assertThat(((DecoratedDataSource) dataSource).getDecoratingChain()).extracting("dataSource").extracting("class");
     }
 
+    public static void main(String[] args) {
+        var size = 8192;
+
+        System.out.println(size >> 2);
+    }
+
     @Configuration(proxyBeanMethods = false)
     static class TestDataSourceConfiguration {
 

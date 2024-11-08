@@ -216,37 +216,26 @@ If the `flexy-pool-spring-boot-starter` is added to the classpath your datasourc
 With default setting you will start getting messages about acquiring and leasing connections:
 ```text
 2017-07-13 01:31:02.575  INFO 5432 --- [ool-1-worker-50] c.v.flexypool.FlexyPoolDataSource        : Connection leased for 1500 millis, while threshold is set to 1000 in dataSource FlexyPoolDataSource
-2017-07-13 01:31:03.143  WARN 5432 --- [ool-1-worker-51] PoolOnTimeoutConnectionAcquiringStrategy : Connection was acquired in 1502 millis, timeoutMillis is set to 500
-2017-07-13 01:31:03.143  INFO 5432 --- [ool-1-worker-51] PoolOnTimeoutConnectionAcquiringStrategy : Pool size changed from previous value 10 to 11
-```
-You can declare bean `MetricsFactory` and besides of JMX metrics will be exported to the metrics provider and to the logs:
-```text
-2017-07-13 02:07:04.265  INFO 5432 --- [rter-1-thread-1] c.v.f.metric.codahale.CodahaleMetrics    : type=HISTOGRAM, name=concurrentConnectionRequestsHistogram, count=4, min=0, max=1, mean=0.5, stddev=0.5, median=1.0, p75=1.0, p95=1.0, p98=1.0, p99=1.0, p999=1.0
-2017-07-13 02:07:04.265  INFO 5432 --- [rter-1-thread-1] c.v.f.metric.codahale.CodahaleMetrics    : type=HISTOGRAM, name=concurrentConnectionsHistogram, count=4, min=0, max=1, mean=0.5, stddev=0.5, median=1.0, p75=1.0, p95=1.0, p98=1.0, p99=1.0, p999=1.0
-2017-07-13 02:07:04.265  INFO 5432 --- [rter-1-thread-1] c.v.f.metric.codahale.CodahaleMetrics    : type=HISTOGRAM, name=maxPoolSizeHistogram, count=1, min=10, max=10, mean=10.0, stddev=0.0, median=10.0, p75=10.0, p95=10.0, p98=10.0, p99=10.0, p999=10.0
-2017-07-13 02:07:04.265  INFO 5432 --- [rter-1-thread-1] c.v.f.metric.codahale.CodahaleMetrics    : type=HISTOGRAM, name=overflowPoolSizeHistogram, count=0, min=0, max=0, mean=0.0, stddev=0.0, median=0.0, p75=0.0, p95=0.0, p98=0.0, p99=0.0, p999=0.0
-2017-07-13 02:07:04.265  INFO 5432 --- [rter-1-thread-1] c.v.f.metric.codahale.CodahaleMetrics    : type=HISTOGRAM, name=retryAttemptsHistogram, count=0, min=0, max=0, mean=0.0, stddev=0.0, median=0.0, p75=0.0, p95=0.0, p98=0.0, p99=0.0, p999=0.0
-2017-07-13 02:07:04.265  INFO 5432 --- [rter-1-thread-1] c.v.f.metric.codahale.CodahaleMetrics    : type=TIMER, name=connectionAcquireMillis, count=2, min=0.0, max=39.0, mean=19.5, stddev=19.5, median=39.0, p75=39.0, p95=39.0, p98=39.0, p99=39.0, p999=39.0, mean_rate=0.07135042014375073, m1=0.02490778899904623, m5=0.006288975787638508, m15=0.002179432534806779, rate_unit=events/second, duration_unit=milliseconds
-2017-07-13 02:07:04.265  INFO 5432 --- [rter-1-thread-1] c.v.f.metric.codahale.CodahaleMetrics    : type=TIMER, name=connectionLeaseMillis, count=2, min=3.0, max=7.0, mean=5.0, stddev=2.0, median=7.0, p75=7.0, p95=7.0, p98=7.0, p99=7.0, p999=7.0, mean_rate=0.07135743555785098, m1=0.02490778899904623, m5=0.006288975787638508, m15=0.002179432534806779, rate_unit=events/second, duration_unit=milliseconds
-2017-07-13 02:07:04.265  INFO 5432 --- [rter-1-thread-1] c.v.f.metric.codahale.CodahaleMetrics    : type=TIMER, name=overallConnectionAcquireMillis, count=2, min=0.0, max=39.0, mean=19.5, stddev=19.5, median=39.0, p75=39.0, p95=39.0, p98=39.0, p99=39.0, p999=39.0, mean_rate=0.07135462550886962, m1=0.02490778899904623, m5=0.006288975787638508, m15=0.002179432534806779, rate_unit=events/second, duration_unit=milliseconds
+2017-07-13 01:31:03.143  WARN 5432 --- [ool-1-worker-51] PoolOnTimeoutConnectionAcquisitionStrategy : Connection was acquired in 1502 millis, timeoutMillis is set to 500
+2017-07-13 01:31:03.143  INFO 5432 --- [ool-1-worker-51] PoolOnTimeoutConnectionAcquisitionStrategy : Pool size changed from previous value 10 to 11
 ```
 
-All beans of type `ConnectionAcquiringStrategyFactory` are used to provide `ConnectionAcquiringStrategy` for the pool.
+All beans of type `ConnectionAcquisitionStrategyFactory` are used to provide `ConnectionAcquisitionStrategy` for the pool.
 
 `MetricsFactory` and `ConnectionProxyFactory` beans can be used to customize metrics and connection decorators.
 
-`EventListener<? extends Event>` beans can be registered to subscribe on events of flexy-pool (e.g. `ConnectionAcquireTimeThresholdExceededEvent`, `ConnectionLeaseTimeThresholdExceededEvent`).
+`EventListener<? extends Event>` beans can be registered to subscribe on events of flexy-pool (e.g. `ConnectionAcquisitionTimeThresholdExceededEvent`, `ConnectionLeaseTimeThresholdExceededEvent`).
 
 You can configure your `FlexyPoolDataSource` by using bean `FlexyPoolConfigurationBuilderCustomizer` or properties:
 > [!NOTE]
 > Configuration below indicates al possible parameters together with their default values and **does not** need to be set explicitly
 ```properties
-# Increments pool size if connection acquire request has timed out
-decorator.datasource.flexy-pool.acquiring-strategy.increment-pool.max-overflow-pool-size=15
-decorator.datasource.flexy-pool.acquiring-strategy.increment-pool.timeout-millis=500
+# Increments pool size if connection acquisition request has timed out
+decorator.datasource.flexy-pool.acquisition-strategy.increment-pool.max-overgrow-pool-size=15
+decorator.datasource.flexy-pool.acquisition-strategy.increment-pool.timeout-millis=500
 
 # Retries on getting connection
-decorator.datasource.flexy-pool.acquiring-strategy.retry.attempts=2
+decorator.datasource.flexy-pool.acquisition-strategy.retry.attempts=2
 
 # Enable metrics exporting to the JMX
 decorator.datasource.flexy-pool.metrics.reporter.jmx.enabled=true
@@ -255,8 +244,8 @@ decorator.datasource.flexy-pool.metrics.reporter.jmx.auto-start=false
 # Millis between two consecutive log reports
 decorator.datasource.flexy-pool.metrics.reporter.log.millis=300000
 
-# Enable logging and publishing ConnectionAcquireTimeThresholdExceededEvent when a connection acquire request has timed out
-decorator.datasource.flexy-pool.threshold.connection.acquire=50
+# Enable logging and publishing ConnectionAcquisitionTimeThresholdExceededEvent when a connection acquisition request has timed out
+decorator.datasource.flexy-pool.threshold.connection.acquisition=50
 # Enable logging and publishing ConnectionLeaseTimeThresholdExceededEvent when a connection lease has exceeded the given time threshold
 decorator.datasource.flexy-pool.threshold.connection.lease=1000
 ```

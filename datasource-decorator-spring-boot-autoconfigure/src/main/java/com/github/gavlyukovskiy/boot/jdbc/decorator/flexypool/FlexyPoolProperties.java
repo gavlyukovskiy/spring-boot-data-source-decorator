@@ -16,6 +16,8 @@
 
 package com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool;
 
+import org.springframework.boot.context.properties.DeprecatedConfigurationProperty;
+
 /**
  * Properties for configuring flexy-pool.
  *
@@ -24,13 +26,14 @@ package com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool;
  */
 public class FlexyPoolProperties {
 
+    private AcquisitionStrategy acquisitionStrategy = new AcquisitionStrategy();
     private AcquiringStrategy acquiringStrategy = new AcquiringStrategy();
 
     private Metrics metrics = new Metrics();
     private Threshold threshold = new Threshold();
 
-    public AcquiringStrategy getAcquiringStrategy() {
-        return this.acquiringStrategy;
+    public AcquisitionStrategy getAcquisitionStrategy() {
+        return acquisitionStrategy;
     }
 
     public Metrics getMetrics() {
@@ -41,6 +44,16 @@ public class FlexyPoolProperties {
         return this.threshold;
     }
 
+    public void setAcquisitionStrategy(AcquisitionStrategy acquisitionStrategy) {
+        this.acquisitionStrategy = acquisitionStrategy;
+    }
+
+    @Deprecated(since = "1.10.0", forRemoval = true)
+    public AcquiringStrategy getAcquiringStrategy() {
+        return acquiringStrategy;
+    }
+
+    @Deprecated(since = "1.10.0", forRemoval = true)
     public void setAcquiringStrategy(AcquiringStrategy acquiringStrategy) {
         this.acquiringStrategy = acquiringStrategy;
     }
@@ -53,7 +66,7 @@ public class FlexyPoolProperties {
         this.threshold = threshold;
     }
 
-    public static class AcquiringStrategy {
+    public static class AcquisitionStrategy {
         private Retry retry = new Retry();
         private IncrementPool incrementPool = new IncrementPool();
 
@@ -86,23 +99,108 @@ public class FlexyPoolProperties {
         }
 
         public static class IncrementPool {
-            private int maxOverflowPoolSize = 15;
+            private int maxOvergrowPoolSize = 15;
             private int timeoutMillis = 500;
 
-            public int getMaxOverflowPoolSize() {
-                return this.maxOverflowPoolSize;
+            public int getMaxOvergrowPoolSize() {
+                return this.maxOvergrowPoolSize;
             }
 
             public int getTimeoutMillis() {
                 return this.timeoutMillis;
             }
 
-            public void setMaxOverflowPoolSize(int maxOverflowPoolSize) {
-                this.maxOverflowPoolSize = maxOverflowPoolSize;
+            public void setMaxOvergrowPoolSize(int maxOvergrowPoolSize) {
+                this.maxOvergrowPoolSize = maxOvergrowPoolSize;
             }
 
             public void setTimeoutMillis(int timeoutMillis) {
                 this.timeoutMillis = timeoutMillis;
+            }
+        }
+    }
+
+    @Deprecated(since = "1.10.0", forRemoval = true)
+    public static class AcquiringStrategy {
+        @Deprecated(since = "1.10.0", forRemoval = true)
+        private Retry retry = new Retry();
+        @Deprecated(since = "1.10.0", forRemoval = true)
+        private IncrementPool incrementPool = new IncrementPool();
+
+        @Deprecated(since = "1.10.0", forRemoval = true)
+        public Retry getRetry() {
+            return this.retry;
+        }
+
+        @Deprecated(since = "1.10.0", forRemoval = true)
+        public IncrementPool getIncrementPool() {
+            return this.incrementPool;
+        }
+
+        @Deprecated(since = "1.10.0", forRemoval = true)
+        public void setRetry(Retry retry) {
+            this.retry = retry;
+        }
+
+        @Deprecated(since = "1.10.0", forRemoval = true)
+        public void setIncrementPool(IncrementPool incrementPool) {
+            this.incrementPool = incrementPool;
+        }
+
+        public static class Retry {
+            @Deprecated(since = "1.10.0", forRemoval = true)
+            private Integer attempts;
+
+            @Deprecated(since = "1.10.0", forRemoval = true)
+            @DeprecatedConfigurationProperty(
+                    reason = "FlexyPool 3.0 has renamed this property",
+                    replacement = "decorator.datasource.flexy-pool.acquisition-strategy.retry.attempts",
+                    since = "1.10.0"
+            )
+            public Integer getAttempts() {
+                return this.attempts;
+            }
+
+            @Deprecated(since = "1.10.0", forRemoval = true)
+            public void setAttempts(int attempts) {
+                this.attempts = attempts;
+            }
+        }
+
+        public static class IncrementPool {
+            @Deprecated(since = "1.10.0", forRemoval = true)
+            private Integer maxOverflowPoolSize;
+            @Deprecated(since = "1.10.0", forRemoval = true)
+            private Integer timeoutMillis;
+
+            @Deprecated(since = "1.10.0", forRemoval = true)
+            @DeprecatedConfigurationProperty(
+                    reason = "FlexyPool 3.0 has renamed this property",
+                    replacement = "decorator.datasource.flexy-pool.acquisition-strategy.increment-pool.timeout-millis",
+                    since = "1.10.0"
+            )
+            public Integer getTimeoutMillis() {
+                return this.timeoutMillis;
+            }
+
+            @Deprecated(since = "1.10.0", forRemoval = true)
+            @DeprecatedConfigurationProperty(
+                    reason = "FlexyPool 3.0 has renamed this property",
+                    replacement = "decorator.datasource.flexy-pool.acquisition-strategy.increment-pool.max-overgrow-pool-size",
+                    since = "1.10.0"
+            )
+            public Integer getMaxOverflowPoolSize() {
+                return this.maxOverflowPoolSize;
+            }
+
+            @Deprecated(since = "1.10.0", forRemoval = true)
+            public void setTimeoutMillis(int timeoutMillis) {
+                this.timeoutMillis = timeoutMillis;
+            }
+
+            @Deprecated(since = "1.10.0", forRemoval = true)
+            public void setMaxOverflowPoolSize(int maxOverflowPoolSize) {
+                this.maxOverflowPoolSize = maxOverflowPoolSize;
             }
         }
     }
@@ -185,23 +283,39 @@ public class FlexyPoolProperties {
         }
 
         public static class Connection {
-            private long acquire = 50L;
+            private long acquisition = 50L;
             private long lease = 1000L;
 
-            public long getAcquire() {
-                return this.acquire;
+            public long getAcquisition() {
+                return this.acquisition;
             }
 
             public long getLease() {
                 return this.lease;
             }
 
-            public void setAcquire(long acquire) {
-                this.acquire = acquire;
+            public void setAcquisition(long acquisition) {
+                this.acquisition = acquisition;
             }
 
             public void setLease(long lease) {
                 this.lease = lease;
+            }
+
+            @Deprecated(since = "1.10.0", forRemoval = true)
+            @DeprecatedConfigurationProperty(
+                    reason = "FlexyPool 3.0 has renamed this property",
+                    replacement = "decorator.datasource.flexy-pool.threshold.connection.acquisition",
+                    since = "1.10.0"
+            )
+            public long getAcquire() {
+                return this.acquisition;
+            }
+
+
+            @Deprecated(since = "1.10.0", forRemoval = true)
+            public void setAcquire(long acquire) {
+                this.acquisition = acquire;
             }
         }
     }
