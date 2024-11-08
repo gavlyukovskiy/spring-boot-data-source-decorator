@@ -17,7 +17,6 @@
 package com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool;
 
 import org.springframework.boot.context.properties.DeprecatedConfigurationProperty;
-import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 /**
  * Properties for configuring flexy-pool.
@@ -284,23 +283,39 @@ public class FlexyPoolProperties {
         }
 
         public static class Connection {
-            private long acquire = 50L;
+            private long acquisition = 50L;
             private long lease = 1000L;
 
-            public long getAcquire() {
-                return this.acquire;
+            public long getAcquisition() {
+                return this.acquisition;
             }
 
             public long getLease() {
                 return this.lease;
             }
 
-            public void setAcquire(long acquire) {
-                this.acquire = acquire;
+            public void setAcquisition(long acquisition) {
+                this.acquisition = acquisition;
             }
 
             public void setLease(long lease) {
                 this.lease = lease;
+            }
+
+            @Deprecated(since = "1.10.0", forRemoval = true)
+            @DeprecatedConfigurationProperty(
+                    reason = "FlexyPool 3.0 has renamed this property",
+                    replacement = "decorator.datasource.flexy-pool.threshold.connection.acquisition",
+                    since = "1.10.0"
+            )
+            public long getAcquire() {
+                return this.acquisition;
+            }
+
+
+            @Deprecated(since = "1.10.0", forRemoval = true)
+            public void setAcquire(long acquire) {
+                this.acquisition = acquire;
             }
         }
     }

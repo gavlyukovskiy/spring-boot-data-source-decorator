@@ -17,8 +17,6 @@
 package com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool;
 
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorProperties;
-import com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool.FlexyPoolProperties.AcquisitionStrategy.IncrementPool;
-import com.github.gavlyukovskiy.boot.jdbc.decorator.flexypool.FlexyPoolProperties.AcquisitionStrategy.Retry;
 import com.vladmihalcea.flexypool.FlexyPoolDataSource;
 import com.vladmihalcea.flexypool.adaptor.DBCP2PoolAdapter;
 import com.vladmihalcea.flexypool.adaptor.HikariCPPoolAdapter;
@@ -132,7 +130,7 @@ public class FlexyPoolConfiguration {
                 builder.setMetricLogReporterMillis(flexyPool.getMetrics().getReporter().getLog().getMillis());
                 builder.setJmxEnabled(flexyPool.getMetrics().getReporter().getJmx().isEnabled());
                 builder.setJmxAutoStart(flexyPool.getMetrics().getReporter().getJmx().isAutoStart());
-                builder.setConnectionAcquisitionTimeThresholdMillis(flexyPool.getThreshold().getConnection().getAcquire());
+                builder.setConnectionAcquisitionTimeThresholdMillis(flexyPool.getThreshold().getConnection().getAcquisition());
                 builder.setConnectionLeaseTimeThresholdMillis(flexyPool.getThreshold().getConnection().getLease());
                 if (metricsFactory != null) {
                     builder.setMetricsFactory(metricsFactory);

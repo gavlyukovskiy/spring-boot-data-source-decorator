@@ -23,3 +23,6 @@ decorator:
         increment-pool:
           timeout-millis: 1000
           max-overgrow-pool-size: 15
+      threshold:
+        connection:
+          acquire: 100
