@@ -35,7 +35,7 @@ import java.util.List;
  */
 public class FlexyPoolDataSourceDecorator implements DataSourceDecorator, Ordered {
 
-    private final ConnectionAcquisitionStrategyFactory<?, DataSource>[] ConnectionAcquisitionStrategyFactories;
+    private final ConnectionAcquisitionStrategyFactory<?, DataSource>[] connectionAcquisitionStrategyFactories;
     private final PoolAdapterFactory<DataSource> poolAdapterFactory;
     private final Class<DataSource> dataSourceClass;
 
@@ -44,17 +44,17 @@ public class FlexyPoolDataSourceDecorator implements DataSourceDecorator, Ordere
 
     @SuppressWarnings("unchecked")
     <T extends DataSource> FlexyPoolDataSourceDecorator(
-            List<ConnectionAcquisitionStrategyFactory<?, T>> ConnectionAcquisitionStrategyFactories,
+            List<ConnectionAcquisitionStrategyFactory<?, T>> connectionAcquisitionStrategyFactories,
             PoolAdapterFactory<T> poolAdapterFactory,
             Class<T> dataSourceClass) {
-        this.ConnectionAcquisitionStrategyFactories = (ConnectionAcquisitionStrategyFactory<?, DataSource>[])
-                ConnectionAcquisitionStrategyFactories.toArray(new ConnectionAcquisitionStrategyFactory[0]);
+        this.connectionAcquisitionStrategyFactories = (ConnectionAcquisitionStrategyFactory<?, DataSource>[])
+                connectionAcquisitionStrategyFactories.toArray(new ConnectionAcquisitionStrategyFactory[0]);
         this.poolAdapterFactory = (PoolAdapterFactory<DataSource>) poolAdapterFactory;
         this.dataSourceClass = (Class<DataSource>) dataSourceClass;
     }
 
     FlexyPoolDataSourceDecorator() {
-        ConnectionAcquisitionStrategyFactories = null;
+        connectionAcquisitionStrategyFactories = null;
         poolAdapterFactory = null;
         dataSourceClass = null;
     }
@@ -76,7 +76,7 @@ public class FlexyPoolDataSourceDecorator implements DataSourceDecorator, Ordere
             if (customizers != null) {
                 customizers.forEach(customizer -> customizer.customize(beanName, configurationBuilder, dataSourceClass));
             }
-            FlexyPoolDataSource<DataSource> flexyPoolDataSource = new FlexyPoolDataSource<>(configurationBuilder.build(), ConnectionAcquisitionStrategyFactories);
+            FlexyPoolDataSource<DataSource> flexyPoolDataSource = new FlexyPoolDataSource<>(configurationBuilder.build(), connectionAcquisitionStrategyFactories);
             flexyPoolDataSource.start();
             return flexyPoolDataSource;
         }

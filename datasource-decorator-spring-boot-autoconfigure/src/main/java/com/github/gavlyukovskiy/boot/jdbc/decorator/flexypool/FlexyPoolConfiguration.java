@@ -152,14 +152,14 @@ public class FlexyPoolConfiguration {
     static class HikariFlexyConfiguration {
 
         @Autowired(required = false)
-        private List<ConnectionAcquisitionStrategyFactory<?, HikariDataSource>> ConnectionAcquisitionStrategyFactories;
+        private List<ConnectionAcquisitionStrategyFactory<?, HikariDataSource>> connectionAcquisitionStrategyFactories;
         @Autowired
         private DataSourceDecoratorProperties dataSourceDecoratorProperties;
 
         @Bean
         public FlexyPoolDataSourceDecorator flexyPoolDataSourceDecorator() {
             return new FlexyPoolDataSourceDecorator(
-                    mergeFactories(ConnectionAcquisitionStrategyFactories, dataSourceDecoratorProperties.getFlexyPool()),
+                    mergeFactories(connectionAcquisitionStrategyFactories, dataSourceDecoratorProperties.getFlexyPool()),
                     HikariCPPoolAdapter.FACTORY, HikariDataSource.class);
         }
     }
@@ -171,14 +171,14 @@ public class FlexyPoolConfiguration {
     static class TomcatFlexyConfiguration {
 
         @Autowired(required = false)
-        private List<ConnectionAcquisitionStrategyFactory<?, org.apache.tomcat.jdbc.pool.DataSource>> ConnectionAcquisitionStrategyFactories;
+        private List<ConnectionAcquisitionStrategyFactory<?, org.apache.tomcat.jdbc.pool.DataSource>> connectionAcquisitionStrategyFactories;
         @Autowired
         private DataSourceDecoratorProperties dataSourceDecoratorProperties;
 
         @Bean
         public FlexyPoolDataSourceDecorator flexyPoolDataSourceDecorator() {
             return new FlexyPoolDataSourceDecorator(
-                    mergeFactories(ConnectionAcquisitionStrategyFactories, dataSourceDecoratorProperties.getFlexyPool()),
+                    mergeFactories(connectionAcquisitionStrategyFactories, dataSourceDecoratorProperties.getFlexyPool()),
                     TomcatCPPoolAdapter.FACTORY, org.apache.tomcat.jdbc.pool.DataSource.class);
         }
     }
@@ -190,14 +190,14 @@ public class FlexyPoolConfiguration {
     static class Dbcp2FlexyConfiguration {
 
         @Autowired(required = false)
-        private List<ConnectionAcquisitionStrategyFactory<?, BasicDataSource>> ConnectionAcquisitionStrategyFactories;
+        private List<ConnectionAcquisitionStrategyFactory<?, BasicDataSource>> connectionAcquisitionStrategyFactories;
         @Autowired
         private DataSourceDecoratorProperties dataSourceDecoratorProperties;
 
         @Bean
         public FlexyPoolDataSourceDecorator flexyPoolDataSourceDecorator() {
             return new FlexyPoolDataSourceDecorator(
-                    mergeFactories(ConnectionAcquisitionStrategyFactories, dataSourceDecoratorProperties.getFlexyPool()),
+                    mergeFactories(connectionAcquisitionStrategyFactories, dataSourceDecoratorProperties.getFlexyPool()),
                     DBCP2PoolAdapter.FACTORY, BasicDataSource.class);
         }
     }
@@ -210,11 +210,11 @@ public class FlexyPoolConfiguration {
         private static final Logger log = getLogger(PropertyFlexyConfiguration.class);
 
         @Autowired(required = false)
-        private List<ConnectionAcquisitionStrategyFactory<?, javax.sql.DataSource>> ConnectionAcquisitionStrategyFactories;
+        private List<ConnectionAcquisitionStrategyFactory<?, javax.sql.DataSource>> connectionAcquisitionStrategyFactories;
 
         @PostConstruct
         public void warnIfAnyStrategyFound() {
-            if (ConnectionAcquisitionStrategyFactories != null) {
+            if (connectionAcquisitionStrategyFactories != null) {
                 log.warn("ConnectionAcquisitionStrategyFactory beans found in the context will not be applied to " +
                         "FlexyDataSource due to property based configuration of FlexyPool");
             }
