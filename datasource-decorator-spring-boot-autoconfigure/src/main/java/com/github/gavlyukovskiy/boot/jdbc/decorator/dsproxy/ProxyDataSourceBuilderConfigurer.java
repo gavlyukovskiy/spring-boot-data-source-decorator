@@ -19,6 +19,7 @@ package com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy;
 import net.ttddyy.dsproxy.listener.MethodExecutionListener;
 import net.ttddyy.dsproxy.listener.QueryCountStrategy;
 import net.ttddyy.dsproxy.listener.QueryExecutionListener;
+import net.ttddyy.dsproxy.listener.logging.AbstractSlowQueryLoggingListener;
 import net.ttddyy.dsproxy.listener.logging.CommonsLogLevel;
 import net.ttddyy.dsproxy.listener.logging.SLF4JLogLevel;
 import net.ttddyy.dsproxy.proxy.ResultSetProxyLogicFactory;
@@ -140,6 +141,12 @@ public class ProxyDataSourceBuilderConfigurer {
             proxyDataSourceBuilder.countQuery(queryCountStrategy);
         }
         if (listeners != null) {
+            for (QueryExecutionListener listener : listeners) {
+                if (listener instanceof AbstractSlowQueryLoggingListener slowQueryListener) {
+                    slowQueryListener.setThreshold(datasourceProxy.getSlowQuery().getThreshold());
+                    slowQueryListener.setThresholdTimeUnit(TimeUnit.SECONDS);
+                }
+            }
             listeners.forEach(proxyDataSourceBuilder::listener);
         }
         if (methodExecutionListeners != null) {
