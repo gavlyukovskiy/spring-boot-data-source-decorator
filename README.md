@@ -149,7 +149,7 @@ Query:["SELECT SLEEP(301000)"]
 Params:[]
 ```
 
-You can add custom `QueryExecutionListener` by registering them in the context, as well you can override `ParameterTransformer`, `QueryTransformer` and `ConnectionIdManager`:
+You can add custom `QueryExecutionListener` by registering them in the context, as well you can override `ParameterTransformer`, `QueryTransformer`, `ConnectionIdManager` and `AbstractSlowQueryLoggingListener`:
 ```java
 @Bean
 public QueryExecutionListener queryExecutionListener() {

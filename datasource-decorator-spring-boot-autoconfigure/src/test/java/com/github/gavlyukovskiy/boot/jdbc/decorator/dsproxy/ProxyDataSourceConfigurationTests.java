@@ -17,20 +17,14 @@
 package com.github.gavlyukovskiy.boot.jdbc.decorator.dsproxy;
 
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorAutoConfiguration;
+import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorProperties;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.DecoratedDataSource;
 import com.github.gavlyukovskiy.boot.jdbc.decorator.HidePackagesClassLoader;
 import net.ttddyy.dsproxy.ExecutionInfo;
 import net.ttddyy.dsproxy.QueryInfo;
 import net.ttddyy.dsproxy.listener.ChainListener;
 import net.ttddyy.dsproxy.listener.QueryExecutionListener;
-import net.ttddyy.dsproxy.listener.logging.CommonsQueryLoggingListener;
-import net.ttddyy.dsproxy.listener.logging.CommonsSlowQueryListener;
-import net.ttddyy.dsproxy.listener.logging.JULQueryLoggingListener;
-import net.ttddyy.dsproxy.listener.logging.JULSlowQueryListener;
-import net.ttddyy.dsproxy.listener.logging.SLF4JQueryLoggingListener;
-import net.ttddyy.dsproxy.listener.logging.SLF4JSlowQueryListener;
-import net.ttddyy.dsproxy.listener.logging.SystemOutQueryLoggingListener;
-import net.ttddyy.dsproxy.listener.logging.SystemOutSlowQueryListener;
+import net.ttddyy.dsproxy.listener.logging.*;
 import net.ttddyy.dsproxy.proxy.DefaultConnectionIdManager;
 import net.ttddyy.dsproxy.proxy.GlobalConnectionIdManager;
 import net.ttddyy.dsproxy.support.ProxyDataSource;
@@ -43,6 +37,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 import javax.sql.DataSource;
 import java.util.List;
@@ -147,10 +142,19 @@ class ProxyDataSourceConfigurationTests {
             DataSource dataSource = context.getBean(DataSource.class);
             ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
             QueryExecutionListener queryExecutionListener = context.getBean(QueryExecutionListener.class);
+            AbstractSlowQueryLoggingListener slowQueryListener = context.getBean(AbstractSlowQueryLoggingListener.class);
+            DataSourceDecoratorProperties properties = context.getBean(DataSourceDecoratorProperties.class);
 
             ChainListener chainListener = proxyDataSource.getProxyConfig().getQueryListener();
             assertThat(chainListener.getListeners()).contains(queryExecutionListener);
+            assertThat(chainListener.getListeners()).contains(slowQueryListener);
+            assertThat(slowQueryListener.getThresholdTimeUnit()).isNotNull();
+            assertThat(slowQueryListener.getThreshold()).isEqualTo(getSlowQueryThresholdProperty(properties));
         });
+    }
+
+    private long getSlowQueryThresholdProperty(DataSourceDecoratorProperties properties) {
+        return properties.getDatasourceProxy().getSlowQuery().getThreshold();
     }
 
     @Test
@@ -198,6 +202,7 @@ class ProxyDataSourceConfigurationTests {
     static class CustomListenerConfiguration {
 
         @Bean
+        @Primary
         public QueryExecutionListener queryExecutionListener() {
             return new QueryExecutionListener() {
                 @Override
@@ -208,6 +213,16 @@ class ProxyDataSourceConfigurationTests {
                 @Override
                 public void afterQuery(ExecutionInfo execInfo, List<QueryInfo> queryInfoList) {
                     System.out.println("afterQuery");
+                }
+            };
+        }
+
+        @Bean
+        public AbstractSlowQueryLoggingListener slowQueryLoggingListener() {
+            return new AbstractSlowQueryLoggingListener() {
+                @Override
+                protected void writeLog(String message) {
+                    System.out.println("slowQueryLoggingListener");
                 }
             };
         }
