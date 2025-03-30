@@ -116,9 +116,13 @@ decorator.datasource.p6spy.log-file=spy.log
 # Class file to use (only with logging=custom). The class must implement com.p6spy.engine.spy.appender.FormattedLogger
 decorator.datasource.p6spy.custom-appender-class=my.custom.LoggerClass
 # Custom log format, if specified com.p6spy.engine.spy.appender.CustomLineFormat will be used with this log format
+# see https://p6spy.readthedocs.io/en/latest/configandusage.html#customlogmessageformat
 decorator.datasource.p6spy.log-format=
 # Use regex pattern to filter log messages. If specified only matched messages will be logged.
 decorator.datasource.p6spy.log-filter.pattern=
+# Exclude certain categories from logging. If specified only matched messages will be logged.
+# see https://p6spy.readthedocs.io/en/latest/configandusage.html#excludecategories
+decorator.datasource.p6spy.exclude-categories=
 ```
 
 Also you can configure P6Spy manually using one of available configuration methods. For more information please refer to the [P6Spy Configuration Guide](http://p6spy.readthedocs.io/en/latest/configandusage.html)

@@ -16,6 +16,8 @@
 
 package com.github.gavlyukovskiy.boot.jdbc.decorator.p6spy;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -45,6 +47,8 @@ public class P6SpyProperties {
     private String logFile = "spy.log";
     /**
      * Custom log format.
+     *
+     * @see <a href="https://p6spy.readthedocs.io/en/latest/configandusage.html#customlogmessageformat">P6Spy / customLogMessageFormat</a>
      */
     private String logFormat;
 
@@ -58,6 +62,13 @@ public class P6SpyProperties {
      * Log filtering related properties.
      */
     private P6SpyLogFilter logFilter = new P6SpyLogFilter();
+
+    /**
+     * Exclude categories from logging.
+     *
+     * @see <a href="https://p6spy.readthedocs.io/en/latest/configandusage.html#excludecategories">P6Spy / excludecategories</a>
+     */
+    private List<String> excludeCategories = new ArrayList<>();
 
     public boolean isEnableLogging() {
         return this.enableLogging;
@@ -113,6 +124,14 @@ public class P6SpyProperties {
 
     public void setLogFilter(P6SpyLogFilter logFilter) {
         this.logFilter = logFilter;
+    }
+
+    public List<String> getExcludeCategories() {
+        return excludeCategories;
+    }
+
+    public void setExcludeCategories(List<String> excludeCategories) {
+        this.excludeCategories = excludeCategories;
     }
 
     public enum P6SpyLogging {

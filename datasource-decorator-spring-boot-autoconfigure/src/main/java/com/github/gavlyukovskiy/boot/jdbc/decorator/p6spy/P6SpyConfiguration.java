@@ -103,6 +103,9 @@ public class P6SpyConfiguration {
         if (!initialP6SpyOptions.containsKey("logfile")) {
             System.setProperty("p6spy.config.logfile", p6spy.getLogFile());
         }
+        if (!p6spy.getExcludeCategories().isEmpty()) {
+            System.setProperty("p6spy.config.excludecategories", String.join(",", p6spy.getExcludeCategories()));
+        }
         if (p6spy.getLogFilter().getPattern() != null) {
             System.setProperty("p6spy.config.filter", "true");
             System.setProperty("p6spy.config.sqlexpression", p6spy.getLogFilter().getPattern().pattern());
