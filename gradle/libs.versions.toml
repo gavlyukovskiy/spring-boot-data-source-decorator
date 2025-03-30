@@ -1,5 +1,5 @@
 [versions]
-spring-boot = "3.4.2"
+spring-boot = "3.4.4"
 p6Spy = "3.9.1"
 datasource-proxy = "1.10.1"
 flexy-pool = "3.0.2"
