@@ -25,3 +25,5 @@ decorator:
       format-sql: true
       query:
         log-level: INFO
+      slow-query:
+        threshold: 100ms
