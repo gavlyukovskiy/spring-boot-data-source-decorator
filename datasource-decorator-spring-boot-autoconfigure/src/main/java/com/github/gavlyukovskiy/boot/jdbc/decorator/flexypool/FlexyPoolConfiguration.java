@@ -78,21 +78,13 @@ public class FlexyPoolConfiguration {
             factoryClasses = Collections.emptyList();
         }
         if (!factoryClasses.contains(IncrementPoolOnTimeoutConnectionAcquisitionStrategy.Factory.class)) {
-            // check deprecated properties first
-            if (flexyPool.getAcquiringStrategy().getIncrementPool().getMaxOverflowPoolSize() != null) {
-                newFactories.add(new IncrementPoolOnTimeoutConnectionAcquisitionStrategy.Factory<>(
-                        flexyPool.getAcquiringStrategy().getIncrementPool().getMaxOverflowPoolSize(),
-                        flexyPool.getAcquiringStrategy().getIncrementPool().getTimeoutMillis()));
-            } else if (flexyPool.getAcquisitionStrategy().getIncrementPool().getMaxOvergrowPoolSize() > 0) {
+            if (flexyPool.getAcquisitionStrategy().getIncrementPool().getMaxOvergrowPoolSize() > 0) {
                 newFactories.add(new IncrementPoolOnTimeoutConnectionAcquisitionStrategy.Factory<>(
                         flexyPool.getAcquisitionStrategy().getIncrementPool().getMaxOvergrowPoolSize(), flexyPool.getAcquisitionStrategy().getIncrementPool().getTimeoutMillis()));
             }
         }
         if (!factoryClasses.contains(RetryConnectionAcquisitionStrategy.Factory.class)) {
-            // check deprecated properties first
-            if (flexyPool.getAcquiringStrategy().getRetry().getAttempts() != null) {
-                newFactories.add(new RetryConnectionAcquisitionStrategy.Factory<>(flexyPool.getAcquiringStrategy().getRetry().getAttempts()));
-            } else if (flexyPool.getAcquisitionStrategy().getRetry().getAttempts() > 0) {
+            if (flexyPool.getAcquisitionStrategy().getRetry().getAttempts() > 0) {
                 newFactories.add(new RetryConnectionAcquisitionStrategy.Factory<>(flexyPool.getAcquisitionStrategy().getRetry().getAttempts()));
             }
         }

@@ -136,31 +136,6 @@ class FlexyPoolConfigurationTests {
 
     @Test
     @SuppressWarnings("unchecked")
-    void testDecoratingHikariDataSourceWithDeprecatedProperties() {
-        ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("spring.datasource.type:" + HikariDataSource.class.getName(),
-                "decorator.datasource.flexy-pool.acquiring-strategy.increment-pool.max-overflow-pool-size:35",
-                "decorator.datasource.flexy-pool.acquiring-strategy.increment-pool.timeout-millis:10000",
-                "decorator.datasource.flexy-pool.acquiring-strategy.retry.attempts:5")
-                .withUserConfiguration(FlexyPoolHikariConfiguration.class);
-
-        contextRunner.run(context -> {
-            DataSource dataSource = context.getBean(DataSource.class);
-            FlexyPoolDataSource<HikariDataSource> flexyPoolDataSource = assertDataSourceOfType(dataSource, HikariDataSource.class);
-            IncrementPoolOnTimeoutConnectionAcquisitionStrategy<HikariDataSource> strategy1 =
-                    findStrategy(flexyPoolDataSource, IncrementPoolOnTimeoutConnectionAcquisitionStrategy.class);
-            assertThat(strategy1).isNotNull();
-            assertThat(strategy1).hasFieldOrPropertyWithValue("maxOvergrowPoolSize", 35);
-            assertThat(strategy1).hasFieldOrPropertyWithValue("timeoutMillis", 10000);
-
-            RetryConnectionAcquisitionStrategy<HikariDataSource> strategy2 =
-                    findStrategy(flexyPoolDataSource, RetryConnectionAcquisitionStrategy.class);
-            assertThat(strategy2).isNotNull();
-            assertThat(strategy2).hasFieldOrPropertyWithValue("retryAttempts", 5);
-        });
-    }
-
-    @Test
-    @SuppressWarnings("unchecked")
     void testDecoratingHikariDataSourceWithCustomBeanStrategies() {
         ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues("spring.datasource.type:" + HikariDataSource.class.getName())
                 .withConfiguration(AutoConfigurations.of(FlexyPoolHikariConfiguration.class, FlexyPoolCustomFactoriesHikariConfiguration.class));
