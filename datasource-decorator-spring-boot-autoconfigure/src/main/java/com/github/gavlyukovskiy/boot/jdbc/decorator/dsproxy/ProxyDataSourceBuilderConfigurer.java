@@ -71,43 +71,49 @@ public class ProxyDataSourceBuilderConfigurer {
     ProxyDataSourceBuilder.FormatQueryCallback formatQueryCallback;
 
     public void configure(ProxyDataSourceBuilder proxyDataSourceBuilder, DataSourceProxyProperties datasourceProxy) {
+        var query = datasourceProxy.getQuery();
+        var slowQuery = datasourceProxy.getSlowQuery();
         switch (datasourceProxy.getLogging()) {
             case SLF4J: {
-                if (datasourceProxy.getQuery().isEnableLogging()) {
-                    proxyDataSourceBuilder.logQueryBySlf4j(toSlf4JLogLevel(datasourceProxy.getQuery().getLogLevel()), datasourceProxy.getQuery().getLoggerName());
+                if (query.isEnableLogging()) {
+                    proxyDataSourceBuilder.logQueryBySlf4j(toSlf4JLogLevel(query.getLogLevel()), query.getLoggerName());
                 }
-                if (datasourceProxy.getSlowQuery().isEnableLogging()) {
-                    proxyDataSourceBuilder.logSlowQueryBySlf4j(datasourceProxy.getSlowQuery().getThreshold(), TimeUnit.SECONDS,
-                            toSlf4JLogLevel(datasourceProxy.getSlowQuery().getLogLevel()), datasourceProxy.getSlowQuery().getLoggerName());
+                if (slowQuery.isEnableLogging()) {
+                    proxyDataSourceBuilder.logSlowQueryBySlf4j(
+                            slowQuery.getThresholdDuration().toMillis(), TimeUnit.MILLISECONDS,
+                            toSlf4JLogLevel(slowQuery.getLogLevel()), slowQuery.getLoggerName());
                 }
                 break;
             }
             case JUL: {
-                if (datasourceProxy.getQuery().isEnableLogging()) {
-                    proxyDataSourceBuilder.logQueryByJUL(toJULLogLevel(datasourceProxy.getQuery().getLogLevel()), datasourceProxy.getQuery().getLoggerName());
+                if (query.isEnableLogging()) {
+                    proxyDataSourceBuilder.logQueryByJUL(toJULLogLevel(query.getLogLevel()), query.getLoggerName());
                 }
-                if (datasourceProxy.getSlowQuery().isEnableLogging()) {
-                    proxyDataSourceBuilder.logSlowQueryByJUL(datasourceProxy.getSlowQuery().getThreshold(), TimeUnit.SECONDS,
-                            toJULLogLevel(datasourceProxy.getSlowQuery().getLogLevel()), datasourceProxy.getSlowQuery().getLoggerName());
+                if (slowQuery.isEnableLogging()) {
+                    proxyDataSourceBuilder.logSlowQueryByJUL(
+                            slowQuery.getThresholdDuration().toMillis(), TimeUnit.MILLISECONDS,
+                            toJULLogLevel(slowQuery.getLogLevel()), slowQuery.getLoggerName());
                 }
                 break;
             }
             case COMMONS: {
-                if (datasourceProxy.getQuery().isEnableLogging()) {
-                    proxyDataSourceBuilder.logQueryByCommons(toCommonsLogLevel(datasourceProxy.getQuery().getLogLevel()), datasourceProxy.getQuery().getLoggerName());
+                if (query.isEnableLogging()) {
+                    proxyDataSourceBuilder.logQueryByCommons(toCommonsLogLevel(query.getLogLevel()), query.getLoggerName());
                 }
-                if (datasourceProxy.getSlowQuery().isEnableLogging()) {
-                    proxyDataSourceBuilder.logSlowQueryByCommons(datasourceProxy.getSlowQuery().getThreshold(), TimeUnit.SECONDS,
-                            toCommonsLogLevel(datasourceProxy.getSlowQuery().getLogLevel()), datasourceProxy.getSlowQuery().getLoggerName());
+                if (slowQuery.isEnableLogging()) {
+                    proxyDataSourceBuilder.logSlowQueryByCommons(
+                            slowQuery.getThresholdDuration().toMillis(), TimeUnit.MILLISECONDS,
+                            toCommonsLogLevel(slowQuery.getLogLevel()), slowQuery.getLoggerName());
                 }
                 break;
             }
             case SYSOUT: {
-                if (datasourceProxy.getQuery().isEnableLogging()) {
+                if (query.isEnableLogging()) {
                     proxyDataSourceBuilder.logQueryToSysOut();
                 }
-                if (datasourceProxy.getSlowQuery().isEnableLogging()) {
-                    proxyDataSourceBuilder.logSlowQueryToSysOut(datasourceProxy.getSlowQuery().getThreshold(), TimeUnit.SECONDS);
+                if (slowQuery.isEnableLogging()) {
+                    proxyDataSourceBuilder.logSlowQueryToSysOut(
+                            slowQuery.getThresholdDuration().toMillis(), TimeUnit.MILLISECONDS);
                 }
                 break;
             }
@@ -200,15 +206,5 @@ public class ProxyDataSourceBuilderConfigurer {
         }
         throw new IllegalArgumentException("Unresolved log level " + logLevel + " for apache commons logger, " +
                 "known levels " + Arrays.toString(CommonsLogLevel.values()));
-    }
-
-    private static boolean classExists(String fullQualifiedClassName) {
-
-        try {
-            Class.forName(fullQualifiedClassName);
-            return true;
-        } catch (ClassNotFoundException e) {
-            return false;
-        }
     }
 }

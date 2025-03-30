@@ -17,13 +17,16 @@
 package com.github.gavlyukovskiy.sample;
 
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.sql.DataSource;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,6 +41,25 @@ public class SampleController {
 
     public SampleController(DataSource dataSource) {
         this.dataSource = dataSource;
+        prepareFunctions(dataSource);
+    }
+
+    private static void prepareFunctions(DataSource dataSource) {
+        try (
+                Connection connection = dataSource.getConnection();
+                PreparedStatement statement = connection.prepareStatement(
+                        """
+                        CREATE ALIAS sleep AS '
+                        void sleep(int millis) throws Exception {
+                          Thread.sleep(millis);
+                        }
+                        ';
+                        """)
+        ) {
+            statement.execute();
+        } catch (SQLException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @RequestMapping("/commit")
@@ -93,6 +115,18 @@ public class SampleController {
             statement.execute("SELECT UNDEFINED()");
         }
         catch (Exception ignored) {
+        }
+    }
+
+    @RequestMapping("/sleep")
+    public void sleep(@RequestParam(defaultValue = "3000") int millis) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement("SELECT SLEEP(?)")) {
+            statement.setInt(1, millis);
+            statement.execute();
+        }
+        catch (Exception e) {
+            throw new IllegalStateException(e);
         }
     }
 }

@@ -47,6 +47,7 @@ import org.springframework.context.annotation.Configuration;
 import javax.sql.DataSource;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -68,8 +69,10 @@ class ProxyDataSourceConfigurationTests {
             DataSource dataSource = context.getBean(DataSource.class);
             ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
             ChainListener chainListener = proxyDataSource.getProxyConfig().getQueryListener();
-            assertThat(chainListener.getListeners()).extracting("class").contains(SLF4JSlowQueryListener.class);
-            assertThat(chainListener.getListeners()).extracting("class").contains(SLF4JQueryLoggingListener.class);
+            assertThat(chainListener.getListeners()).hasExactlyElementsOfTypes(
+                    SLF4JQueryLoggingListener.class,
+                    SLF4JSlowQueryListener.class
+            );
         });
     }
 
@@ -81,8 +84,10 @@ class ProxyDataSourceConfigurationTests {
             DataSource dataSource = context.getBean(DataSource.class);
             ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
             ChainListener chainListener = proxyDataSource.getProxyConfig().getQueryListener();
-            assertThat(chainListener.getListeners()).extracting("class").contains(SLF4JSlowQueryListener.class);
-            assertThat(chainListener.getListeners()).extracting("class").contains(SLF4JQueryLoggingListener.class);
+            assertThat(chainListener.getListeners()).hasExactlyElementsOfTypes(
+                    SLF4JQueryLoggingListener.class,
+                    SLF4JSlowQueryListener.class
+            );
         });
     }
 
@@ -94,8 +99,10 @@ class ProxyDataSourceConfigurationTests {
             DataSource dataSource = context.getBean(DataSource.class);
             ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
             ChainListener chainListener = proxyDataSource.getProxyConfig().getQueryListener();
-            assertThat(chainListener.getListeners()).extracting("class").contains(SystemOutSlowQueryListener.class);
-            assertThat(chainListener.getListeners()).extracting("class").contains(SystemOutQueryLoggingListener.class);
+            assertThat(chainListener.getListeners()).hasExactlyElementsOfTypes(
+                    SystemOutQueryLoggingListener.class,
+                    SystemOutSlowQueryListener.class
+            );
         });
     }
 
@@ -107,8 +114,10 @@ class ProxyDataSourceConfigurationTests {
             DataSource dataSource = context.getBean(DataSource.class);
             ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
             ChainListener chainListener = proxyDataSource.getProxyConfig().getQueryListener();
-            assertThat(chainListener.getListeners()).extracting("class").contains(JULSlowQueryListener.class);
-            assertThat(chainListener.getListeners()).extracting("class").contains(JULQueryLoggingListener.class);
+            assertThat(chainListener.getListeners()).hasExactlyElementsOfTypes(
+                    JULQueryLoggingListener.class,
+                    JULSlowQueryListener.class
+            );
         });
     }
 
@@ -120,9 +129,52 @@ class ProxyDataSourceConfigurationTests {
             DataSource dataSource = context.getBean(DataSource.class);
             ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
             ChainListener chainListener = proxyDataSource.getProxyConfig().getQueryListener();
-            assertThat(chainListener.getListeners()).extracting("class").contains(CommonsSlowQueryListener.class);
-            assertThat(chainListener.getListeners()).extracting("class").contains(CommonsQueryLoggingListener.class);
+            assertThat(chainListener.getListeners()).hasExactlyElementsOfTypes(
+                    CommonsQueryLoggingListener.class,
+                    CommonsSlowQueryListener.class
+            );
         });
+    }
+
+    @Test
+    void testSlowQueryWithoutTimeUnit() {
+        ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues(
+                "decorator.datasource.datasource-proxy.slow-query.threshold:50"
+        );
+
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
+            var slowQueryListener = findListener(proxyDataSource, SLF4JSlowQueryListener.class);
+            assertThat(slowQueryListener.getThreshold()).isEqualTo(50000);
+            assertThat(slowQueryListener.getThresholdTimeUnit()).isEqualTo(TimeUnit.MILLISECONDS);
+        });
+    }
+
+    @Test
+    void testSlowQueryMilliseconds() {
+        ApplicationContextRunner contextRunner = this.contextRunner.withPropertyValues(
+                "decorator.datasource.datasource-proxy.slow-query.threshold:50ms"
+        );
+
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
+            var slowQueryListener = findListener(proxyDataSource, SLF4JSlowQueryListener.class);
+            assertThat(slowQueryListener.getThreshold()).isEqualTo(50);
+            assertThat(slowQueryListener.getThresholdTimeUnit()).isEqualTo(TimeUnit.MILLISECONDS);
+        });
+    }
+
+    private static <T> T findListener(ProxyDataSource proxyDataSource, Class<T> clazz) {
+        return proxyDataSource.getProxyConfig()
+                .getQueryListener()
+                .getListeners()
+                .stream()
+                .filter(clazz::isInstance)
+                .map(clazz::cast)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Listener of type " + clazz.getName() + " not found"));
     }
 
     @Test

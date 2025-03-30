@@ -20,7 +20,10 @@ import net.ttddyy.dsproxy.QueryCountHolder;
 import net.ttddyy.dsproxy.listener.logging.CommonsLogLevel;
 import net.ttddyy.dsproxy.listener.logging.SLF4JLogLevel;
 import net.ttddyy.dsproxy.support.ProxyDataSourceBuilder;
+import org.springframework.boot.convert.DurationUnit;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
@@ -51,7 +54,7 @@ public class DataSourceProxyProperties {
     /**
      * Use formatted SQL for logging query.
      *
-     * @see ProxyDataSourceBuilder#formatQuery(ProxyDataSourceBuilder.FormatQueryCallback) 
+     * @see ProxyDataSourceBuilder#formatQuery(ProxyDataSourceBuilder.FormatQueryCallback)
      */
     private boolean formatSql = false;
 
@@ -194,9 +197,10 @@ public class DataSourceProxyProperties {
          */
         private String logLevel = "WARN";
         /**
-         * Number of seconds to consider query as slow.
+         * Query duration to consider the query slow and log it.
          */
-        private long threshold = 300;
+        @DurationUnit(value = ChronoUnit.SECONDS)
+        private Duration threshold = Duration.ofSeconds(300);
 
         public boolean isEnableLogging() {
             return this.enableLogging;
@@ -210,7 +214,15 @@ public class DataSourceProxyProperties {
             return this.logLevel;
         }
 
+        /**
+         * @deprecated Use {@link #getThresholdDuration()} instead.
+         */
+        @Deprecated(since = "1.11.0", forRemoval = true)
         public long getThreshold() {
+            return this.threshold.toSeconds();
+        }
+
+        public Duration getThresholdDuration() {
             return this.threshold;
         }
 
@@ -226,7 +238,7 @@ public class DataSourceProxyProperties {
             this.logLevel = logLevel;
         }
 
-        public void setThreshold(long threshold) {
+        public void setThreshold(Duration threshold) {
             this.threshold = threshold;
         }
     }
