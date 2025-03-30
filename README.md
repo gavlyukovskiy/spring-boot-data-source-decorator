@@ -217,6 +217,11 @@ decorator.datasource.datasource-proxy.count-query=false
 #### Flexy Pool
 
 If the `flexy-pool-spring-boot-starter` is added to the classpath your datasource will be wrapped to the `FlexyPoolDataSource`.
+
+> [!IMPORTANT]
+> If you are not relying on Spring Boot autoconfiguration and instead declare a custom `DataSource` bean, you need to use
+> a concrete `DataSource` type as the return value (e.g., `@Bean HikariDataSource dataSource()`) to match the FlexyPool adapter.
+
 With default setting you will start getting messages about acquiring and leasing connections:
 ```text
 2017-07-13 01:31:02.575  INFO 5432 --- [ool-1-worker-50] c.v.flexypool.FlexyPoolDataSource        : Connection leased for 1500 millis, while threshold is set to 1000 in dataSource FlexyPoolDataSource
@@ -254,7 +259,7 @@ decorator.datasource.flexy-pool.threshold.connection.acquisition=50
 decorator.datasource.flexy-pool.threshold.connection.lease=1000
 ```
 
-#### Spring Cloud Sleuth (deprecated)
+#### Spring Cloud Sleuth (removed since 1.9.0)
 
 ##### For Spring Boot users, that DO NOT use Spring Cloud Sleuth
 Nothing has changed, this project is continued to be supported and maintained, and can be used to enable JDBC logging
