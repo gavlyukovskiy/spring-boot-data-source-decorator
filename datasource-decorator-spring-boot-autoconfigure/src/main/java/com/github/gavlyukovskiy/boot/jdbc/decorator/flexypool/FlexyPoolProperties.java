@@ -27,7 +27,6 @@ import org.springframework.boot.context.properties.DeprecatedConfigurationProper
 public class FlexyPoolProperties {
 
     private AcquisitionStrategy acquisitionStrategy = new AcquisitionStrategy();
-    private AcquiringStrategy acquiringStrategy = new AcquiringStrategy();
 
     private Metrics metrics = new Metrics();
     private Threshold threshold = new Threshold();
@@ -46,16 +45,6 @@ public class FlexyPoolProperties {
 
     public void setAcquisitionStrategy(AcquisitionStrategy acquisitionStrategy) {
         this.acquisitionStrategy = acquisitionStrategy;
-    }
-
-    @Deprecated(since = "1.10.0", forRemoval = true)
-    public AcquiringStrategy getAcquiringStrategy() {
-        return acquiringStrategy;
-    }
-
-    @Deprecated(since = "1.10.0", forRemoval = true)
-    public void setAcquiringStrategy(AcquiringStrategy acquiringStrategy) {
-        this.acquiringStrategy = acquiringStrategy;
     }
 
     public void setMetrics(Metrics metrics) {
@@ -116,91 +105,6 @@ public class FlexyPoolProperties {
 
             public void setTimeoutMillis(int timeoutMillis) {
                 this.timeoutMillis = timeoutMillis;
-            }
-        }
-    }
-
-    @Deprecated(since = "1.10.0", forRemoval = true)
-    public static class AcquiringStrategy {
-        @Deprecated(since = "1.10.0", forRemoval = true)
-        private Retry retry = new Retry();
-        @Deprecated(since = "1.10.0", forRemoval = true)
-        private IncrementPool incrementPool = new IncrementPool();
-
-        @Deprecated(since = "1.10.0", forRemoval = true)
-        public Retry getRetry() {
-            return this.retry;
-        }
-
-        @Deprecated(since = "1.10.0", forRemoval = true)
-        public IncrementPool getIncrementPool() {
-            return this.incrementPool;
-        }
-
-        @Deprecated(since = "1.10.0", forRemoval = true)
-        public void setRetry(Retry retry) {
-            this.retry = retry;
-        }
-
-        @Deprecated(since = "1.10.0", forRemoval = true)
-        public void setIncrementPool(IncrementPool incrementPool) {
-            this.incrementPool = incrementPool;
-        }
-
-        public static class Retry {
-            @Deprecated(since = "1.10.0", forRemoval = true)
-            private Integer attempts;
-
-            @Deprecated(since = "1.10.0", forRemoval = true)
-            @DeprecatedConfigurationProperty(
-                    reason = "FlexyPool 3.0 has renamed this property",
-                    replacement = "decorator.datasource.flexy-pool.acquisition-strategy.retry.attempts",
-                    since = "1.10.0"
-            )
-            public Integer getAttempts() {
-                return this.attempts;
-            }
-
-            @Deprecated(since = "1.10.0", forRemoval = true)
-            public void setAttempts(int attempts) {
-                this.attempts = attempts;
-            }
-        }
-
-        public static class IncrementPool {
-            @Deprecated(since = "1.10.0", forRemoval = true)
-            private Integer maxOverflowPoolSize;
-            @Deprecated(since = "1.10.0", forRemoval = true)
-            private Integer timeoutMillis;
-
-            @Deprecated(since = "1.10.0", forRemoval = true)
-            @DeprecatedConfigurationProperty(
-                    reason = "FlexyPool 3.0 has renamed this property",
-                    replacement = "decorator.datasource.flexy-pool.acquisition-strategy.increment-pool.timeout-millis",
-                    since = "1.10.0"
-            )
-            public Integer getTimeoutMillis() {
-                return this.timeoutMillis;
-            }
-
-            @Deprecated(since = "1.10.0", forRemoval = true)
-            @DeprecatedConfigurationProperty(
-                    reason = "FlexyPool 3.0 has renamed this property",
-                    replacement = "decorator.datasource.flexy-pool.acquisition-strategy.increment-pool.max-overgrow-pool-size",
-                    since = "1.10.0"
-            )
-            public Integer getMaxOverflowPoolSize() {
-                return this.maxOverflowPoolSize;
-            }
-
-            @Deprecated(since = "1.10.0", forRemoval = true)
-            public void setTimeoutMillis(int timeoutMillis) {
-                this.timeoutMillis = timeoutMillis;
-            }
-
-            @Deprecated(since = "1.10.0", forRemoval = true)
-            public void setMaxOverflowPoolSize(int maxOverflowPoolSize) {
-                this.maxOverflowPoolSize = maxOverflowPoolSize;
             }
         }
     }
@@ -300,22 +204,6 @@ public class FlexyPoolProperties {
 
             public void setLease(long lease) {
                 this.lease = lease;
-            }
-
-            @Deprecated(since = "1.10.0", forRemoval = true)
-            @DeprecatedConfigurationProperty(
-                    reason = "FlexyPool 3.0 has renamed this property",
-                    replacement = "decorator.datasource.flexy-pool.threshold.connection.acquisition",
-                    since = "1.10.0"
-            )
-            public long getAcquire() {
-                return this.acquisition;
-            }
-
-
-            @Deprecated(since = "1.10.0", forRemoval = true)
-            public void setAcquire(long acquire) {
-                this.acquisition = acquire;
             }
         }
     }
