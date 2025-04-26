@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - id: request-token
-        uses: permissionizer/request-token@main
+        uses: permissionizer/request-token@v1
         with:
           target-repository: ${{ github.repository }}
           permissions: |
