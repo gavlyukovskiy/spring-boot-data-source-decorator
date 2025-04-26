@@ -4,5 +4,5 @@ allow:
     ref: master
     workflow_ref: .github/workflows/update-gradle-wrapper.yml
     permissions:
-      contents: read
+      contents: write
       pull-requests: write

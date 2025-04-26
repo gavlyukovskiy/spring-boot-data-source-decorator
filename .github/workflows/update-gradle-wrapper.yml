@@ -21,7 +21,7 @@ jobs:
         with:
           target-repository: ${{ github.repository }}
           permissions: |
-            contents: read
+            contents: write
             pull-requests: write
 
       - name: Update Gradle Wrapper
