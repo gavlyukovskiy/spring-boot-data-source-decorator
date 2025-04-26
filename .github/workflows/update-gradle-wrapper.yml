@@ -5,6 +5,10 @@ on:
     - cron: "0 0 * * Mon"
   workflow_dispatch:
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   update-gradle-wrapper:
     runs-on: ubuntu-latest
