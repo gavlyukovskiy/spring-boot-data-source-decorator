@@ -3,6 +3,7 @@ name: Update Gradle Wrapper
 on:
   schedule:
     - cron: "0 0 * * Mon"
+  workflow_dispatch:
 
 jobs:
   update-gradle-wrapper:
@@ -11,5 +12,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - id: request-token
+        uses: permissionizer/request-token@main
+        with:
+          target-repository: ${{ github.repository }}
+          permissions: |
+            checks: write
+            statuses: write
+
       - name: Update Gradle Wrapper
         uses: gradle-update/update-gradle-wrapper-action@v2
+        with:
+          repo-token: '${{ steps.request-token.outputs.token }}'
+          merge-method: SQUASH
+          reviewers: gavlyukovskiy

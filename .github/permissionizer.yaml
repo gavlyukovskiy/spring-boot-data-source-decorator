@@ -1,0 +1,8 @@
+self: gavlyukovskiy/spring-boot-data-source-decorator
+allow:
+  - repository: gavlyukovskiy/spring-boot-data-source-decorator
+    ref: master
+    workflow_ref: .github/workflows/update-gradle-wrapper.yml
+    permissions:
+      contents: read
+      pull-requests: write
