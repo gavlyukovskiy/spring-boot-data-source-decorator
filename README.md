@@ -71,13 +71,13 @@ You can use all decorators at the same time if you need, if so decorating order 
 
 After adding p6spy starter you'll start getting all sql queries in the logs:
 ```text
-2017-06-07 21:42:08.120  INFO 5456 --- [ool-1-worker-57] p6spy                                    : #1496860928120 | took 0ms | statement | connection 0|SELECT NOW()
+2017-06-07 21:42:08 INFO p6spy: #1496860928120 | took 0ms | statement | connection 0|SELECT NOW()
 ;
-2017-06-07 21:51:07.802  INFO 5456 --- [ool-1-worker-50] p6spy                                    : #1496861467802 | took 0ms | statement | connection 1|SELECT NOW()
+2017-06-07 21:51:07 INFO p6spy: #1496861467802 | took 0ms | statement | connection 1|SELECT NOW()
 ;
-2017-06-07 21:51:07.803  INFO 5456 --- [ool-1-worker-43] p6spy                                    : #1496861467803 | took 0ms | statement | connection 2|SELECT NOW()
+2017-06-07 21:51:07 INFO p6spy: #1496861467803 | took 0ms | statement | connection 2|SELECT NOW()
 ;
-2017-06-07 21:51:08.806  INFO 5456 --- [ool-1-worker-36] p6spy                                    : #1496861468806 | took 0ms | statement | connection 3|SELECT NOW()
+2017-06-07 21:51:08 INFO p6spy: #1496861468806 | took 0ms | statement | connection 3|SELECT NOW()
 ;
 ```
 
@@ -131,12 +131,12 @@ Also you can configure P6Spy manually using one of available configuration metho
 
 After adding datasource-proxy starter you'll start getting all sql queries in the logs with level `DEBUG` and slow sql queries with level `WARN`:
 ```text
-2017-06-07 21:58:06.630  DEBUG 8492 --- [ool-1-worker-57] n.t.d.l.l.SLF4JQueryLoggingListener      :
+2017-06-07 21:58:06 DEBUG n.t.d.l.l.SLF4JQueryLoggingListener:
 Name:, Time:0, Success:True
 Type:Statement, Batch:False, QuerySize:1, BatchSize:0
 Query:["SELECT NOW()"]
 Params:[]
-2017-06-07 21:58:06.630  DEBUG 8492 --- [ool-1-worker-43] n.t.d.l.l.SLF4JQueryLoggingListener      :
+2017-06-07 21:58:06 DEBUG n.t.d.l.l.SLF4JQueryLoggingListener:
 Name:, Time:0, Success:True
 Type:Statement, Batch:False, QuerySize:1, BatchSize:0
 Query:["SELECT NOW()"]
@@ -146,7 +146,7 @@ Name:, Time:0, Success:True
 Type:Statement, Batch:False, QuerySize:1, BatchSize:0
 Query:["SELECT NOW()"]
 Params:[]
-2017-06-07 22:10:50.478  WARN 8492 --- [pool-1-thread-1] n.t.d.l.logging.SLF4JSlowQueryListener   :
+2017-06-07 22:10:50 WARN n.t.d.l.logging.SLF4JSlowQueryListener:
 Name:, Time:0, Success:False
 Type:Statement, Batch:False, QuerySize:1, BatchSize:0
 Query:["SELECT SLEEP(301000)"]
@@ -224,9 +224,9 @@ If the `flexy-pool-spring-boot-starter` is added to the classpath your datasourc
 
 With default setting you will start getting messages about acquiring and leasing connections:
 ```text
-2017-07-13 01:31:02.575  INFO 5432 --- [ool-1-worker-50] c.v.flexypool.FlexyPoolDataSource        : Connection leased for 1500 millis, while threshold is set to 1000 in dataSource FlexyPoolDataSource
-2017-07-13 01:31:03.143  WARN 5432 --- [ool-1-worker-51] PoolOnTimeoutConnectionAcquisitionStrategy : Connection was acquired in 1502 millis, timeoutMillis is set to 500
-2017-07-13 01:31:03.143  INFO 5432 --- [ool-1-worker-51] PoolOnTimeoutConnectionAcquisitionStrategy : Pool size changed from previous value 10 to 11
+2017-07-13 01:31:02 INFO c.v.flexypool.FlexyPoolDataSource: Connection leased for 1500 millis, while threshold is set to 1000 in dataSource FlexyPoolDataSource
+2017-07-13 01:31:03 WARN PoolOnTimeoutConnectionAcquisitionStrategy: Connection was acquired in 1502 millis, timeoutMillis is set to 500
+2017-07-13 01:31:03 INFO PoolOnTimeoutConnectionAcquisitionStrategy: Pool size changed from previous value 10 to 11
 ```
 
 All beans of type `ConnectionAcquisitionStrategyFactory` are used to provide `ConnectionAcquisitionStrategy` for the pool.
