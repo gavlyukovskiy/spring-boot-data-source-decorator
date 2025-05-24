@@ -20,8 +20,10 @@ val gpgPassphrase: String? = project.properties["gpg_passphrase"] as String?
 nexusPublishing {
     repositories {
         sonatype {
-            username.set(sonatypeUser)
-            password.set(sonatypePassword)
+            nexusUrl = uri("https://ossrh-staging-api.central.sonatype.com/service/local/")
+            snapshotRepositoryUrl = uri("https://central.sonatype.com/repository/maven-snapshots/")
+            username = sonatypeUser
+            password = sonatypePassword
         }
     }
 }
