@@ -37,6 +37,9 @@ h2 = { group = "com.h2database", name = "h2" }
 commons-dbcp = { group = "commons-dbcp", name = "commons-dbcp", version = "1.4" }
 flyway-core = { group = "org.flywaydb", name = "flyway-core" }
 
+junit-bom = { group = "org.junit", name = "junit-bom", version = "5.12.2" }
+junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher" }
+
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
 nexus-publish = { id = "io.github.gradle-nexus.publish-plugin", version = "2.0.0" }
