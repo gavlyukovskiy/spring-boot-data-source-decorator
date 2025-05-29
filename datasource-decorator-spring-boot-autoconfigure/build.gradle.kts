@@ -7,6 +7,7 @@ dependencies {
     implementation(platform(libs.spring.boot.dependencies))
     annotationProcessor(platform(libs.spring.boot.dependencies))
     compileOnly(platform(libs.spring.boot.dependencies))
+    testImplementation(platform(libs.junit.bom))
     testImplementation(platform(libs.spring.boot.dependencies))
 
     implementation(libs.spring.boot)
@@ -33,6 +34,7 @@ dependencies {
     compileOnly(libs.hibernate.core)
     compileOnly(libs.sql.formatter)
 
+    testImplementation(libs.junit.platform.launcher)
     testImplementation(libs.h2)
     testImplementation(libs.spring.boot.starter.test)
 
