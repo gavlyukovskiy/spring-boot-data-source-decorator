@@ -20,6 +20,7 @@ import net.ttddyy.dsproxy.listener.MethodExecutionListener;
 import net.ttddyy.dsproxy.listener.QueryCountStrategy;
 import net.ttddyy.dsproxy.listener.QueryExecutionListener;
 import net.ttddyy.dsproxy.listener.logging.CommonsLogLevel;
+import net.ttddyy.dsproxy.listener.logging.LoggingFilter;
 import net.ttddyy.dsproxy.listener.logging.SLF4JLogLevel;
 import net.ttddyy.dsproxy.proxy.ResultSetProxyLogicFactory;
 import net.ttddyy.dsproxy.support.ProxyDataSourceBuilder;
@@ -69,6 +70,9 @@ public class ProxyDataSourceBuilderConfigurer {
 
     @Autowired(required = false)
     ProxyDataSourceBuilder.FormatQueryCallback formatQueryCallback;
+
+    @Autowired(required = false)
+    private LoggingFilter loggingFilter;
 
     public void configure(ProxyDataSourceBuilder proxyDataSourceBuilder, DataSourceProxyProperties datasourceProxy) {
         var query = datasourceProxy.getQuery();
@@ -124,6 +128,10 @@ public class ProxyDataSourceBuilderConfigurer {
         }
         if (datasourceProxy.isFormatSql() && datasourceProxy.isJsonFormat()) {
             log.warn("Found opposite format-sql and json format, json format will be used (may depend on library version)");
+        }
+
+        if (loggingFilter != null) {
+            proxyDataSourceBuilder.loggingFilter(loggingFilter);
         }
 
         if (datasourceProxy.isMultiline()) {

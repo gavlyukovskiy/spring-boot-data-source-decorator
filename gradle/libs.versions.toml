@@ -1,7 +1,7 @@
 [versions]
 spring-boot = "3.5.3"
 p6Spy = "3.9.1"
-datasource-proxy = "1.10.1"
+datasource-proxy = "1.11.0"
 flexy-pool = "3.0.2"
 
 [libraries]
