@@ -187,7 +187,7 @@ public ConnectionIdManagerProvider connectionIdManagerProvider() {
 ```
 You can configure logging, query/slow query listeners and more using your `application.properties`:
 > [!NOTE]
-> Configuration below indicates al possible parameters together with their default values and **does not** need to be set explicitly
+> Configuration below indicates all possible parameters together with their default values and **does not** need to be set explicitly
 ```properties
 # One of logging libraries (slf4j, jul, common, sysout)
 decorator.datasource.datasource-proxy.logging=slf4j
@@ -212,6 +212,14 @@ decorator.datasource.datasource-proxy.json-format=false
 
 # Enable Query Metrics
 decorator.datasource.datasource-proxy.count-query=false
+```
+
+Optionally, configure a `LoggingFilter` to control the output of query logging:
+```java
+@Bean
+public LoggingFilter loggingFilter() {
+    return MyLoggingFilter();
+}
 ```
 
 #### Flexy Pool

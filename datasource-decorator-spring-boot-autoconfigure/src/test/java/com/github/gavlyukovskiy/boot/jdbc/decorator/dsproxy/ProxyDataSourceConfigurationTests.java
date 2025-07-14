@@ -23,10 +23,12 @@ import net.ttddyy.dsproxy.ExecutionInfo;
 import net.ttddyy.dsproxy.QueryInfo;
 import net.ttddyy.dsproxy.listener.ChainListener;
 import net.ttddyy.dsproxy.listener.QueryExecutionListener;
+import net.ttddyy.dsproxy.listener.logging.AbstractQueryLoggingListener;
 import net.ttddyy.dsproxy.listener.logging.CommonsQueryLoggingListener;
 import net.ttddyy.dsproxy.listener.logging.CommonsSlowQueryListener;
 import net.ttddyy.dsproxy.listener.logging.JULQueryLoggingListener;
 import net.ttddyy.dsproxy.listener.logging.JULSlowQueryListener;
+import net.ttddyy.dsproxy.listener.logging.LoggingFilter;
 import net.ttddyy.dsproxy.listener.logging.SLF4JQueryLoggingListener;
 import net.ttddyy.dsproxy.listener.logging.SLF4JSlowQueryListener;
 import net.ttddyy.dsproxy.listener.logging.SystemOutQueryLoggingListener;
@@ -227,6 +229,19 @@ class ProxyDataSourceConfigurationTests {
         });
     }
 
+    @Test
+    void testCustomLoggingFilter() {
+        ApplicationContextRunner contextRunner = this.contextRunner.withUserConfiguration(CustomLoggingFilterConfiguration.class);
+
+        contextRunner.run(context -> {
+            DataSource dataSource = context.getBean(DataSource.class);
+            ProxyDataSource proxyDataSource = (ProxyDataSource) ((DecoratedDataSource) dataSource).getDecoratedDataSource();
+            LoggingFilter loggingFilter = context.getBean(LoggingFilter.class);
+            var queryListener = findListener(proxyDataSource, AbstractQueryLoggingListener.class);
+            assertThat(queryListener.getLoggingFilter()).isSameAs(loggingFilter);
+        });
+    }
+
     @Configuration(proxyBeanMethods = false)
     static class CustomDataSourceProxyConfiguration {
 
@@ -262,6 +277,15 @@ class ProxyDataSourceConfigurationTests {
                     System.out.println("afterQuery");
                 }
             };
+        }
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    static class CustomLoggingFilterConfiguration {
+
+        @Bean
+        public LoggingFilter loggingFilter() {
+            return (execInfo, queryInfoList) -> true;
         }
     }
 }
