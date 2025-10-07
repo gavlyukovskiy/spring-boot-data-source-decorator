@@ -72,13 +72,9 @@ You can use all decorators at the same time if you need, if so decorating order 
 After adding p6spy starter you'll start getting all sql queries in the logs:
 ```text
 2017-06-07 21:42:08 INFO p6spy: #1496860928120 | took 0ms | statement | connection 0|SELECT NOW()
-;
 2017-06-07 21:51:07 INFO p6spy: #1496861467802 | took 0ms | statement | connection 1|SELECT NOW()
-;
 2017-06-07 21:51:07 INFO p6spy: #1496861467803 | took 0ms | statement | connection 2|SELECT NOW()
-;
 2017-06-07 21:51:08 INFO p6spy: #1496861468806 | took 0ms | statement | connection 3|SELECT NOW()
-;
 ```
 
 All beans of type `JdbcEventListener` are registered in P6Spy:
