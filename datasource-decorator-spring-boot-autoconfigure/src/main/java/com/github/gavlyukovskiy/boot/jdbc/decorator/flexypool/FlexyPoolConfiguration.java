@@ -34,6 +34,7 @@ import com.vladmihalcea.flexypool.util.ClassLoaderUtils;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionMessage;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
@@ -48,7 +49,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 
-import jakarta.annotation.PostConstruct;
 import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -197,18 +197,19 @@ public class FlexyPoolConfiguration {
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnMissingBean(FlexyPoolDataSourceDecorator.class)
     @Conditional(FlexyPoolConfiguration.FlexyPoolConfigurationAvailableCondition.class)
-    static class PropertyFlexyConfiguration {
+    static class PropertyFlexyConfiguration implements InitializingBean {
 
         private static final Logger log = getLogger(PropertyFlexyConfiguration.class);
 
         @Autowired(required = false)
         private List<ConnectionAcquisitionStrategyFactory<?, javax.sql.DataSource>> connectionAcquisitionStrategyFactories;
 
-        @PostConstruct
-        public void warnIfAnyStrategyFound() {
+
+        @Override
+        public void afterPropertiesSet() {
             if (connectionAcquisitionStrategyFactories != null) {
                 log.warn("ConnectionAcquisitionStrategyFactory beans found in the context will not be applied to " +
-                        "FlexyDataSource due to property based configuration of FlexyPool");
+                         "FlexyDataSource due to property based configuration of FlexyPool");
             }
         }
 
