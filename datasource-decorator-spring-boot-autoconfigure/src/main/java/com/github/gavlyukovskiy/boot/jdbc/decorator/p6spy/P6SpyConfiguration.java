@@ -28,9 +28,9 @@ import com.p6spy.engine.spy.option.EnvironmentVariables;
 import com.p6spy.engine.spy.option.P6OptionsSource;
 import com.p6spy.engine.spy.option.SpyDotProperties;
 import com.p6spy.engine.spy.option.SystemProperties;
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -54,7 +54,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 // P6Spy is automatically configured by Spring Cloud Sleuth if exists
 @ConditionalOnMissingBean(type = "org.springframework.cloud.sleuth.autoconfig.instrument.jdbc.P6SpyConfiguration")
 @ConditionalOnClass(P6DataSource.class)
-public class P6SpyConfiguration {
+public class P6SpyConfiguration implements InitializingBean, DisposableBean {
 
     private static final Logger log = getLogger(P6SpyConfiguration.class);
 
@@ -66,8 +66,8 @@ public class P6SpyConfiguration {
 
     private Map<String, String> initialP6SpyOptions;
 
-    @PostConstruct
-    public void init() {
+    @Override
+    public void afterPropertiesSet() {
         P6SpyProperties p6spy = dataSourceDecoratorProperties.getP6spy();
         initialP6SpyOptions = findDefinedOptions();
         String customModuleList = initialP6SpyOptions.get("modulelist");
@@ -115,7 +115,7 @@ public class P6SpyConfiguration {
         P6ModuleManager.getInstance().reload();
     }
 
-    @PreDestroy
+    @Override
     public void destroy() {
         P6SpyProperties p6spy = dataSourceDecoratorProperties.getP6spy();
         if (!initialP6SpyOptions.containsKey("modulelist")) {
