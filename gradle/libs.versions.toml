@@ -1,5 +1,5 @@
 [versions]
-spring-boot = "4.0.0-RC1"
+spring-boot = "4.0.0-RC2"
 p6Spy = "3.9.1"
 datasource-proxy = "1.11.0"
 flexy-pool = "3.0.2"
@@ -12,6 +12,7 @@ spring-boot-configuration-processor = { group = "org.springframework.boot", name
 spring-boot-dependencies = { group = "org.springframework.boot", name = "spring-boot-dependencies", version.ref = "spring-boot" }
 spring-boot-flyway = { group = "org.springframework.boot", name = "spring-boot-flyway" }
 spring-boot-jdbc = { group = "org.springframework.boot", name = "spring-boot-jdbc" }
+spring-boot-jdbc-test = { group = "org.springframework.boot", name = "spring-boot-jdbc-test" }
 spring-boot-starter-jdbc = { group = "org.springframework.boot", name = "spring-boot-starter-jdbc" }
 spring-boot-starter-test = { group = "org.springframework.boot", name = "spring-boot-starter-test" }
 spring-boot-starter-web = { group = "org.springframework.boot", name = "spring-boot-starter-web" }

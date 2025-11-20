@@ -37,7 +37,8 @@ dependencies {
     testImplementation(libs.junit.platform.launcher)
     testImplementation(libs.h2)
     testImplementation(libs.spring.boot.starter.test)
-    implementation(libs.spring.boot.flyway)
+    testImplementation(libs.spring.boot.flyway)
+    testImplementation(libs.spring.boot.jdbc.test)
 
     testImplementation(libs.p6spy)
     testImplementation(libs.datasource.proxy)
