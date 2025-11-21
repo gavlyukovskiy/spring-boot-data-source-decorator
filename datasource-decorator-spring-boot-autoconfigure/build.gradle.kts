@@ -12,7 +12,7 @@ dependencies {
 
     implementation(libs.spring.boot)
     implementation(libs.spring.boot.autoconfigure)
-    implementation(libs.spring.boot.starter.jdbc)
+    implementation(libs.spring.boot.jdbc)
 
     annotationProcessor(libs.spring.boot.configuration.processor)
 
@@ -28,7 +28,7 @@ dependencies {
     compileOnly(libs.flexy.pool.tomcatcp)
     compileOnly(libs.flexy.pool.micrometer.metrics)
 
-    compileOnly(libs.spring.boot.starter.actuator)
+    compileOnly(libs.spring.boot.actuator)
 
     // optional (compileOnly) dependencies for SQL formatting
     compileOnly(libs.hibernate.core)
@@ -37,6 +37,8 @@ dependencies {
     testImplementation(libs.junit.platform.launcher)
     testImplementation(libs.h2)
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.spring.boot.flyway)
+    testImplementation(libs.spring.boot.jdbc.test)
 
     testImplementation(libs.p6spy)
     testImplementation(libs.datasource.proxy)

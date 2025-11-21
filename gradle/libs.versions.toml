@@ -1,21 +1,21 @@
 [versions]
-spring-boot = "3.5.7"
+spring-boot = "4.0.0"
 p6Spy = "3.9.1"
 datasource-proxy = "1.11.0"
 flexy-pool = "3.1.0"
 
 [libraries]
-spring-boot-dependencies = { group = "org.springframework.boot", name = "spring-boot-dependencies", version.ref = "spring-boot" }
 spring-boot = { group = "org.springframework.boot", name = "spring-boot" }
+spring-boot-actuator = { group = "org.springframework.boot", name = "spring-boot-actuator" }
 spring-boot-autoconfigure = { group = "org.springframework.boot", name = "spring-boot-autoconfigure" }
-spring-boot-starter-actuator = { group = "org.springframework.boot", name = "spring-boot-starter-actuator" }
-spring-boot-starter-jdbc = { group = "org.springframework.boot", name = "spring-boot-starter-jdbc" }
 spring-boot-configuration-processor = { group = "org.springframework.boot", name = "spring-boot-configuration-processor" }
+spring-boot-dependencies = { group = "org.springframework.boot", name = "spring-boot-dependencies", version.ref = "spring-boot" }
+spring-boot-flyway = { group = "org.springframework.boot", name = "spring-boot-flyway" }
+spring-boot-jdbc = { group = "org.springframework.boot", name = "spring-boot-jdbc" }
+spring-boot-jdbc-test = { group = "org.springframework.boot", name = "spring-boot-jdbc-test" }
+spring-boot-starter-jdbc = { group = "org.springframework.boot", name = "spring-boot-starter-jdbc" }
 spring-boot-starter-test = { group = "org.springframework.boot", name = "spring-boot-starter-test" }
-
-
 spring-boot-starter-web = { group = "org.springframework.boot", name = "spring-boot-starter-web" }
-spring-boot-starter-aop = { group = "org.springframework.boot", name = "spring-boot-starter-aop" }
 
 p6spy = { group = "p6spy", name = "p6spy", version.ref = "p6Spy" }
 
