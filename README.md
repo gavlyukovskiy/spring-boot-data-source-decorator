@@ -17,12 +17,14 @@ Instead of using the library you can manually wrap your `DataSource`, but this l
 
 #### Quick Start
 
-Add one of the starters to the classpath of a Spring Boot 3 application and your datasources (auto-configured or custom) will be wrapped into one of a datasource proxy providers below.
+Add one of the starters to the classpath of a Spring Boot 4 application and your datasources (auto-configured or custom) will be wrapped into one of a datasource proxy providers below.
 
-The latest release version is [![Latest release](https://img.shields.io/badge/dynamic/xml.svg?label=&color=green&query=%2F%2Fmetadata%2Fversioning%2Flatest&url=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Fcom%2Fgithub%2Fgavlyukovskiy%2Fdatasource-decorator-spring-boot-autoconfigure%2Fmaven-metadata.xml)](https://mvnrepository.com/artifact/com.github.gavlyukovskiy/datasource-decorator-spring-boot-autoconfigure/)
+Spring Boot compatibility
 
-> [!NOTE]  
-> For Spring Boot 2 applications, the latest compatible version is 1.8.1.
+| Spring Boot Version | Starter Version                                                                                                                                                                                                                                                                                                                                                                              |
+|---------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.x                 | [![Latest release](https://img.shields.io/badge/dynamic/xml.svg?label=&color=green&query=%2F%2Fmetadata%2Fversioning%2Flatest&url=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Fcom%2Fgithub%2Fgavlyukovskiy%2Fdatasource-decorator-spring-boot-autoconfigure%2Fmaven-metadata.xml)](https://mvnrepository.com/artifact/com.github.gavlyukovskiy/datasource-decorator-spring-boot-autoconfigure/) |
+| 3.x                 | 1.12.1                                                                                                                                                                                                                                                                                                                                                                                       |
 
 If you want to use [P6Spy](https://github.com/p6spy/p6spy)
 ```groovy
