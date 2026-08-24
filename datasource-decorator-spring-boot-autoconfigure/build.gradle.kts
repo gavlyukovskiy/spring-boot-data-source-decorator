@@ -4,15 +4,14 @@ plugins {
 }
 
 dependencies {
-    implementation(platform(libs.spring.boot.dependencies))
     annotationProcessor(platform(libs.spring.boot.dependencies))
     compileOnly(platform(libs.spring.boot.dependencies))
     testImplementation(platform(libs.junit.bom))
     testImplementation(platform(libs.spring.boot.dependencies))
 
-    implementation(libs.spring.boot)
-    implementation(libs.spring.boot.autoconfigure)
-    implementation(libs.spring.boot.jdbc)
+    compileOnly(libs.spring.boot)
+    compileOnly(libs.spring.boot.autoconfigure)
+    compileOnly(libs.spring.boot.jdbc)
 
     annotationProcessor(libs.spring.boot.configuration.processor)
 
