@@ -9,9 +9,9 @@ dependencies {
     testImplementation(platform(libs.junit.bom))
     testImplementation(platform(libs.spring.boot.dependencies))
 
-    compileOnly(libs.spring.boot)
-    compileOnly(libs.spring.boot.autoconfigure)
-    compileOnly(libs.spring.boot.jdbc)
+    implementation(libs.spring.boot) { version { prefer(libs.versions.spring.boot.get()) } }
+    implementation(libs.spring.boot.autoconfigure) { version { prefer(libs.versions.spring.boot.get()) } }
+    implementation(libs.spring.boot.jdbc) { version { prefer(libs.versions.spring.boot.get()) } }
 
     annotationProcessor(libs.spring.boot.configuration.processor)
 
