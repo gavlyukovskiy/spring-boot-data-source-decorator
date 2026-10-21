@@ -4,15 +4,14 @@ plugins {
 }
 
 dependencies {
-    implementation(platform(libs.spring.boot.dependencies))
     annotationProcessor(platform(libs.spring.boot.dependencies))
     compileOnly(platform(libs.spring.boot.dependencies))
     testImplementation(platform(libs.junit.bom))
     testImplementation(platform(libs.spring.boot.dependencies))
 
-    implementation(libs.spring.boot)
-    implementation(libs.spring.boot.autoconfigure)
-    implementation(libs.spring.boot.jdbc)
+    implementation(libs.spring.boot) { version { prefer(libs.versions.spring.boot.get()) } }
+    implementation(libs.spring.boot.autoconfigure) { version { prefer(libs.versions.spring.boot.get()) } }
+    implementation(libs.spring.boot.jdbc) { version { prefer(libs.versions.spring.boot.get()) } }
 
     annotationProcessor(libs.spring.boot.configuration.processor)
 
